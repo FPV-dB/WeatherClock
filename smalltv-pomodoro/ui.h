@@ -37,6 +37,8 @@ struct UiWeather {
   uint8_t nd;        // dias em d[] (0 se a previsão não veio)
   UiDay d[UI_DAYS];
   uint8_t rainIn;    // chuva começando na próxima hora: minutos até ela (5 = em instantes, 15, 30, 45); 0 = não
+  uint8_t wind, gust;  // vento a 10 m, km/h (weatherbox)
+  uint16_t wdir;       // direção de onde sopra, graus
 };
 
 struct UiState {

@@ -804,6 +804,8 @@ struct Weather {
   uint8_t nd = 0;  // previsão: hoje e os próximos dias
   UiDay d[UI_DAYS];
   uint8_t rainIn = 0;  // ver UiWeather::rainIn
+  uint8_t wind = 0, gust = 0;  // km/h (weatherbox)
+  uint16_t wdir = 0;
   char tzName[40] = "";  // fuso da cidade segundo o Open-Meteo (IANA, ex.: America/Sao_Paulo)
   int32_t utcOff = 0;     // deslocamento desse fuso agora, em segundos (o painel compara com o do relógio)
 } wx;
@@ -894,7 +896,7 @@ bool fetchWeather() {
   appendFixed(url, cfg.lat, 4);
   url += F("&longitude=");
   appendFixed(url, cfg.lon, 4);
-  url += F("&current=temperature_2m,relative_humidity_2m,weather_code,is_day"
+  url += F("&current=temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m"
            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset"
            "&minutely_15=precipitation,precipitation_probability&forecast_minutely_15=4"
            "&timezone=auto&forecast_days=");
@@ -908,6 +910,9 @@ bool fetchWeather() {
   filter["current"]["relative_humidity_2m"] = true;
   filter["current"]["weather_code"] = true;
   filter["current"]["is_day"] = true;
+  filter["current"]["wind_speed_10m"] = true;
+  filter["current"]["wind_direction_10m"] = true;
+  filter["current"]["wind_gusts_10m"] = true;
   filter["current"]["time"] = true;  // hora local do serviço: a segunda fonte que confirma a do SNTP
   filter["utc_offset_seconds"] = true;
   filter["timezone"] = true;  // fuso da cidade: o painel confere se bate com o do relógio
@@ -925,6 +930,9 @@ bool fetchWeather() {
   wx.hum = doc["current"]["relative_humidity_2m"];
   wx.code = doc["current"]["weather_code"];
   wx.day = doc["current"]["is_day"] | 1;
+  wx.wind = (uint8_t)constrain(lroundf(doc["current"]["wind_speed_10m"] | 0.0f), 0, 255);
+  wx.gust = (uint8_t)constrain(lroundf(doc["current"]["wind_gusts_10m"] | 0.0f), 0, 255);
+  wx.wdir = (uint16_t)constrain(doc["current"]["wind_direction_10m"] | 0, 0, 360) % 360;
   wx.tmax = doc["daily"]["temperature_2m_max"][0];
   wx.tmin = doc["daily"]["temperature_2m_min"][0];
   // a resposta vem em HTTP puro: limita antes de converter os decimais de /api/state
@@ -1101,7 +1109,7 @@ UiState makeState() {
   s.streak = statsStreak;
   s.best = statsBest;
   s.weatherOn = cfg.weatherOn && cfg.city[0];
-  s.wx = {wx.ok, wx.t, wx.tmin, wx.tmax, wx.hum, wx.code, wx.day, wx.version, wx.nd, {}, (uint8_t)(cfg.rainAlert ? wx.rainIn : 0)};
+  s.wx = {wx.ok, wx.t, wx.tmin, wx.tmax, wx.hum, wx.code, wx.day, wx.version, wx.nd, {}, (uint8_t)(cfg.rainAlert ? wx.rainIn : 0), wx.wind, wx.gust, wx.wdir};
   memcpy(s.wx.d, wx.d, sizeof wx.d);
   s.fahr = cfg.fahr;
   if (s.fahr) {  // °F só na tela: o clima segue guardado em °C

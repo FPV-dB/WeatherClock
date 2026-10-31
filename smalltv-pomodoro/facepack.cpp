@@ -413,6 +413,12 @@ static void variable(const char *k, const UiState &s, char *v, size_t n) {
   else if (!strcmp_P(k, PSTR("TMIN"))) wx ? snprintf_P(v, n, PSTR("%d"), (int)lroundf(s.wx.tmin)) : snprintf_P(v, n, PSTR("--"));
   else if (!strcmp_P(k, PSTR("TMAX"))) wx ? snprintf_P(v, n, PSTR("%d"), (int)lroundf(s.wx.tmax)) : snprintf_P(v, n, PSTR("--"));
   else if (!strcmp_P(k, PSTR("HUM"))) wx ? snprintf_P(v, n, PSTR("%d"), s.wx.hum) : snprintf_P(v, n, PSTR("--"));
+  else if (!strcmp_P(k, PSTR("WIND"))) wx ? snprintf_P(v, n, PSTR("%u"), s.wx.wind) : snprintf_P(v, n, PSTR("--"));
+  else if (!strcmp_P(k, PSTR("GUST"))) wx ? snprintf_P(v, n, PSTR("%u"), s.wx.gust) : snprintf_P(v, n, PSTR("--"));
+  else if (!strcmp_P(k, PSTR("WDIR"))) {
+    static const char DIRS[16][4] = {"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
+    snprintf_P(v, n, PSTR("%s"), wx ? DIRS[((s.wx.wdir * 2 + 22) / 45) % 16] : "");
+  }
   else if (!strcmp_P(k, PSTR("UNIT"))) snprintf_P(v, n, PSTR("%s"), s.fahr ? "F" : "C");
   else if (!strcmp_P(k, PSTR("RAIN"))) snprintf_P(v, n, PSTR("%s"), wx ? rainSoonText(s.wx.rainIn) : "");
   else if (!strcmp_P(k, PSTR("WX"))) snprintf_P(v, n, PSTR("%s"), wx ? weatherText(s.wx.code) : "");
