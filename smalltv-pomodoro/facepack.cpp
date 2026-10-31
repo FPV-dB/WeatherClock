@@ -16,12 +16,15 @@ bool (*uiDrawImage)(const char *path, int x, int y) = nullptr;
 enum : uint8_t { L_RECT, L_CIRCLE, L_LINE, L_TEXT, L_SPRITE, L_MASCOT, L_WEATHER, L_BAR, L_HAND, L_IMAGE, L_ARC, L_TICKS, L_PLANT, L_TYPES };
 enum : uint8_t { F_PIXEL, F_DM, F_GEO, F_DSEG, F_BEBAS, F_OUTFIT, F_RIGHTEOUS, F_FONTS };
 enum : uint8_t { A_LEFT, A_CENTER, A_RIGHT };
-enum : uint8_t { W_ALWAYS, W_DAY, W_NIGHT, W_RAIN, W_DRY, W_WX, W_NOWX, W_GOAL, W_NOGOAL, W_STREAK, W_WHENS };
+enum : uint8_t { W_ALWAYS, W_DAY, W_NIGHT, W_RAIN, W_DRY, W_WX, W_NOWX, W_GOAL, W_NOGOAL, W_STREAK,
+                 // weatherbox: one condition per kind of sky, for animated weather icons
+                 W_SUNNY, W_MOON, W_PARTLY, W_PARTLYNIGHT, W_CLOUDY, W_FOG, W_DRIZZLE, W_RAINY, W_SNOWY, W_STORM, W_WHENS };
 enum : uint8_t { V_SEC, V_MIN, V_HOUR, V_FOCOS, V_HUM, V_VARS };
 static const char TYPES[] PROGMEM = "rect\0circle\0line\0text\0sprite\0mascot\0weather\0bar\0hand\0image\0arc\0ticks\0plant";
 static const char FONTS[] PROGMEM = "pixel\0dm\0geo\0dseg\0bebas\0outfit\0righteous";
 static const char ALIGNS[] PROGMEM = "left\0center\0right";
-static const char WHENS[] PROGMEM = "always\0day\0night\0rain\0dry\0weather\0noweather\0goal\0nogoal\0streak";
+static const char WHENS[] PROGMEM = "always\0day\0night\0rain\0dry\0weather\0noweather\0goal\0nogoal\0streak"
+                                    "\0sunny\0moon\0partly\0partlynight\0cloudy\0fog\0drizzle\0rainy\0snowy\0storm";
 static const char VARS[] PROGMEM = "sec\0min\0hour\0focos\0hum";
 static const char MOODS[] PROGMEM = "feliz\0dormindo\0focado\0relax\0comemorando\0guarda-chuva\0cachecol\0oculos\0auto";
 static const int32_t C_NONE = -1, C_ACCENT = -2;
@@ -468,6 +471,24 @@ static bool cond(uint8_t w, const UiState &s) {
     case W_GOAL: return s.today >= s.dailyGoal;
     case W_NOGOAL: return s.today < s.dailyGoal;
     case W_STREAK: return s.streak > 0;
+    default: break;
+  }
+  if (w >= W_SUNNY && w < W_WHENS) {  // código WMO do Open-Meteo
+    if (!wx) return false;
+    int c = s.wx.code;
+    bool day = isDay(s);
+    switch (w) {
+      case W_SUNNY: return c <= 1 && day;
+      case W_MOON: return c <= 1 && !day;
+      case W_PARTLY: return c == 2 && day;
+      case W_PARTLYNIGHT: return c == 2 && !day;
+      case W_CLOUDY: return c == 3;
+      case W_FOG: return c == 45 || c == 48;
+      case W_DRIZZLE: return c >= 51 && c <= 57;
+      case W_RAINY: return (c >= 61 && c <= 67) || (c >= 80 && c <= 82);
+      case W_SNOWY: return (c >= 71 && c <= 77) || c == 85 || c == 86;
+      case W_STORM: return c >= 95;
+    }
   }
   return true;
 }
