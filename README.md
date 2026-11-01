@@ -1,3 +1,23 @@
+# Weather Clock
+
+A weather-focused firmware for the **GeekMagic SmallTV-Ultra** (ESP8266, 240×240), forked from
+[davicorrea0/smalltv-pomodoro](https://github.com/davicorrea0/smalltv-pomodoro) (GPL-3.0).
+
+Changes in this fork:
+- Renamed to **Weather Clock**: Wi-Fi setup `WeatherClock-Setup`, recovery `WeatherClock-Recovery`, `http://weatherclock.local`.
+- **Pomodoro timer removed** from the screen and the web panel; English by default; Alexa timer off.
+- **Wind** speed, gusts and direction from Open-Meteo; face-pack variables `{WIND}`, `{GUST}`, `{WDIR}`.
+- Every built-in face shows weather instead of focus counts (Matrix, Neon, Flip, Retro LCD: wind + humidity; Tomato is now a weather **Scene**).
+- Face-pack `when` conditions for animated weather icons: `sunny`, `moon`, `partly`, `partlynight`, `cloudy`, `fog`, `drizzle`, `rainy`, `snowy`, `storm`.
+- Panel and website served from GitHub Pages (`https://fpv-db.github.io/WeatherClock/`), built with `scripts/build_panel.py`.
+- Updates over Wi-Fi are signed with this fork's own key (`smalltv-pomodoro/ota-public.pem`); the first install from another firmware goes through recovery mode.
+
+Build: see "Building" below (`arduino-cli compile --fqbn "esp8266:esp8266:generic:eesz=4M2M,xtal=160,ip=lm2n" --build-property "build.float=" --output-dir build smalltv-pomodoro`).
+
+---
+
+*Original README follows.*
+
 # SmallTV Pomodoro 🍅
 
 Alternative firmware for the **GeekMagic SmallTV Ultra** (ESP8266, 240×240 ST7789 screen): a clock with 11 faces, a Pomodoro timer, weather, a photo/GIF album and a pixel art tomato mascot that grows a plant as you keep your focus streak.

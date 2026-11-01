@@ -47,8 +47,8 @@ extern "C" uint32_t _FS_start;
 void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h);  // ui.cpp: recorta para a área suja; fora da tela, cai na faixa
 
 #define FW_VERSION "1.23.5"
-#define HOSTNAME   "smalltv"
-#define AP_NAME    "SmallTV-Pomodoro"
+#define HOSTNAME   "weatherclock"
+#define AP_NAME    "WeatherClock-Setup"
 
 #define PIN_DC  0
 #define PIN_RST 2
@@ -151,6 +151,8 @@ Settings cfg;
 void defaultSettings() {
   cfg = Settings{SETTINGS_MAGIC, 25, 5, 15, 4, 80, 0, 0, "<-03>3", "", 0, -1,
                  THEME_MATRIX, 0, 10, 0, 22, 7, 15, 1, 242, 242, 242, 0, 0, "", 0, 1, 0, 8, ACT_READ, "", 0, 0, 0, 1, "", UI_VCOM_DEFAULT, 0, 0, 1, 0, 0};
+  cfg.lang = 1;   // weatherbox: inglês por padrão
+  cfg.alexa = 0;  // a lâmpada "Pomodoro" da Alexa é do timer, que não existe aqui
 }
 
 // ---------- recuperação: 3 inicializações curtas seguidas ----------
@@ -535,7 +537,7 @@ void command(const String &c) {
 //  - lanName: http://smalltv.local; com outro relógio já usando, smalltv-2.local, -3... (conferido ao conectar)
 //  - netName: "smalltv-" + 4 hex do chip, sempre válido como reserva e usado no DHCP.
 // Só o registro A, com o leitor de pacotes de security.h (testado): o ESP8266mDNS custaria ~21 KB.
-char netName[16], lanName[12];
+char netName[24], lanName[20];  // weatherbox: "weatherclock-xxxx" é mais longo que "smalltv-xxxx"
 WiFiUDP hueUdp;
 WiFiUDP mdnsUdp;
 IPAddress mdnsIp;
@@ -866,7 +868,7 @@ int httpGet(WiFiClient &c, const String &url, uint16_t timeoutMs) {
   c.print(path);
   c.print(F(" HTTP/1.0\r\nHost: "));
   c.print(host);
-  c.print(F("\r\nUser-Agent: SmallTV\r\nConnection: close\r\n\r\n"));
+  c.print(F("\r\nUser-Agent: WeatherClock\r\nConnection: close\r\n\r\n"));
   uint32_t start = millis();
   String line;
   line.reserve(128);  // httpLine reutiliza a mesma capacidade para status e cabeçalhos
@@ -1226,7 +1228,7 @@ void fsMount() {
   if (!fsLayout2()) return;
   EEPROM.get(FS_OFF, fsMark);
   if (fsMark.magic == FS_MAGIC) return;
-  message("SmallTV Pomodoro", tr("Reorganizando a memoria", "Reorganizing storage", "Reorganizando la memoria"), "...");
+  message("Weather Clock", tr("Reorganizando a memoria", "Reorganizing storage", "Reorganizando la memoria"), "...");
   if (fsOk) LittleFS.end();
   // Antes de formatar, guarda o histórico, o rodízio e os avisos, que valem mais que o espaço que ocupam: no primeiro
   // início o LittleFS antigo (4M3M, 0x100000-0x3FA000) ainda está intacto, porque a atualização só gravou abaixo de
@@ -2241,7 +2243,7 @@ bool passOk() {
   return !cfg.otaPass[0] || server.header("Authorization") == "Basic " + base64::encode(String("admin:") + cfg.otaPass, false);
 }
 void askLogin() {
-  server.sendHeader(F("WWW-Authenticate"), F("Basic realm=\"SmallTV\""));
+  server.sendHeader(F("WWW-Authenticate"), F("Basic realm=\"Weather Clock\""));
   server.send(401, "text/plain", "");
 }
 AuthThrottle authThrottle;
@@ -2507,7 +2509,7 @@ void setupWeb() {
       server.send(404, "text/plain", "");
       return;
     }
-    server.sendHeader("Location", String(F("https://davicorrea0.github.io/smalltv-pomodoro/img/faces/face-")) + t + ".png");
+    server.sendHeader("Location", String(F("https://fpv-db.github.io/WeatherClock/img/faces/face-")) + t + ".png");
     server.send(302, "text/plain", "");
   });
   // anti-fantasma: v=0..63 aplica e mostra a estampa (3 min); save=1 guarda; stop=1 volta ao salvo
@@ -2989,7 +2991,7 @@ void setupUpdate() {
   server.on("/update", HTTP_GET, [] {
     if (!hostOk()) { deny(); return; }
     if (!recoveryMode && !authed()) return;
-    String p = F("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>SmallTV</title>"
+    String p = F("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>Weather Clock</title>"
                  "<style>body{font:16px system-ui;background:#111;color:#eee;max-width:420px;margin:auto;padding:20px}"
                  "input,button{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #333;background:#1c1c1c;color:#eee;font:inherit}"
                  "button{background:#ff5a47;border:0;font-weight:700}</style><h2>");
@@ -3061,7 +3063,7 @@ void setupUpdate() {
 }
 
 // ---------- modo de recuperação ----------
-#define RECOVERY_AP "SmallTV-Recuperacao"
+#define RECOVERY_AP "WeatherClock-Recovery"
 void startRecovery() {
   newFormToken();
   WiFi.mode(WIFI_AP);
@@ -3069,7 +3071,7 @@ void startRecovery() {
   String pw = String(tr("senha: ", "password: ", "clave: ")) + cfg.apPass;
   message(tr("Modo de recuperacao", "Recovery mode", "Modo de recuperacion"), RECOVERY_AP, pw.c_str(), "http://192.168.4.1");
   server.on("/", HTTP_GET, [] {
-    String p = F("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>SmallTV</title>"
+    String p = F("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>Weather Clock</title>"
                  "<style>body{font:16px system-ui;background:#111;color:#eee;max-width:420px;margin:auto;padding:20px}"
                  "button,a{display:block;width:100%;box-sizing:border-box;text-align:center;padding:12px;margin:8px 0;border-radius:10px;"
                  "border:1px solid #333;background:#1c1c1c;color:#eee;font:inherit;text-decoration:none}.p{background:#ff5a47;border:0;font-weight:700}</style><h2>");
@@ -3381,9 +3383,9 @@ void startPortal() {
     String p;
     p.reserve(900 + opts.length());
     p = F("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
-          "<title>SmallTV Wi-Fi</title><style>body{font:16px system-ui;background:#111;color:#eee;max-width:380px;margin:auto;padding:20px}"
+          "<title>Weather Clock Wi-Fi</title><style>body{font:16px system-ui;background:#111;color:#eee;max-width:380px;margin:auto;padding:20px}"
           "input,button{width:100%;padding:12px;margin:6px 0 14px;border-radius:10px;border:1px solid #333;background:#1c1c1c;color:#eee;font:inherit}"
-          "button{background:#ff5a47;border:0;font-weight:700}</style><h2>SmallTV Wi-Fi</h2><form method=post action=/save>");
+          "button{background:#ff5a47;border:0;font-weight:700}</style><h2>Weather Clock Wi-Fi</h2><form method=post action=/save>");
     p += tr("Rede", "Network", "Red");
     p += F("<input name=s list=l required><datalist id=l>");
     p += opts;
@@ -3458,7 +3460,7 @@ void setup() {
   applyPanel();
   // A tela de início aparece já: montar a memória de arquivos, o histórico, o mostrador e a lista de fotos leva
   // alguns segundos, e com a tela preta parecia travado.
-  message("SmallTV Pomodoro", tr("Iniciando", "Starting", "Iniciando"), "v" FW_VERSION);
+  message("Weather Clock", tr("Iniciando", "Starting", "Iniciando"), "v" FW_VERSION);
   bootScreenMs = millis() | 1;
   uiBootProgress(millis(), 0);
 

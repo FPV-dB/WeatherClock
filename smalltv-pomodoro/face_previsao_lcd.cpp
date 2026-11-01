@@ -92,7 +92,7 @@ static void paintRows(void *c) {
 
 void themeForecastLcd(const UiState &s, bool full) {
   if (full) {
-    textC(120, 9, 1, uiRgb(170, 170, 182), tr("TOMATE   PREVISAO   4 DIAS", "TOMATE   FORECAST   4 DAYS", "TOMATE   PRONOSTICO   4 DIAS"));
+    textC(120, 9, 1, uiRgb(170, 170, 182), tr("PREVISAO   4 DIAS", "FORECAST   4 DAYS", "PRONOSTICO   4 DIAS"));
     G->fillRoundRect(8, 24, 224, 186, 14, LCD_BG);
     G->drawFastHLine(22, 25, 196, uiRgb(140, 154, 116));  // sombra interna
     G->drawFastHLine(22, 26, 196, uiRgb(152, 165, 128));

@@ -285,14 +285,14 @@ static void paintWxPill(void *c) {
     tempText(80, 193, 2, TEXT, s.wx.t);
   } else textC(62, 197, 1, MUTED, tr("sem clima", "no weather", "sin clima"));
 }
-static void paintFocusPill(void *c) {
+static void paintWindPill(void *c) {  // weatherbox: vento no lugar dos focos
   const UiState &s = *(const UiState *)c;
   G->fillRect(122, 184, 112, 32, BG);
   pill(125, 105);
-  mascot(137, 192, 1, s.today >= s.dailyGoal ? FACE_CHEER : FACE_HAPPY);
+  if (!(s.weatherOn && s.wx.ok)) return;
   char f[16];
-  snprintf(f, sizeof f, "%u/%u", s.today, s.dailyGoal);
-  text(160, 193, 2, s.today >= s.dailyGoal ? SHORT : TEXT, f);
+  snprintf(f, sizeof f, "%s %u", windDir(s.wx.wdir), s.wx.wind);
+  textC(170, 193, 2, TEXT, f);
 }
 
 void themeFlip(const UiState &s, bool full) {
@@ -319,13 +319,9 @@ void themeFlip(const UiState &s, bool full) {
   if (n) flipAnimate(n, cx, ov, nv);
   if (full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn) {
     uiPaint(full, 8, 184, 110, 32, paintWxPill, (void *)&s);
+    uiPaint(full, 122, 184, 112, 32, paintWindPill, (void *)&s);
     lastWx = s.wx.version;
     lastWxOn = s.weatherOn;
-  }
-  if (full || lastToday != s.today || lastGoal != s.dailyGoal) {
-    uiPaint(full, 122, 184, 112, 32, paintFocusPill, (void *)&s);
-    lastToday = s.today;
-    lastGoal = s.dailyGoal;
   }
   if (changed(cStatR, s.ip ? s.ip : "")) {
     G->fillRect(0, 224, 240, 10, BG);

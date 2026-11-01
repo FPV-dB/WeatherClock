@@ -7,8 +7,8 @@
 #pragma once
 
 #define UI_FACES(X)                                                                         \
-  X(MATRIX, themeMatrix, "Matriz", "Pixel art com cartões de clima e focos do dia")         \
-  X(TOMATO, themeTomato, "Tomate", "Cena em pixel art que muda com a hora e o clima")      \
+  X(MATRIX, themeMatrix, "Matriz", "Pixel art com cartões de clima e vento")         \
+  X(TOMATO, themeTomato, "Cena", "Paisagem em pixel art que muda com a hora e o clima")      \
   X(ANALOG, themeAnalog, "Analógico", "Ponteiros bastão e marcas grossas")                 \
   X(WEATHER, themeWeather, "Clima", "Temperatura grande e mini cartões")                   \
   X(NEON, themeNeon, "Neon", "Tubos rosa e ciano com brilho")                              \

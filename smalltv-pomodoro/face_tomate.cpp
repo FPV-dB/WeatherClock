@@ -1,4 +1,4 @@
-// Mostrador Tomate: cena em pixel art que muda com a hora e o clima.
+// Mostrador Cena: paisagem em pixel art que muda com a hora e o clima (weatherbox: sem o tomate).
 // Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
@@ -40,17 +40,6 @@ static void skyRect(int x, int y, int w, int h, int hour) {
     }
 }
 
-// Expressão do tomate na cena: dorme à noite; de dia reage à chuva, à meta e à temperatura.
-static uint8_t sceneFace(const UiState &s, bool night, bool rain, bool snow) {
-  bool show = s.weatherOn && s.wx.ok;
-  if (night) return FACE_SLEEP;
-  if (rain || (show && s.wx.rainIn)) return FACE_UMBRELLA;  // chovendo ou chuva chegando: já abre o guarda-chuva
-  if (s.dailyGoal && s.today >= s.dailyGoal) return FACE_CHEER;
-  if (snow || (show && uiTempC(s, s.wx.t) <= 12)) return FACE_SCARF;
-  if (show && uiTempC(s, s.wx.t) >= 30) return FACE_SHADES;
-  return FACE_HAPPY;
-}
-
 static void tomatoScene(const UiState &s) {
   int hour = s.timeOk ? s.now.tm_hour : 12;
   skyRect(0, 0, 240, GROUND_Y, hour);
@@ -84,23 +73,14 @@ static void tomatoScene(const UiState &s) {
   G->fillRect(0, GROUND_Y + 6, 240, 4, uiRgb(46, 125, 50));
   G->fillRect(0, GROUND_Y + 10, 240, 240 - GROUND_Y - 10, uiRgb(92, 60, 42));
   for (int i = 0; i < 12; i++) G->fillRect((i * 53 + 21) % 230, GROUND_Y - 4, 2, 4, uiRgb(76, 175, 80));  // tufos
-  // mascote em pé na grama e, à esquerda, a planta que cresce com a sequência de dias com a meta batida
-  mascot(88, GROUND_Y + 8 - 64, 4, sceneFace(s, night, rain, snow));
-  uiSprite(plantSprite(s.streak), 18, GROUND_Y + 6 - 48, 3);
-  if (night) {
-    text(150, GROUND_Y - 58, 2, uiRgb(220, 220, 255), "z");
-    text(164, GROUND_Y - 72, 1, uiRgb(220, 220, 255), "z");
-  }
-  // balão com a temperatura
+  // weatherbox: sem o tomate; a temperatura fica grande no meio da cena, com sombra
   if (show) {
-    const uint16_t bub = uiRgb(250, 250, 250);
-    const int by0 = GROUND_Y - 52;
-    G->fillRoundRect(166, by0, 62, 30, 9, bub);
-    G->fillTriangle(168, by0 + 10, 168, by0 + 22, 156, by0 + 20, bub);
-    tempText(197, by0 + 8, 2, uiRgb(40, 40, 46), s.wx.t);
-    if (s.wx.rainIn) {  // aviso embaixo do balão, com contorno para ler sobre o céu
-      textC(198, by0 + 37, 1, uiRgb(20, 30, 50), rainSoonText(s.wx.rainIn));
-      textC(197, by0 + 36, 1, uiRgb(230, 242, 255), rainSoonText(s.wx.rainIn));
+    const int ty = GROUND_Y - 58;
+    tempText(122, ty + 2, 5, uiRgb(10, 16, 36), s.wx.t);
+    tempText(120, ty, 5, TEXT, s.wx.t);
+    if (s.wx.rainIn) {  // aviso com contorno para ler sobre o céu
+      textC(121, ty + 45, 1, uiRgb(20, 30, 50), rainSoonText(s.wx.rainIn));
+      textC(120, ty + 44, 1, uiRgb(230, 242, 255), rainSoonText(s.wx.rainIn));
     }
   }
 }
@@ -109,13 +89,14 @@ static void tomatoBottom(const UiState &s) {
   const uint16_t soil = uiRgb(92, 60, 42);
   G->fillRect(0, GROUND_Y + 10, 240, 240 - GROUND_Y - 10, soil);
   for (int i = 0; i < 14; i++) G->fillRect((i * 29 + 7) % 236, GROUND_Y + 12 + (i * 7) % 24, 3, 3, uiRgb(74, 47, 33));
-  char b[40];
-  snprintf(b, sizeof b, tr("%u %s hoje  %s", "%u %s today  %s", "%u %s hoy  %s"), s.today, s.today == 1 ? tr("foco", "session", "foco") : tr("focos", "sessions", "focos"), s.ip ? s.ip : "");
-  // texto com contorno escuro para ler por cima da textura da terra; a chama da sequência à esquerda
-  int cx = s.streak ? 132 : 120;
-  textC(cx + 1, GROUND_Y + 22, 1, uiRgb(50, 30, 20), b);
-  textC(cx, GROUND_Y + 21, 1, uiRgb(255, 226, 190), b);
-  streakBadge(4, GROUND_Y + 17, s.streak, uiRgb(255, 226, 190));
+  char b[48];
+  if (s.weatherOn && s.wx.ok)  // weatherbox: vento e umidade no lugar dos focos
+    snprintf(b, sizeof b, "%s %u km/h  %d%%  %s", windDir(s.wx.wdir), s.wx.wind, s.wx.hum, s.ip ? s.ip : "");
+  else
+    snprintf(b, sizeof b, "%s", s.ip ? s.ip : "");
+  // texto com contorno escuro para ler por cima da textura da terra
+  textC(121, GROUND_Y + 22, 1, uiRgb(50, 30, 20), b);
+  textC(120, GROUND_Y + 21, 1, uiRgb(255, 226, 190), b);
 }
 
 static void tomatoClock(const UiState &s) {
@@ -149,31 +130,20 @@ static void paintAll(void *c) {
   tomatoBottom(s);
 }
 static void paintClock(void *c) { tomatoClock(*(const UiState *)c); }
-static void paintBottom(void *c) { tomatoBottom(*(const UiState *)c); }
 
 void themeTomato(const UiState &s, bool full) {
   int hour = s.timeOk ? s.now.tm_hour : -1;
   int minute = s.timeOk ? s.now.tm_min : -1;
-  int goalDone = s.dailyGoal && s.today >= s.dailyGoal;  // o tomate comemora a meta batida
-  static uint16_t lastStreak = 0xFFFF;
-  bool scene = full || hour != lastHour || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn || goalDone != lastGoal || s.streak != lastStreak;
+  bool scene = full || hour != lastHour || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn;
   if (scene) {
     uiPaint(full, 0, 0, 240, 240, paintAll, (void *)&s);
     lastMin = minute;
-    lastToday = s.today;
     lastHour = hour;
     lastWx = s.wx.version;
     lastWxOn = s.weatherOn;
-    lastGoal = goalDone;
-    lastStreak = s.streak;
   }
   if (minute != lastMin) {
     uiPaint(false, 10, 2, 222, 92, paintClock, (void *)&s);
     lastMin = minute;
   }
-  if (lastToday != s.today) {
-    uiPaint(false, 0, GROUND_Y + 10, 240, 240 - GROUND_Y - 10, paintBottom, (void *)&s);
-    lastToday = s.today;
-  }
 }
-

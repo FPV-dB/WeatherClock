@@ -63,7 +63,7 @@ void dsegDigit(int x, int y, int h, int d, uint16_t on, uint16_t off) {
 
 void themeLcd(const UiState &s, bool full) {
   if (full) {
-    textC(120, 9, 1, uiRgb(170, 170, 182), "TOMATE   ALARM   CHRONO");
+    textC(120, 9, 1, uiRgb(170, 170, 182), tr("CLIMA   VENTO   UMIDADE", "WEATHER   WIND   HUMIDITY", "CLIMA   VIENTO   HUMEDAD"));
     G->fillRoundRect(8, 24, 224, 186, 14, LCD_BG);
     G->drawFastHLine(22, 25, 196, uiRgb(140, 154, 116));  // sombra interna
     G->drawFastHLine(22, 26, 196, uiRgb(152, 165, 128));
@@ -109,8 +109,8 @@ void themeLcd(const UiState &s, bool full) {
     dsegDigit(198, 158, 36, sec < 0 ? -1 : sec % 10, LCD_ON, LCD_GHOST);
     lastSecW = sec;
   }
-  // temperatura (7 segmentos médios) e focos com o tomate monocromático
-  if (full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn || lastToday != s.today) {
+  // temperatura (7 segmentos médios) e, no lugar do tomate, vento e umidade (weatherbox)
+  if (full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn) {
     G->fillRect(16, 152, 150, 52, LCD_BG);
     if (s.weatherOn && s.wx.ok) {
       int t = (int)lroundf(s.wx.t);
@@ -125,13 +125,15 @@ void themeLcd(const UiState &s, bool full) {
       degree(74, 156, 1, LCD_ON);
       text(82, 156, 2, LCD_ON, s.fahr ? "F" : "C");
     }
-    uiSprite(&SPR_TOMATE_LCD, 96, 158, 2, 0, LCD_BG);  // tomate monocromático, no estilo do LCD
-    char f[12];
-    snprintf(f, sizeof f, "x%u", s.today);
-    text(132, 172, 2, LCD_ON, f);
+    if (s.weatherOn && s.wx.ok) {
+      char f[16];
+      snprintf(f, sizeof f, "%s%u", windDir(s.wx.wdir), s.wx.wind);
+      text(100, 158, 2, LCD_ON, f);
+      snprintf(f, sizeof f, "%d%%", s.wx.hum);
+      text(100, 180, 2, LCD_ON, f);
+    }
     lastWx = s.wx.version;
     lastWxOn = s.weatherOn;
-    lastToday = s.today;
   }
   if (changed(cStatR, s.ip ? s.ip : "")) {
     G->fillRect(0, 216, 240, 12, BG);

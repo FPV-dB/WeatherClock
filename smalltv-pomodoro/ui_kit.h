@@ -107,6 +107,11 @@ extern int8_t lastDig[4], lastColon;
 extern uint16_t lastDigCol;
 extern int lastSecW, lastMin, lastHour, lastToday, lastGoal, lastRing, lastDots, lastWxOn;
 extern int8_t lastFace;
+// weatherbox: rumo do vento (graus) em 16 pontos da rosa dos ventos
+static inline const char *windDir(int deg) {
+  static const char D[16][4] = {"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
+  return D[((deg * 2 + 22) / 45) % 16];
+}
 extern uint16_t lastWx;  // compare com s.wx.version para saber se o clima mudou
 
 // ---------- mostradores registrados (faces_list.h) ----------

@@ -1,4 +1,4 @@
-// Mostrador Matriz: dígitos em pixel art e cartões de clima e focos.
+// Mostrador Matriz: dígitos em pixel art e cartões de clima e vento.
 // Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
@@ -24,33 +24,27 @@ static void weatherCard(const UiState &s, int x, int y) {
   }
 }
 
-static void focusCard(const UiState &s, int x, int y) {
+// weatherbox: no lugar do cartão de focos, vento e umidade
+static void windCard(const UiState &s, int x, int y) {
   const int w = 108, h = 120, cx = x + w / 2;
   G->fillRoundRect(x, y, w, h, 12, CARD);
-  text(x + 12, y + 10, 1, MUTED, tr("FOCOS HOJE", "FOCUS TODAY", "FOCOS HOY"));
-  int goal = s.dailyGoal ? s.dailyGoal : 1;
-  bool done = s.today >= goal;
+  text(x + 12, y + 10, 1, MUTED, tr("VENTO", "WIND", "VIENTO"));
+  if (!(s.weatherOn && s.wx.ok)) {
+    textC(cx, y + 50, 3, DIM, "--");
+    return;
+  }
   char n[8];
-  snprintf(n, sizeof n, "%u", s.today);
-  if (done) {  // meta batida: o número vai para a esquerda e o tomate comemora ao lado
-    textC(x + 36, y + 30, 5, TEXT, n);
-    mascot(x + 68, y + 34, 2, FACE_CHEER);
-  } else {
-    mascot(x + w - 22, y + 6, 1, FACE_HAPPY);
-    textC(cx, y + 30, 5, TEXT, n);
-  }
-  char g[20];
-  snprintf(g, sizeof g, tr("meta %d", "goal %d", "meta %d"), goal);
-  textC(cx, y + 76, 1, MUTED, g);
-  const int bx = x + 12, bw = w - 24, by = y + 92;
+  snprintf(n, sizeof n, "%u", s.wx.wind);
+  textC(cx, y + 28, 4, TEXT, n);
+  char d[16];
+  snprintf(d, sizeof d, "km/h %s", windDir(s.wx.wdir));
+  textC(cx, y + 62, 1, MUTED, d);
+  snprintf(d, sizeof d, tr("umid %d%%", "hum %d%%", "hum %d%%"), s.wx.hum);
+  textC(cx, y + 82, 1, MUTED, d);
+  const int bx = x + 12, bw = w - 24, by = y + 96;
   G->fillRoundRect(bx, by, bw, 8, 4, CARD2);
-  int fill = (done ? goal : s.today) * bw / goal;
-  if (fill > 0) G->fillRoundRect(bx, by, fill < 8 ? 8 : fill, 8, 4, done ? SHORT : WORK);
-  if (done) textC(cx, y + 106, 1, SHORT, tr("meta batida!", "goal met!", "meta lograda!"));
-  else {
-    snprintf(g, sizeof g, tr("faltam %d", "%d to go", "faltan %d"), goal - s.today);
-    textC(cx, y + 106, 1, MUTED, g);
-  }
+  int fill = constrain(s.wx.hum, 0, 100) * bw / 100;
+  if (fill > 0) G->fillRoundRect(bx, by, fill < 8 ? 8 : fill, 8, 4, LONG);
 }
 
 void themeMatrix(const UiState &s, bool full) {
@@ -73,13 +67,9 @@ void themeMatrix(const UiState &s, bool full) {
   }
   if (full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn) {
     weatherCard(s, 8, 112);
+    windCard(s, 124, 112);
     lastWx = s.wx.version;
     lastWxOn = s.weatherOn;
-  }
-  if (full || lastToday != s.today || lastGoal != s.dailyGoal) {
-    focusCard(s, 124, 112);
-    lastToday = s.today;
-    lastGoal = s.dailyGoal;
   }
 }
 

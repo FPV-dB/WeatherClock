@@ -62,17 +62,14 @@ void themeNeon(const UiState &s, bool full) {
     G->fillRect(0, 142, 240, 32, BG);
     G->drawFastHLine(40, 146, 160, mix(BG, NEON_B, 0.35f));
     if (s.weatherOn && s.wx.ok) tempDesc(158, 2, NEON_B, uiRgb(170, 230, 245), s.wx.t, weatherText(s.wx.code));
+    G->fillRect(0, 186, 240, 24, BG);  // weatherbox: vento e umidade no lugar dos focos
+    if (s.weatherOn && s.wx.ok) {
+      char f[28];
+      snprintf(f, sizeof f, "%s %u km/h  %d%%", windDir(s.wx.wdir), s.wx.wind, s.wx.hum);
+      textC(120, 191, 2, NEON_A, f);
+    }
     lastWx = s.wx.version;
     lastWxOn = s.weatherOn;
-  }
-  if (full || lastToday != s.today) {
-    G->fillRect(0, 186, 240, 24, BG);
-    char f[24];
-    snprintf(f, sizeof f, tr("%u %s hoje", "%u %s today", "%u %s hoy"), s.today, s.today == 1 ? tr("foco", "session", "foco") : tr("focos", "sessions", "focos"));
-    int w = textW(f, 2) + 22;
-    mascot(120 - w / 2, 188, 1, s.dailyGoal && s.today >= s.dailyGoal ? FACE_CHEER : FACE_HAPPY);
-    text(120 - w / 2 + 22, 191, 2, NEON_A, f);
-    lastToday = s.today;
   }
   if (changed(cStatR, s.ip ? s.ip : "")) {
     G->fillRect(0, 222, 240, 10, BG);
