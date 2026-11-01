@@ -58,7 +58,8 @@ static UiState base(int h, int m, int s) {
   st.best = 9;
   st.weatherOn = true;
   st.wx = {true, 23.4f, 14.2f, 27.1f, 44, 2, true, 1, 5, {{2, 14, 27, 10}, {61, 15, 21, 80}, {95, 13, 19, 100}, {3, -2, 22, 20}, {0, 12, 29, 0}}};
-  st.city = "Florianopolis";
+  st.wx.wind = 18; st.wx.gust = 31; st.wx.wdir = 225;  // weatherbox: vento SW
+  st.city = getenv("SIM_CITY") ? getenv("SIM_CITY") : "Florianopolis";
   st.accent = uiRgb(242, 242, 242);
   st.ip = "192.168.1.101";
   return st;

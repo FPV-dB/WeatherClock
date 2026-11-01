@@ -43,7 +43,8 @@ static void windCard(const UiState &s, int x, int y) {
   textC(cx, y + 82, 1, MUTED, d);
   const int bx = x + 12, bw = w - 24, by = y + 96;
   G->fillRoundRect(bx, by, bw, 8, 4, CARD2);
-  int fill = constrain(s.wx.hum, 0, 100) * bw / 100;
+  int hum = s.wx.hum < 0 ? 0 : s.wx.hum > 100 ? 100 : s.wx.hum;
+  int fill = hum * bw / 100;
   if (fill > 0) G->fillRoundRect(bx, by, fill < 8 ? 8 : fill, 8, 4, LONG);
 }
 
