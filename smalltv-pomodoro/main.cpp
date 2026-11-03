@@ -1629,6 +1629,22 @@ void gifDraw(GIFDRAW *p) {
   tft.endWrite();
 }
 
+// weatherbox: um pacote de mostrador ocupa uns 8 KB de RAM, e o decodificador de GIF (~24 KB contíguos) ou de
+// JPEG (~18 KB) não cabe ao lado dele. Enquanto o álbum aparece, o pacote sai da RAM e volta depois.
+bool loadPack(const String &id);
+static String packHeld;
+static void packHold() {
+  if (packHeld.length() || !facePackId()[0]) return;
+  packHeld = facePackId();
+  facePackUnload();
+}
+static void packResume() {
+  if (!packHeld.length()) return;
+  String id = packHeld;
+  packHeld = "";
+  loadPack(id);
+}
+
 void stopAlbum() {
   if (gif) {
     gif->close();
@@ -1637,12 +1653,14 @@ void stopAlbum() {
   }
   inAlbum = false;
   curFile = "";
+  packResume();
   uiInvalidate();  // o relógio redesenha tudo ao voltar
 }
 
 bool showAlbumItem(const String &f) {
   stopAlbum();
   if (!LittleFS.exists(f)) return false;
+  packHold();
   tft.fillScreen(0);
   uiInvalidate();
   inAlbum = true;
@@ -2116,6 +2134,8 @@ void handleUpload() {
     photoGate.stop();
     if (uploadFile) uploadFile.close();
     if (up.status == UPLOAD_FILE_ABORTED && uploadPath.length()) LittleFS.remove(uploadPath);
+    bool held = packHeld.length();  // a validação também decodifica: libera o pacote durante ela
+    if (up.status == UPLOAD_FILE_END && !uploadError.length()) packHold();
     if (up.status == UPLOAD_FILE_END && !uploadError.length() && isGif(uploadPath) && !validGif(uploadPath)) {
       LittleFS.remove(uploadPath);
       uploadError = tr("GIF fora do padrao", "Unsupported GIF", "GIF fuera de norma");
@@ -2123,6 +2143,7 @@ void handleUpload() {
       LittleFS.remove(uploadPath);
       uploadError = tr("JPG fora do padrao", "Unsupported JPG", "JPG fuera de norma");
     }
+    if (!held && !inAlbum) packResume();
     rebuildAlbum();
   }
 }
