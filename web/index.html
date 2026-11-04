@@ -131,6 +131,7 @@ nav button[hidden],[hidden]{display:none!important}
 #rotlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:6px 0 4px}
 #rotlist label{display:flex;gap:8px;align-items:center;justify-content:flex-start;padding:8px 10px;border-radius:10px;background:var(--card2);font-size:14px;margin:0}
 #rotlist input{margin:0}
+#radarc{margin-bottom:16px}#radarc img{display:block;width:100%;max-width:240px;aspect-ratio:1;margin:8px auto 0;border-radius:12px;image-rendering:pixelated}
 
 </style></head><body>
 <header><b>Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span></header>
@@ -144,6 +145,7 @@ nav button[hidden],[hidden]{display:none!important}
  <div id="pvbar"></div>
  <div class="side">
  <div class="card" id="now"></div>
+ <div class="card" id="radarc" hidden><small>Rain radar · Bureau of Meteorology, last 30 min</small><img id="radarimg" alt="Rain radar"></div>
  <div class="card hero"><div class="scr"><img id="curimg" alt=""></div><div><small>Mostrador atual</small><b id="curname">—</b><p id="curdesc"></p></div></div>
  </div>
  <div class="body">
@@ -296,8 +298,8 @@ nav button[hidden],[hidden]{display:none!important}
    <small>Com senha, o navegador pede usuário admin e esta senha ao abrir o painel. A Alexa continua funcionando sem senha. Esqueceu? Use o modo de recuperação.</small>
    <p><button class="btn" type="submit">Salvar senha</button></p>
   </form>
-  <label>Receber versões de teste<input data-k="beta" type="checkbox"></label>
-  <small>O aviso de atualização passa a oferecer também as versões de teste, antes de todo mundo. Elas podem ter problemas; o modo de recuperação continua disponível.</small>
+  <label hidden>Receber versões de teste<input data-k="beta" type="checkbox"></label>
+  <small hidden>O aviso de atualização passa a oferecer também as versões de teste, antes de todo mundo. Elas podem ter problemas; o modo de recuperação continua disponível.</small>
   <div class="row" style="margin:10px 0 8px"><button class="btn" onclick="backup()">Fazer backup</button><button class="btn" onclick="$('rbk').click()">Restaurar backup</button></div>
   <input id="rbk" type="file" accept=".json,application/json" hidden>
   <div class="row"><button class="btn" onclick="location='/update'">Atualizar firmware</button>
@@ -399,6 +401,8 @@ function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.o
  const rain=w.rin?'<span class="rn">'+(w.rin<15?t('Rain any minute'):t('Rain in {0} min',w.rin))+'</span>':'';
  c.innerHTML='<div class="ic">'+WXI(w.code,w.day)+'</div><div class="tp">'+dg(w.t)+'</div><div class="ds">'+w.desc+(s.cfg.city?' · '+s.cfg.city:'')+'</div>'
   +'<div class="chips">'+chip(t('High'),dg(w.max))+chip(t('Low'),dg(w.min))+(w.wind!=null?chip(t('Wind'),WDIR(w.wdir)+' '+w.wind+' km/h')+chip(t('Gusts'),w.gust+' km/h'):'')+chip(t('Humidity'),w.h+'%')+rain+'</div>'}
+function radarDraw(){const i=$('radarimg'),v=Math.floor(Date.now()/120000);if(!i||i.dataset.v==v)return;i.dataset.v=v;
+ i.onload=()=>{$('radarc').hidden=false};i.onerror=()=>{$('radarc').hidden=true};i.src='/fs?f=%2Fimage%2Fradar.gif&v='+v}
 function rotDraw(){const box=$('rotlist');if(!box||!FACES.length)return;const rk=rotKeys(),sig=FACES.map(fkey).join()+'|'+rk.join();if(box.dataset.sig==sig)return;box.dataset.sig=sig;box.innerHTML='';
  FACES.forEach(f=>{const k=fkey(f),l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.checked=rk.includes(k);
   i.onchange=()=>{const cur=rotKeys().filter(x=>x!=k);save({rot:(i.checked?cur.concat(k):cur).join(',')}).then(()=>toast(i.checked?t('Added to rotation'):t('Removed from rotation')))};
@@ -600,7 +604,7 @@ function load(s){if(s.cfg.lang!=null&&s.cfg.lang!=LG)setLang(s.cfg.lang);if(last
  const when=ago<60?t('agora'):ago<3600?t('há {0} min',ago/60|0):t('há {0} h',ago/3600|0),cmdT=[0,t('começar o foco'),t('pausar'),t('foco de {0} min',ax.min),t('encerrar'),t('pausa curta'),t('pausa longa'),t('voltar ao foco'),t('pausa de {0} min',ax.min)][ax.last];
  $('alxst').style.display=s.cfg.alexa?'':'none';$('alxst').className='alx'+(seen?' ok':'');$('alxst').innerHTML='<i></i>';
  $('alxst').append(seen?t('Conectado à Alexa ({0}) · último contato {1}',ax.ip,when)+(cmdT?' · '+t('último comando: {0}',cmdT):''):t('Aguardando a Alexa: diga "Alexa, descobrir dispositivos".'));
- nowDraw(s);rotDraw();
+ nowDraw(s);rotDraw();radarDraw();
  $('rotinfo').textContent=rk.length?t('No rodízio: {0}. Toque num mostrador para incluir ou tirar.',rk.map(k=>(FACES.find(f=>fkey(f)==k)||{n:k}).n).join(', ')):t('Toque num mostrador e escolha "Incluir no rodízio" (2 ou mais).');
  // noite pelo sol: horários do Open-Meteo; o horário fixo some quando o sol vale
  const hm=m=>String(m/60|0).padStart(2,'0')+':'+String(m%60).padStart(2,'0'),sun=s.wx&&s.wx.rise>=0&&s.wx.set>s.wx.rise;
