@@ -122,6 +122,16 @@ nav button.on svg{stroke:var(--ac)}
 }
 #t1{display:none!important}
 nav button[hidden],[hidden]{display:none!important}
+/* weatherbox: tempo agora e rodízio por caixas */
+#now{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center;margin-bottom:16px}
+#now .ic{font-size:46px;line-height:1;grid-row:span 2}#now .tp{font-size:44px;font-weight:700;line-height:1}
+#now .ds{color:var(--mut)}#now .chips{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#now .chips span{background:var(--card2);border-radius:999px;padding:6px 12px;font-size:14px}
+#now .chips b{font-weight:600}#now .rn{color:var(--long)}
+#rotlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:6px 0 4px}
+#rotlist label{display:flex;gap:8px;align-items:center;justify-content:flex-start;padding:8px 10px;border-radius:10px;background:var(--card2);font-size:14px;margin:0}
+#rotlist input{margin:0}
+
 </style></head><body>
 <header><b>Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span></header>
 <main>
@@ -133,6 +143,7 @@ nav button[hidden],[hidden]{display:none!important}
 <section class="tab" id="t0">
  <div id="pvbar"></div>
  <div class="side">
+ <div class="card" id="now"></div>
  <div class="card hero"><div class="scr"><img id="curimg" alt=""></div><div><small>Mostrador atual</small><b id="curname">—</b><p id="curdesc"></p></div></div>
  </div>
  <div class="body">
@@ -157,7 +168,9 @@ nav button[hidden],[hidden]{display:none!important}
   <label>O que mostrar<select data-k="mode"><option value="0">Só o relógio</option><option value="1">Álbum de fotos</option><option value="2">Alternar relógio e álbum</option></select></label>
   <label>Segundos por item<input data-k="delay" type="number" min="3" max="255"></label>
   <label>Trocar de mostrador<select data-k="rotmin"><option value="0">Nunca</option><option value="1">A cada 1 min</option><option value="5">A cada 5 min</option><option value="15">A cada 15 min</option><option value="30">A cada 30 min</option><option value="60">A cada 1 h</option></select></label>
-  <small id="rotinfo"></small>
+  <small>Faces in the rotation (tick 2 or more):</small>
+  <div id="rotlist"></div>
+  <small id="rotinfo" hidden></small>
  </div>
  </div>
 </section>
@@ -378,6 +391,18 @@ function buildFaces(){FACES.forEach(f=>{const b=f.pkg==null&&LG&&BUILTIN[f.t];f.
  const s=el('div','scr');s.appendChild(img(f));b.appendChild(s);b.appendChild(el('span',null,f.n));b.onclick=()=>faceSheet(f);(f.pkg?d:g).appendChild(b)});
  $('dlnone').hidden=!!d.children.length}
 const rotKeys=()=>st&&st.cfg.rot?st.cfg.rot.split(',').filter(Boolean):[];
+// weatherbox: cartão "tempo agora" e rodízio por caixas de seleção
+const WXI=(c,d)=>c<=1?(d?'☀️':'🌙'):c==2?(d?'⛅':'☁️'):c==3?'☁️':c==45||c==48?'🌫️':c>=95?'⛈️':c>=71&&c<=77||c==85||c==86?'🌨️':c>=51?'🌧️':'🌡️';
+const WDIR=g=>['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(g/22.5)%16];
+function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.ok)){c.innerHTML='<small>'+t('Weather is off or still loading. Choose your city in Settings.')+'</small>';return}
+ const dg=v=>Math.round(s.cfg.fahr?v*9/5+32:v)+'°',chip=(k,v)=>'<span>'+k+' <b>'+v+'</b></span>';
+ const rain=w.rin?'<span class="rn">'+(w.rin<15?t('Rain any minute'):t('Rain in {0} min',w.rin))+'</span>':'';
+ c.innerHTML='<div class="ic">'+WXI(w.code,w.day)+'</div><div class="tp">'+dg(w.t)+'</div><div class="ds">'+w.desc+(s.cfg.city?' · '+s.cfg.city:'')+'</div>'
+  +'<div class="chips">'+chip(t('High'),dg(w.max))+chip(t('Low'),dg(w.min))+(w.wind!=null?chip(t('Wind'),WDIR(w.wdir)+' '+w.wind+' km/h')+chip(t('Gusts'),w.gust+' km/h'):'')+chip(t('Humidity'),w.h+'%')+rain+'</div>'}
+function rotDraw(){const box=$('rotlist');if(!box||!FACES.length)return;const rk=rotKeys(),sig=FACES.map(fkey).join()+'|'+rk.join();if(box.dataset.sig==sig)return;box.dataset.sig=sig;box.innerHTML='';
+ FACES.forEach(f=>{const k=fkey(f),l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.checked=rk.includes(k);
+  i.onchange=()=>{const cur=rotKeys().filter(x=>x!=k);save({rot:(i.checked?cur.concat(k):cur).join(',')}).then(()=>toast(i.checked?t('Added to rotation'):t('Removed from rotation')))};
+  l.append(i,document.createTextNode(f.n));box.appendChild(l)})}
 function rotToggle(f){const k=fkey(f),l=rotKeys(),on=l.includes(k);save({rot:(on?l.filter(x=>x!=k):l.concat(k)).join(',')}).then(()=>{closeSheet();toast(t(on?'Fora do rodízio':'Incluído no rodízio'))})}
 function faceSheet(f){const c=$('sheetc');c.innerHTML='';const s=el('div','scr');s.appendChild(img(f));c.appendChild(s);
  c.append(el('h3',null,f.n),el('p',null,f.d+(f.a?' · '+t('por')+' '+f.a:'')+(f.pkg?' · '+t('instalado'):'')));
@@ -558,7 +583,7 @@ function load(s){if(s.cfg.lang!=null&&s.cfg.lang!=LG)setLang(s.cfg.lang);if(last
  // firmware sem o aviso (até a 1.19.3): segura pelo tempo medido do desenho
  else if(s.running&&s.remaining>=s.total-1500&&(!st||!st.running||st.phase!=s.phase))ringDraw(s.pdraw||100,s.remaining,false);
  st=s;at=Date.now();$('net').className='on';
- document.documentElement.style.setProperty('--ac','var(--'+(s.phase=='idle'?'work':s.phase)+')');
+ document.documentElement.style.setProperty('--ac','var(--long)');
  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('sel',b.dataset.p==s.phase));
  const n=s.cfg.every,d=s.phase=='long'?n:s.cycle%n;$('dots').innerHTML='<i class="f"></i>'.repeat(d)+'<i></i>'.repeat(n-d);
  $('go').innerHTML=s.running?'&#10074;&#10074;':'&#9654;';$('today').textContent=s.today;$('goal').textContent=s.cfg.goal;$('mins').textContent=s.today*s.cfg.work;$('streak').textContent=s.streak||0;
@@ -575,6 +600,7 @@ function load(s){if(s.cfg.lang!=null&&s.cfg.lang!=LG)setLang(s.cfg.lang);if(last
  const when=ago<60?t('agora'):ago<3600?t('há {0} min',ago/60|0):t('há {0} h',ago/3600|0),cmdT=[0,t('começar o foco'),t('pausar'),t('foco de {0} min',ax.min),t('encerrar'),t('pausa curta'),t('pausa longa'),t('voltar ao foco'),t('pausa de {0} min',ax.min)][ax.last];
  $('alxst').style.display=s.cfg.alexa?'':'none';$('alxst').className='alx'+(seen?' ok':'');$('alxst').innerHTML='<i></i>';
  $('alxst').append(seen?t('Conectado à Alexa ({0}) · último contato {1}',ax.ip,when)+(cmdT?' · '+t('último comando: {0}',cmdT):''):t('Aguardando a Alexa: diga "Alexa, descobrir dispositivos".'));
+ nowDraw(s);rotDraw();
  $('rotinfo').textContent=rk.length?t('No rodízio: {0}. Toque num mostrador para incluir ou tirar.',rk.map(k=>(FACES.find(f=>fkey(f)==k)||{n:k}).n).join(', ')):t('Toque num mostrador e escolha "Incluir no rodízio" (2 ou mais).');
  // noite pelo sol: horários do Open-Meteo; o horário fixo some quando o sol vale
  const hm=m=>String(m/60|0).padStart(2,'0')+':'+String(m%60).padStart(2,'0'),sun=s.wx&&s.wx.rise>=0&&s.wx.set>s.wx.rise;

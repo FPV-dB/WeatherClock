@@ -1930,6 +1930,16 @@ void sendState() {
   j += wx.hum;
   j += F(",\"rin\":");  // minutos até a chuva (0 = não vai chover na próxima hora)
   j += wx.rainIn;
+  j += F(",\"wind\":");  // weatherbox: vento em km/h, rajada e rumo em graus; código WMO e dia/noite
+  j += wx.wind;
+  j += F(",\"gust\":");
+  j += wx.gust;
+  j += F(",\"wdir\":");
+  j += wx.wdir;
+  j += F(",\"code\":");
+  j += wx.code;
+  j += F(",\"day\":");
+  j += wx.day ? 1 : 0;
   j += F(",\"tzn\":\"");  // fuso da cidade (Open-Meteo), o deslocamento dele e o do relógio agora
   j += wx.tzName;
   j += F("\",\"off\":");
