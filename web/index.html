@@ -156,8 +156,8 @@ nav button[hidden],[hidden]{display:none!important}
  <small id="dlnone">Nenhum mostrador baixado ainda. Abra a galeria online logo abaixo e toque em um para instalar.</small>
  <h2>Mais mostradores</h2>
  <div class="card">
-  <p style="margin-top:0"><button class="btn p" onclick="catalog()">Ver a galeria online</button></p>
-  <div class="faces" id="cat"></div>
+  <p style="margin-top:0" hidden><button class="btn p" onclick="catalog()">Ver a galeria online</button></p>
+  <div class="faces" id="cat" hidden></div>
   <label>Instalar de um arquivo<input id="pkf" type="file" multiple></label>
   <small>Escolha o .json do mostrador (e, se tiver, a prévia .png). Ele fica guardado no relógio, sem atualizar o firmware. Mais mostradores e como criar o seu: <a href="https://fpv-db.github.io/WeatherClock/" target="_blank" rel="noopener">site do projeto</a>.</small>
  </div>
@@ -403,7 +403,7 @@ function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.o
   +'<div class="chips">'+chip(t('High'),dg(w.max))+chip(t('Low'),dg(w.min))+(w.wind!=null?chip(t('Wind'),WDIR(w.wdir)+' '+w.wind+' km/h')+chip(t('Gusts'),w.gust+' km/h'):'')+chip(t('Humidity'),w.h+'%')+rain+'</div>'}
 function radarDraw(){const i=$('radarimg'),v=Math.floor(Date.now()/120000);if(!i||i.dataset.v==v)return;i.dataset.v=v;
  i.onload=()=>{$('radarc').hidden=false};i.onerror=()=>{$('radarc').hidden=true};i.src='/fs?f=%2Fimage%2Fradar.gif&v='+v}
-function rotDraw(){const box=$('rotlist');if(!box||!FACES.length)return;const rk=rotKeys(),sig=FACES.map(fkey).join()+'|'+rk.join();if(box.dataset.sig==sig)return;box.dataset.sig=sig;box.innerHTML='';
+function rotDraw(){const box=$('rotlist');if(!box||!FACES.length)return;const rk=rotKeys(),sig=FACES.map(f=>f.n).join()+'|'+rk.join();if(box.dataset.sig==sig)return;box.dataset.sig=sig;box.innerHTML='';
  FACES.forEach(f=>{const k=fkey(f),l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.checked=rk.includes(k);
   i.onchange=()=>{const cur=rotKeys().filter(x=>x!=k);save({rot:(i.checked?cur.concat(k):cur).join(',')}).then(()=>toast(i.checked?t('Added to rotation'):t('Removed from rotation')))};
   l.append(i,document.createTextNode(f.n));box.appendChild(l)})}
