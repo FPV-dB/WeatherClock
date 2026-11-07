@@ -1743,6 +1743,15 @@ void albumLoop() {
   }
   if (r == 0) gif->reset();  // último quadro: recomeça
   nextFrameAt = millis() + max(delayMs, 20);
+  // weatherbox: no radar, a hora de agora por cima de cada quadro (o GIF redesenha o canto)
+  struct tm t;
+  if (curFile.indexOf("radar") >= 0 && localNow(t)) {
+    char hm[8];
+    int h = t.tm_hour;
+    if (cfg.hour12) h = h % 12 == 0 ? 12 : h % 12;
+    snprintf(hm, sizeof hm, "%02d:%02d", h, t.tm_min);
+    uiCornerClock(hm);
+  }
 }
 
 // Decide o que mostrar quando não há Pomodoro: relógio ou um item do álbum.

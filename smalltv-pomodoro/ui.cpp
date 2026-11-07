@@ -806,6 +806,13 @@ void uiBootProgress(uint32_t ms, uint8_t done) {
   }
 }
 
+// weatherbox: relógio pequeno no canto inferior direito, numa caixa escura (por cima do radar do álbum)
+void uiCornerClock(const char *hm) {
+  const int w = strlen(hm) * 12 - 2, x0 = 240 - w - 8, y0 = 216;
+  G->fillRoundRect(x0 - 5, y0 - 4, w + 10, 24, 5, 0);
+  text(x0, y0, 2, TEXT, hm);
+}
+
 // Enquanto o relógio não tem hora: quatro pontinhos no alto, um aceso que vai e volta, por cima do mostrador
 void uiSyncHint(uint32_t ms) {
   int p = ms / 200 % 6, on = p < 4 ? p : 6 - p;

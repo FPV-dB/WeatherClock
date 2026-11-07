@@ -93,6 +93,7 @@ uint8_t uiSpriteFrame(const UiSprite *s, uint32_t ms);  // quadro da animação 
 void uiBegin(Adafruit_GFX *gfx);
 // Chamado entre os quadros de animação (ex.: virada do Flip) para ceder tempo ao Wi-Fi.
 extern void (*uiFrameHook)();
+void uiCornerClock(const char *hm);  // weatherbox: hora atual no canto de baixo, por cima do radar
 // Relógio em ms para animações guiadas por tempo (firmware: millis). Sem ele, passos de 20 ms.
 extern uint32_t (*uiMillis)();
 // Envia um bloco de pixels RGB565 para a tela. O firmware aponta para o método rápido do
