@@ -7,15 +7,15 @@
 #pragma once
 
 #define UI_FACES(X)                                                                         \
-  X(MATRIX, themeMatrix, "Matriz", "Pixel art com cartões de clima e vento")         \
-  X(TOMATO, themeTomato, "Cena", "Paisagem em pixel art que muda com a hora e o clima")      \
-  X(ANALOG, themeAnalog, "Analógico", "Ponteiros bastão e marcas grossas")                 \
-  X(WEATHER, themeWeather, "Clima", "Temperatura grande e mini cartões")                   \
-  X(NEON, themeNeon, "Neon", "Tubos rosa e ciano com brilho")                              \
-  X(FLIP, themeFlip, "Flip", "Plaquinhas que viram, com a fonte Bebas Neue")               \
-  X(LCD, themeLcd, "LCD retrô", "Relógio digital dos anos 80 (fonte DSEG7)")               \
-  X(WORDS, themeWords, "Palavras", "A hora por extenso, no idioma do relógio")         \
-  X(FORECAST, themeForecast, "Previsão", "Hoje e os próximos 4 dias, com chuva e mín/máx") \
-  X(FORECAST_CARDS, themeForecastCards, "Previsão em cartões", "Quatro dias em cartões, com a máxima em destaque") \
-  X(FORECAST_LCD, themeForecastLcd, "Previsão LCD", "Quatro dias no visor do LCD retrô") \
-  X(WIND, themeWind, "Vento", "Bússola, velocidade, rajadas e força do vento")
+  X(MATRIX, themeMatrix, "Matrix", "Pixel art with weather and wind cards")         \
+  X(TOMATO, themeTomato, "Scene", "Pixel art landscape that changes with the time and weather")      \
+  X(ANALOG, themeAnalog, "Analog", "Baton hands and bold markers")                 \
+  X(WEATHER, themeWeather, "Weather", "Big temperature and mini cards")                   \
+  X(NEON, themeNeon, "Neon", "Pink and cyan glowing tubes")                              \
+  X(FLIP, themeFlip, "Flip", "Flipping cards with the Bebas Neue font")               \
+  X(LCD, themeLcd, "Retro LCD", "80s digital watch (DSEG7 font)")               \
+  X(WORDS, themeWords, "Words", "The time spelled out, in the clock language")         \
+  X(FORECAST, themeForecast, "Forecast", "Today and the next 4 days, with rain and low/high") \
+  X(FORECAST_CARDS, themeForecastCards, "Forecast cards", "Four days in cards, with the high in focus") \
+  X(FORECAST_LCD, themeForecastLcd, "Forecast LCD", "Four days on the retro LCD screen") \
+  X(WIND, themeWind, "Wind", "Compass, speed, gusts and wind strength")

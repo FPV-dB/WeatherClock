@@ -188,7 +188,7 @@ const int WIFIH_OFF = FS_OFF + sizeof(FsMark);
 const int EE_SIZE = WIFIH_OFF + sizeof(WifiHint);
 static_assert(sizeof(WifiHint) == 16, "registro do Wi-Fi mudou de tamanho");
 static_assert(sizeof(CrashRec) == 28, "registro da queda mudou de tamanho");
-static_assert(sizeof(FW_VERSION) <= sizeof(CrashRec::ver), "a versao nao cabe no registro da queda");
+static_assert(sizeof(FW_VERSION) <= sizeof(CrashRec::ver), "the version does not fit in the crash record");
 const uint32_t CRASH_RTC_TAG = 0x55505453;  // "UPTS"
 // Memória RTC de usuário: os blocos 0-31 (128 bytes) são do comando que a atualização deixa para o eboot
 // (Updater, eboot_command em 0x60001200). Escrever ali entre o fim da atualização e o reinício corrompe o
@@ -1964,13 +1964,13 @@ bool idOk(const String &id) {
 bool loadPackFile(const String &path, String &msg) {
   File f = fsOk ? LittleFS.open(path, "r") : File();
   if (!f) {
-    msg = F("arquivo nao encontrado");
+    msg = F("file not found");
     return false;
   }
   size_t n = f.size();
   if (n == 0 || n > 16384) {
     f.close();
-    msg = F("pacote vazio ou maior que 16 KB");
+    msg = F("face pack empty or larger than 16 KB");
     return false;
   }
   char err[96];
@@ -2007,28 +2007,28 @@ void handlePackUpload() {
     packGate.begin(false, 0);
     if (up.name == "face") { packUploadError = ""; packFaceReady = false; }
     if (!panelOk() || !uploadAuthed()) {
-      packUploadError = F("Proibido");
+      packUploadError = F("Forbidden");
       return;
     }
-    if (up.name != "face" && up.name != "preview") { packUploadError = F("Campo invalido"); return; }
+    if (up.name != "face" && up.name != "preview") { packUploadError = F("Invalid field"); return; }
     if (packUploadError.length()) return;
     if (!fsOk) {
-      packUploadError = F("Sistema de arquivos indisponivel");
+      packUploadError = F("File system unavailable");
       return;
     }
     if (!LittleFS.exists("/faces")) LittleFS.mkdir("/faces");
     if (up.name == "face") { LittleFS.remove("/faces/_novo.json"); LittleFS.remove("/faces/_novo.png"); }
     packUpload = LittleFS.open(up.name == "preview" ? "/faces/_novo.png" : "/faces/_novo.json", "w");
-    if (!packUpload) { packUploadError = F("Falha ao criar arquivo"); return; }
+    if (!packUpload) { packUploadError = F("Could not create the file"); return; }
     packGate.begin(true, up.name == "face" ? 16384 : 65536);
   } else if (up.status == UPLOAD_FILE_WRITE) {
     if (!packGate.active) return;
-    if (!packGate.take(up.currentSize)) packUploadError = F("Arquivo grande demais");
-    else if (packUpload.write(up.buf, up.currentSize) != up.currentSize) packUploadError = F("Memoria cheia");
+    if (!packGate.take(up.currentSize)) packUploadError = F("File too large");
+    else if (packUpload.write(up.buf, up.currentSize) != up.currentSize) packUploadError = F("Storage full");
     if (packUploadError.length()) { packUpload.close(); packGate.stop(); }
   } else if (up.status == UPLOAD_FILE_END || up.status == UPLOAD_FILE_ABORTED) {
     if (packUpload) packUpload.close();
-    if (up.status == UPLOAD_FILE_ABORTED) packUploadError = F("Envio interrompido");
+    if (up.status == UPLOAD_FILE_ABORTED) packUploadError = F("Upload interrupted");
     if (packGate.active && !packUploadError.length() && up.name == "face") packFaceReady = true;
     packGate.stop();
     if (packUploadError.length()) packFaceReady = false;
@@ -2335,11 +2335,11 @@ void handleUpload() {
     uploadError = "";
     uploadPath = "";
     if (!panelOk() || !uploadAuthed()) {
-      uploadError = F("Proibido");
+      uploadError = F("Forbidden");
       return;
     }
     if (!fsOk) {
-      uploadError = F("Sistema de arquivos indisponivel");
+      uploadError = F("File system unavailable");
       return;
     }
     // nome seguro: letras, números, - _ . e no máximo 28 caracteres (limite do LittleFS é 31)
@@ -2349,24 +2349,24 @@ void handleUpload() {
     while (name.indexOf("..") >= 0) name.replace("..", ".");  // mediaPath recusa "..": o arquivo não poderia ser apagado
     if (name.length() > 28) name = name.substring(name.length() - 28);
     if (!isJpg(name) && !isGif(name) && !isWcr(name)) {
-      uploadError = F("Use JPG ou GIF");
+      uploadError = F("Use JPG, GIF or WCR");
       return;
     }
     FSInfo fi;
     LittleFS.info(fi);
     if (fi.totalBytes - fi.usedBytes < 16384) {
-      uploadError = F("Memoria cheia");
+      uploadError = F("Storage full");
       return;
     }
     if (!LittleFS.exists("/image")) LittleFS.mkdir("/image");
     uploadPath = "/image/" + name;
     uploadFile = LittleFS.open(uploadPath, "w");
-    if (!uploadFile) uploadError = F("Falha ao criar arquivo");
+    if (!uploadFile) uploadError = F("Could not create the file");
     else photoGate.begin(true, 3 * 1024 * 1024);
   } else if (up.status == UPLOAD_FILE_WRITE) {
     if (!photoGate.active) return;
-    if (!photoGate.take(up.currentSize)) uploadError = F("Arquivo grande demais");
-    else if (uploadFile.write(up.buf, up.currentSize) != up.currentSize) uploadError = F("Memoria cheia");
+    if (!photoGate.take(up.currentSize)) uploadError = F("File too large");
+    else if (uploadFile.write(up.buf, up.currentSize) != up.currentSize) uploadError = F("Storage full");
     if (uploadError.length()) {
       photoGate.stop();
       uploadFile.close();
@@ -2383,7 +2383,7 @@ void handleUpload() {
       uploadError = tr("GIF fora do padrao", "Unsupported GIF", "GIF fuera de norma");
     } else if (up.status == UPLOAD_FILE_END && !uploadError.length() && isWcr(uploadPath) && !validWcr(uploadPath)) {
       LittleFS.remove(uploadPath);
-      uploadError = F("WCR invalido");
+      uploadError = F("Invalid WCR file");
     } else if (up.status == UPLOAD_FILE_END && !uploadError.length() && isJpg(uploadPath) && !validJpg(uploadPath)) {
       LittleFS.remove(uploadPath);
       uploadError = tr("JPG fora do padrao", "Unsupported JPG", "JPG fuera de norma");
@@ -2498,7 +2498,7 @@ bool hostOk() {
 }
 bool panelOk() { return hostOk() && server.header("X-SmallTV") == "1"; }
 bool deny() {
-  server.send_P(403, PSTR("text/plain"), PSTR("Proibido"));
+  server.send_P(403, PSTR("text/plain"), PSTR("Forbidden"));
   return false;
 }
 // Senha do painel (a mesma do /update, usuário admin): com ela definida, todo o painel e a API pedem
@@ -2626,7 +2626,7 @@ void setupWeb() {
   });
   server.on("/api/panel", HTTP_POST, [] {
     if (!guard()) return;
-    if (!panelResult.length()) server.send_P(400, PSTR("text/plain"), PSTR("Painel invalido"));
+    if (!panelResult.length()) server.send_P(400, PSTR("text/plain"), PSTR("Invalid panel"));
     else server.send(200, "text/plain", panelResult == PANEL_HASH ? "ok" : "guardado " + panelResult);
   }, handlePanelUpload);
   server.on("/api/state", HTTP_GET, sendState);
@@ -2662,7 +2662,7 @@ void setupWeb() {
     String rawWork = server.arg("w"), rawPause = server.arg("b");
     rawWork.trim(); rawPause.trim();
     if ((rawWork.length() && !work.length()) || (rawPause.length() && !pause.length())) {
-      server.send_P(400, PSTR("text/plain"), PSTR("Use um endereco http:// valido (sem espacos ou controles)"));
+      server.send_P(400, PSTR("text/plain"), PSTR("Use a valid http:// address (no spaces or control characters)"));
       return;
     }
     hookWork = work;
@@ -2693,7 +2693,7 @@ void setupWeb() {
     if (!guard()) return;
     const int id = server.arg("id").toInt(), km = server.arg("km").toInt();
     if (id < 0 || id > 99 || (km != 64 && km != 128 && km != 256 && km != 512)) {
-      server.send_P(400, PSTR("text/plain"), PSTR("radar invalido"));
+      server.send_P(400, PSTR("text/plain"), PSTR("invalid radar"));
       return;
     }
     File f = fsOk ? LittleFS.open("/radar.txt", "w") : File();
@@ -2707,7 +2707,7 @@ void setupWeb() {
   server.on("/api/statsimport", HTTP_POST, [] {
     if (!guard()) return;
     if (!fsOk || !server.hasArg("days") || !server.hasArg("day")) {
-      server.send_P(400, PSTR("text/plain"), PSTR("Backup invalido"));
+      server.send_P(400, PSTR("text/plain"), PSTR("Invalid backup"));
       return;
     }
     const String &d = server.arg("days");
@@ -2718,12 +2718,12 @@ void setupWeb() {
       int e = d.indexOf(',', i);
       if (e < 0) e = d.length();
       int n = d.substring(i, e).toInt();
-      if (v.size() >= STATS_DAYS) { server.send_P(400, PSTR("text/plain"), PSTR("Backup invalido")); return; }
+      if (v.size() >= STATS_DAYS) { server.send_P(400, PSTR("text/plain"), PSTR("Invalid backup")); return; }
       v.push_back(n < 0 ? 0 : n > 255 ? 255 : n);
       i = e + 1;
     }
     if (v.empty() || v.size() > STATS_DAYS) {
-      server.send_P(400, PSTR("text/plain"), PSTR("Backup invalido"));
+      server.send_P(400, PSTR("text/plain"), PSTR("Invalid backup"));
       return;
     }
     stats = {STATS_MAGIC, day, (uint16_t)server.arg("best").toInt(), (uint32_t)server.arg("total").toInt()};
@@ -2951,7 +2951,7 @@ void setupWeb() {
     String id = ok ? facePackId() : "", name = ok ? facePackName() : "";
     if (ok && id[0] == '_') {  // "_novo" e afins são os temporários do envio
       ok = false;
-      msg = F("id invalido");
+      msg = F("invalid id");
     }
     if (ok) {
       LittleFS.remove("/faces/" + id + ".json");
@@ -2969,7 +2969,7 @@ void setupWeb() {
     }
     restoreActivePack();  // o teste carregou o pacote novo no motor; volta ao que estava ativo
     if (!ok) {
-      server.send(400, "text/plain", packUploadError.length() ? packUploadError : "Pacote invalido: " + msg);
+      server.send(400, "text/plain", packUploadError.length() ? packUploadError : "Invalid face pack: " + msg);
       return;
     }
     String reply;
@@ -2985,7 +2985,7 @@ void setupWeb() {
     if (!guard()) return;
     const String &id = server.arg("pkg");
     if (!fsOk || !idOk(id) || !LittleFS.remove("/faces/" + id + ".json")) {
-      server.send_P(400, PSTR("text/plain"), PSTR("Pacote nao encontrado"));
+      server.send_P(400, PSTR("text/plain"), PSTR("Face pack not found"));
       return;
     }
     LittleFS.remove("/faces/" + id + ".png");
@@ -3012,7 +3012,7 @@ void setupWeb() {
       viewUntil = 0;
     }
     if (!fsOk || !mediaPath(f) || !LittleFS.remove(f)) {
-      server.send_P(400, PSTR("text/plain"), PSTR("Nao foi possivel apagar"));
+      server.send_P(400, PSTR("text/plain"), PSTR("Could not delete"));
       return;
     }
     rebuildAlbum();
@@ -3025,7 +3025,7 @@ void setupWeb() {
     String f = server.arg("f");
     if (!fsOk || !f.startsWith("/") || f.length() < 2 || f.length() > 96 || f.indexOf("..") >= 0 || f.indexOf("//") >= 0 ||
         f.endsWith("/") || fsKeep(f) || !LittleFS.exists(f)) {
-      server.send_P(400, PSTR("text/plain"), PSTR("Nao foi possivel apagar"));
+      server.send_P(400, PSTR("text/plain"), PSTR("Could not delete"));
       return;
     }
     if (curFile == f || curFile.startsWith(f + "/")) {  // o arquivo na tela, ou a pasta dele
@@ -3048,7 +3048,7 @@ void setupWeb() {
       return;
     }
     if (!fsOk || !mediaPath(f) || !showAlbumItem(f)) {
-      server.send_P(400, PSTR("text/plain"), PSTR("Arquivo invalido"));
+      server.send_P(400, PSTR("text/plain"), PSTR("Invalid file"));
       return;
     }
     viewUntil = millis() + cfg.albumDelay * 1000UL;
@@ -3079,7 +3079,7 @@ void setupWeb() {
     File file;
     if (fsOk && mediaPath(f)) file = LittleFS.open(f, "r");
     if (!file) {
-      server.send_P(404, PSTR("text/plain"), PSTR("nao encontrado"));
+      server.send_P(404, PSTR("text/plain"), PSTR("not found"));
       return;
     }
     server.sendHeader("Cache-Control", "max-age=86400");
@@ -3090,12 +3090,12 @@ void setupWeb() {
   server.on("/api/otapass", HTTP_POST, [] {
     if (!guard()) return;
     if (cfg.otaPass[0] && server.arg("old") != cfg.otaPass) {
-      server.send_P(403, PSTR("text/plain"), PSTR("Senha atual incorreta"));
+      server.send_P(403, PSTR("text/plain"), PSTR("Current password is wrong"));
       return;
     }
     const String &p = server.arg("new");
     if (p.length() >= sizeof(cfg.otaPass)) {
-      server.send_P(400, PSTR("text/plain"), PSTR("Senha muito longa (max 23)"));
+      server.send_P(400, PSTR("text/plain"), PSTR("Password too long (max 23)"));
       return;
     }
     strlcpy(cfg.otaPass, p.c_str(), sizeof(cfg.otaPass));
@@ -3128,7 +3128,7 @@ void otaConsume(const uint8_t *p, size_t n) {
   for (size_t i = 0; i < n && !ota.err.length(); i++, ota.got++) {
     uint32_t o = ota.got;
     uint8_t v = p[i];
-    if ((o == 0 || o == 4096) && v != 0xE9) ota.err = F("nao e um firmware do ESP8266");
+    if ((o == 0 || o == 4096) && v != 0xE9) ota.err = F("not an ESP8266 firmware");
     if (o >= 4112 && o < 4120) {
       ota.field[o - 4112] = v;
       v = 0;  // os campos de tamanho e CRC entram zerados na conta
@@ -3136,10 +3136,10 @@ void otaConsume(const uint8_t *p, size_t n) {
         memcpy(&ota.size, ota.field, 4);
         memcpy(&ota.want, ota.field + 4, 4);
         uint32_t room = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-        if (ota.size < 4120 || (!ota.gz && ota.size > room)) ota.err = F("tamanho invalido ou sem espaco");  // .gz: conferido em otaVerifyGz
+        if (ota.size < 4120 || (!ota.gz && ota.size > room)) ota.err = F("invalid size or not enough space");  // .gz: conferido em otaVerifyGz
       }
     }
-    if (ota.size && o >= ota.size) ota.err = F("arquivo maior que o indicado");
+    if (ota.size && o >= ota.size) ota.err = F("file larger than stated");
     ota.crc ^= (uint32_t)v << 24;
     for (int k = 0; k < 8; k++) ota.crc = (ota.crc << 1) ^ (ota.crc & 0x80000000 ? 0x04C11DB7 : 0);
   }
@@ -3170,7 +3170,7 @@ static uint8_t *otaDict = nullptr;
 bool otaVerifyGz() {
   eboot_command cmd;
   if (eboot_command_read(&cmd) || cmd.action != ACTION_COPY_RAW) {
-    ota.err = F("troca nao agendada");
+    ota.err = F("update not scheduled");
     return false;
   }
   uint32_t src = cmd.args[0];
@@ -3195,21 +3195,21 @@ bool otaVerifyGz() {
       yield();
     }
     if (ota.err.length()) {}
-    else if (res != TINF_DONE) ota.err = F("arquivo comprimido corrompido");
-    else if (ota.got < 4120 || ota.got != ota.size) ota.err = F("imagem incompleta");
-    else if (ota.crc != ota.want) ota.err = F("imagem corrompida (CRC)");
-    else if (ota.size > src) ota.err = F("firmware grande demais para descompactar");
+    else if (res != TINF_DONE) ota.err = F("compressed file is corrupt");
+    else if (ota.got < 4120 || ota.got != ota.size) ota.err = F("incomplete image");
+    else if (ota.crc != ota.want) ota.err = F("image is corrupt (CRC)");
+    else if (ota.size > src) ota.err = F("firmware too large to decompress");
     else {
       // O eboot não lê o tamanho do gzip: usa os 4 ÚLTIMOS bytes da área gravada como o tamanho da
       // imagem. Qualquer coisa depois do gzip (como os 260 bytes de assinatura da 1.20.0) vira o
       // tamanho, e o eboot grava só o começo por cima do setor 0 e apaga o próprio gerenciador de
       // boot: o relógio não liga mais. Só libera a troca se esse número for o da imagem conferida.
       uint8_t t[4];
-      if (cmd.args[2] < 4 || !ESP.flashRead(src + cmd.args[2] - 4, t, 4)) ota.err = F("fim do arquivo ilegivel");
+      if (cmd.args[2] < 4 || !ESP.flashRead(src + cmd.args[2] - 4, t, 4)) ota.err = F("cannot read the end of the file");
       else if ((uint32_t)(t[0] | t[1] << 8 | t[2] << 16 | (uint32_t)t[3] << 24) != ota.got)
-        ota.err = F("dados depois do gzip (envie o .bin.gz sem assinatura ou o .bin)");
+        ota.err = F("data after the gzip (send the .bin.gz without a signature, or the .bin)");
     }
-  } else ota.err = F("sem memoria para conferir");
+  } else ota.err = F("not enough memory to check the file");
   free(dict);
   free(gzBuf);
   free(d);
@@ -3273,11 +3273,11 @@ static void otaSigBegin() {
 static bool otaSigOk() {
   if (recoveryMode) return true;
   if (!otaSigGiven) {
-    ota.err = F("firmware sem assinatura (use o arquivo do site ou o modo de recuperacao)");
+    ota.err = F("unsigned firmware (use the file from the website, or recovery mode)");
     return false;
   }
   if (!otaThunk && ESP.getMaxFreeBlockSize() < 7500) {  // a conta usa uma pilha extra de 6,2 KB
-    ota.err = F("sem memoria para conferir a assinatura");
+    ota.err = F("not enough memory to check the signature");
     return false;
   }
   uint8_t n[sizeof OTA_KEY_N], e[sizeof OTA_KEY_E], want[32], got[32];
@@ -3293,7 +3293,7 @@ static bool otaSigOk() {
     stack_thunk_del_ref();
     otaThunk = false;
   }
-  if (!ok) ota.err = F("assinatura invalida");
+  if (!ok) ota.err = F("invalid signature");
   return ok;
 }
 
@@ -3329,7 +3329,7 @@ void setupUpdate() {
   });
   server.on("/update", HTTP_POST, [authOk] {
       if (!authOk() || !ota.authOk) return askLogin();
-      if (!ota.err.length() && !ota.finished) ota.err = F("envio incompleto");
+      if (!ota.err.length() && !ota.finished) ota.err = F("incomplete upload");
       if (ota.err.length()) {
         if (!inAlbum) packResume();  // não atualizou: o mostrador volta
         server.send(400, "text/plain", "Update error: " + ota.err);
@@ -3344,7 +3344,7 @@ void setupUpdate() {
         ota = {0, 0, 0, 0xFFFFFFFF, {0}, String(), authOk(), false, false, false};
         packHold();  // weatherbox: libera a RAM do mostrador: a conferência da assinatura precisa de ~17 KB contíguos
         otaSigBegin();
-        if (!ota.authOk) ota.err = F("senha");
+        if (!ota.authOk) ota.err = F("password");
         else if (inAlbum) stopAlbum();  // libera RAM e o LittleFS durante a gravação
       } else if (up.status == UPLOAD_FILE_WRITE && !ota.err.length()) {
         if (!ota.begun) {  // primeiro pedaço: .gz vai para o fim da área (tamanho do envio); .bin, para o espaço livre
@@ -3352,20 +3352,20 @@ void setupUpdate() {
           ota.gz = up.currentSize > 1 && up.buf[0] == 0x1F && up.buf[1] == 0x8B;
           if (ota.gz && !otaDict && ESP.getMaxFreeBlockSize() >= 8192 + 1024) otaDict = (uint8_t *)malloc(8192);  // weatherbox
           uint32_t size = ota.gz ? server.header("Content-Length").toInt() : (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-          if (!size || !Update.begin(size, U_FLASH)) ota.err = size ? Update.getErrorString() : String(F("tamanho desconhecido"));
+          if (!size || !Update.begin(size, U_FLASH)) ota.err = size ? Update.getErrorString() : String(F("unknown size"));
         }
         if (!ota.gz) otaConsume(up.buf, up.currentSize);
         br_sha256_update(&otaHash, up.buf, up.currentSize);
         if (!ota.err.length() && Update.write(up.buf, up.currentSize) != up.currentSize) ota.err = Update.getErrorString();
         if (ota.err.length()) Update.end();  // desiste: o firmware atual continua
       } else if (up.status == UPLOAD_FILE_END && !ota.err.length()) {
-        if (!ota.begun) ota.err = F("arquivo vazio");
+        if (!ota.begun) ota.err = F("empty file");
         else if (ota.gz) {
           if (!otaSigOk()) Update.end();  // assinatura antes de agendar a troca: sem ela nada muda
           else if (!Update.end(true)) ota.err = Update.getErrorString();
           else otaVerifyGz();
-        } else if (ota.got < 4120 || ota.got != ota.size) ota.err = F("arquivo incompleto");
-        else if (ota.crc != ota.want) ota.err = F("arquivo corrompido (CRC)");
+        } else if (ota.got < 4120 || ota.got != ota.size) ota.err = F("incomplete file");
+        else if (ota.crc != ota.want) ota.err = F("file is corrupt (CRC)");
         else otaSigOk();
         if (ota.gz) {}
         else if (ota.err.length()) Update.end();
@@ -3373,7 +3373,7 @@ void setupUpdate() {
         ota.finished = !ota.err.length();
       } else if (up.status == UPLOAD_FILE_ABORTED) {
         Update.end();
-        ota.err = F("envio interrompido");
+        ota.err = F("upload interrupted");
       }
       if (up.status == UPLOAD_FILE_END || up.status == UPLOAD_FILE_ABORTED) otaSigFree();
       yield();

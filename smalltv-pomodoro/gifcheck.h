@@ -37,7 +37,7 @@ static bool gcSkipSub(GifCheckRead rd, void *c) {
 // nullptr = GIF aceito; senão, o motivo da recusa
 static const char *gifCheck(GifCheckRead rd, void *c, int maxW, int maxH) {
   uint8_t b[13];
-  if (!gcRead(rd, c, b, 13) || memcmp(b, "GIF8", 4) || (b[4] != '7' && b[4] != '9') || b[5] != 'a') return "nao e GIF";
+  if (!gcRead(rd, c, b, 13) || memcmp(b, "GIF8", 4) || (b[4] != '7' && b[4] != '9') || b[5] != 'a') return "not a GIF";
   const int W = b[6] | b[7] << 8, H = b[8] | b[9] << 8;
   if (!W || !H || W > maxW || H > maxH) return "GIF grande demais";
   const bool globalPalette = b[10] & 0x80;
@@ -46,16 +46,16 @@ static const char *gifCheck(GifCheckRead rd, void *c, int maxW, int maxH) {
   for (;;) {
     uint8_t t;
     if (!gcRead(rd, c, &t, 1)) return "GIF cortado";
-    if (t == 0x3B) return frames ? nullptr : "GIF sem imagem";
+    if (t == 0x3B) return frames ? nullptr : "GIF has no image";
     if (t == 0x21) {  // extensão: rótulo + sub-blocos
       uint8_t label;
       if (!gcRead(rd, c, &label, 1)) return "GIF cortado";
       if (label == 0xf9) {
         uint8_t gce[6];
         if (!gcRead(rd, c, gce, 6)) return "GIF cortado";
-        if (gce[0] != 4 || gce[5] != 0) return "extensao invalida";
+        if (gce[0] != 4 || gce[5] != 0) return "invalid extension";
       } else {
-        if (label != 0xff && label != 0xfe && label != 1) return "extensao invalida";
+        if (label != 0xff && label != 0xfe && label != 1) return "invalid extension";
         if (!gcSkipSub(rd, c)) return "GIF cortado";
       }
     } else if (t == 0x2C) {  // quadro
@@ -63,15 +63,15 @@ static const char *gifCheck(GifCheckRead rd, void *c, int maxW, int maxH) {
       if (!gcRead(rd, c, d, 9)) return "GIF cortado";
       const int x = d[0] | d[1] << 8, y = d[2] | d[3] << 8, w = d[4] | d[5] << 8, h = d[6] | d[7] << 8;
       if (!w || !h || x + w > W || y + h > H) return "quadro fora da imagem";
-      if (!globalPalette && !(d[8] & 0x80)) return "GIF sem paleta";
+      if (!globalPalette && !(d[8] & 0x80)) return "GIF has no palette";
       if ((d[8] & 0x80) && !gcSkip(rd, c, 3 << ((d[8] & 7) + 1))) return "GIF cortado";
       uint8_t lzw;
       if (!gcRead(rd, c, &lzw, 1)) return "GIF cortado";
-      if (lzw < 2 || lzw > 8) return "compressao invalida";
+      if (lzw < 2 || lzw > 8) return "invalid compression";
       if (!gcSkipSub(rd, c)) return "GIF cortado";
       if (++frames > 2000) return "quadros demais";
     } else {
-      return "bloco invalido";
+      return "invalid block";
     }
   }
 }

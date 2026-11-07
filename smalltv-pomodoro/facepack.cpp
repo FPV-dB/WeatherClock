@@ -143,7 +143,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     rewind();
     DeserializationError e = deserializeJson(doc, in, DeserializationOption::Filter(filter));
     if (e) {
-      snprintf_P(err, errLen, PSTR("JSON invalido: %s"), e.c_str());
+      snprintf_P(err, errLen, PSTR("Invalid JSON: %s"), e.c_str());
       return false;
     }
   }
@@ -169,7 +169,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
   uint8_t ns = 0;
   for (JsonPairConst kv : doc["sprites"].as<JsonObjectConst>()) {
     if (ns >= MAX_SPRITES || strlen(kv.key().c_str()) >= sizeof sprName[0]) {
-      snprintf_P(err, errLen, PSTR("sprite \"%s\": ate 32x32 e no maximo %d sprites"), kv.key().c_str(), MAX_SPRITES);
+      snprintf_P(err, errLen, PSTR("sprite \"%s\": up to 32x32 and at most %d sprites"), kv.key().c_str(), MAX_SPRITES);
       return false;
     }
     strcpy(sprName[ns++], kv.key().c_str());
@@ -178,7 +178,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
   pool = (char *)malloc(pcap);
   if (!lay || !pool) {
     facePackUnload();
-    snprintf_P(err, errLen, PSTR("sem memoria para o pacote"));
+    snprintf_P(err, errLen, PSTR("not enough memory for the face pack"));
     return false;
   }
   poolCap = pcap;
@@ -195,7 +195,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
       DeserializationError e = deserializeJson(sd, in, DeserializationOption::Filter(filter));
       if (e) {
         facePackUnload();
-        snprintf_P(err, errLen, PSTR("JSON invalido: %s"), e.c_str());
+        snprintf_P(err, errLen, PSTR("Invalid JSON: %s"), e.c_str());
         return false;
       }
     }
@@ -206,31 +206,31 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     int fps = sp["fps"] | 4;
     if (!w0 || w0 > 32 || h0 > 32) {
       facePackUnload();
-      snprintf_P(err, errLen, PSTR("sprite \"%s\": ate 32x32 e no maximo %d sprites"), sprName[si], MAX_SPRITES);
+      snprintf_P(err, errLen, PSTR("sprite \"%s\": up to 32x32 and at most %d sprites"), sprName[si], MAX_SPRITES);
       return false;
     }
     if (nf0 < 1 || nf0 > MAX_FRAMES || fps < 1 || fps > 10) {
       facePackUnload();
-      snprintf_P(err, errLen, PSTR("sprite \"%s\": de 1 a %d quadros e \"fps\" de 1 a 10"), sprName[si], MAX_FRAMES);
+      snprintf_P(err, errLen, PSTR("sprite \"%s\": 1 to %d frames and \"fps\" from 1 to 10"), sprName[si], MAX_FRAMES);
       return false;
     }
     for (size_t k = 1; k < nf0; k++)
       if (fr[k].size() != h0 || strlen(fr[k][0] | "") != w0) {
         facePackUnload();
-        snprintf_P(err, errLen, PSTR("sprite \"%s\": todos os quadros precisam ter o mesmo tamanho"), sprName[si]);
+        snprintf_P(err, errLen, PSTR("sprite \"%s\": all frames must be the same size"), sprName[si]);
         return false;
       }
     size_t add = 4 + 15 * 2 + nf0 * ((w0 * h0 + 1) / 2);
     if (sprCap + add > MAX_SPR_BYTES) {
       size_t tot = sprCap + add;
       facePackUnload();
-      snprintf_P(err, errLen, PSTR("sprites grandes demais: %d bytes no total (maximo %d)"), (int)tot, MAX_SPR_BYTES);
+      snprintf_P(err, errLen, PSTR("sprites too large: %d bytes in total (max %d)"), (int)tot, MAX_SPR_BYTES);
       return false;
     }
     uint8_t *ns_ = (uint8_t *)realloc(spr, sprCap + add);
     if (!ns_) {
       facePackUnload();
-      snprintf_P(err, errLen, PSTR("sem memoria para o pacote"));
+      snprintf_P(err, errLen, PSTR("not enough memory for the face pack"));
       return false;
     }
     spr = ns_;
@@ -240,7 +240,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     uint16_t colors[15];
     for (JsonPairConst c : palObj) {
       if (n == 15 || strlen(c.key().c_str()) != 1) {
-        snprintf_P(err, errLen, PSTR("sprite \"%s\": paleta com ate 15 cores de 1 caractere"), sprName[si]);
+        snprintf_P(err, errLen, PSTR("sprite \"%s\": palette of up to 15 one-character colours"), sprName[si]);
         facePackUnload();
         return false;
       }
@@ -282,7 +282,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     Layer &L = lay[nLay];
     L.type = pick(l["type"] | (const char *)nullptr, TYPES, L_TYPES, 255);
     if (L.type == 255) {
-      snprintf_P(err, errLen, PSTR("camada %d: tipo desconhecido"), nLay + 1);
+      snprintf_P(err, errLen, PSTR("layer %d: unknown type"), nLay + 1);
       facePackUnload();
       return false;
     }
@@ -310,7 +310,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     bool stroke = L.type == L_LINE || L.type == L_HAND || L.type == L_TICKS || L.type == L_ARC;
     if (abs(L.x) > 960 || abs(L.y) > 960 || abs(L.w) > 960 || abs(L.h) > 960 || L.r < 0 || L.r > 360 ||
         (L.type == L_TICKS && (L.mx < 1 || L.mx > 120 || abs(L.w) > 240)) || (stroke && L.size > 64)) {
-      snprintf_P(err, errLen, PSTR("camada %d: tamanho ou posicao fora do limite"), nLay + 1);
+      snprintf_P(err, errLen, PSTR("layer %d: size or position out of range"), nLay + 1);
       facePackUnload();
       return false;
     }
@@ -320,7 +320,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     L.var = L.type == L_MASCOT ? pick(l["mood"] | (const char *)nullptr, MOODS, 9, 8)
                                : pick(l["value"] | (const char *)nullptr, VARS, V_VARS, V_SEC);
     if (L.font == 255 || L.align == 255 || L.when == 255 || L.var == 255) {
-      snprintf_P(err, errLen, PSTR("camada %d: font/align/when/value/mood invalido"), nLay + 1);
+      snprintf_P(err, errLen, PSTR("layer %d: invalid font/align/when/value/mood"), nLay + 1);
       facePackUnload();
       return false;
     }
@@ -349,7 +349,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     } else if (L.type == L_TEXT) L.str = addStr(l["text"] | "");
     else if (L.type == L_IMAGE) L.str = addStr(l["file"] | "");
     if ((L.type == L_TEXT || L.type == L_IMAGE) && L.str == 0xFFFF) {  // não coube no pool: nunca ler pool + 0xFFFF
-      snprintf_P(err, errLen, PSTR("camada %d: texto grande demais"), nLay + 1);
+      snprintf_P(err, errLen, PSTR("layer %d: text too long"), nLay + 1);
       facePackUnload();
       return false;
     }
@@ -359,7 +359,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
       for (uint8_t i = 0; i < ns; i++)
         if (!strcmp(sprName[i], sn)) L.str = sprOff[i];
       if (L.str == 0xFFFF) {
-        snprintf_P(err, errLen, PSTR("camada %d: sprite \"%s\" nao existe"), nLay + 1, sn);
+        snprintf_P(err, errLen, PSTR("layer %d: sprite \"%s\" does not exist"), nLay + 1, sn);
         facePackUnload();
         return false;
       }
@@ -367,7 +367,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     nLay++;
   }
   bgColor = (uint16_t)parseColor(doc["bg"] | (const char *)nullptr, BG);
-  snprintf(pkName, sizeof pkName, "%s", doc["name"] | "Sem nome");
+  snprintf(pkName, sizeof pkName, "%s", doc["name"] | "Untitled");
   snprintf(pkDesc, sizeof pkDesc, "%s", doc["desc"] | "");
   snprintf(pkAuthor, sizeof pkAuthor, "%s", doc["author"] | "");
   for (char *t : {pkName, pkDesc, pkAuthor})  // uma linha só (vão para o .txt de metadados)
