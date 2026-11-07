@@ -1625,6 +1625,10 @@ static bool validGif(const String &path) {
   return error == nullptr;
 }
 
+// weatherbox: canto reservado ao relógio do radar (o GIF não desenha ali, então ele não pisca)
+int16_t gifMaskX = 240, gifMaskY = 240;
+char cornerHM[8] = "";
+
 void gifDraw(GIFDRAW *p) {
   uint16_t *buf = uiRowBuf();  // alinhado: tftPixels não copia
   int y = p->iY + p->y + gifOffY;
@@ -1632,6 +1636,7 @@ void gifDraw(GIFDRAW *p) {
   int x0 = p->iX + gifOffX;
   int w = p->iWidth;
   if (x0 + w > 240) w = 240 - x0;
+  if (y >= gifMaskY && x0 + w > gifMaskX) w = gifMaskX - x0;
   if (w <= 0) return;
   uint8_t *s = p->pPixels;
   uint16_t *pal = p->pPalette;
@@ -1685,6 +1690,8 @@ void stopAlbum() {
   }
   inAlbum = false;
   curFile = "";
+  gifMaskX = gifMaskY = 240;
+  cornerHM[0] = 0;
   packResume();
   uiInvalidate();  // o relógio redesenha tudo ao voltar
 }
@@ -1743,14 +1750,19 @@ void albumLoop() {
   }
   if (r == 0) gif->reset();  // último quadro: recomeça
   nextFrameAt = millis() + max(delayMs, 20);
-  // weatherbox: no radar, a hora de agora por cima de cada quadro (o GIF redesenha o canto)
+  // weatherbox: no radar, a hora de agora no canto; o GIF não desenha ali, então só redesenha quando muda
   struct tm t;
   if (curFile.indexOf("radar") >= 0 && localNow(t)) {
     char hm[8];
     int h = t.tm_hour;
     if (cfg.hour12) h = h % 12 == 0 ? 12 : h % 12;
     snprintf(hm, sizeof hm, "%02d:%02d", h, t.tm_min);
-    uiCornerClock(hm);
+    if (strcmp(hm, cornerHM)) {
+      strlcpy(cornerHM, hm, sizeof cornerHM);
+      uiCornerClock(hm);
+      gifMaskX = 240 - (int)strlen(hm) * 12 - 11;  // mesma caixa de uiCornerClock
+      gifMaskY = 212;
+    }
   }
 }
 
