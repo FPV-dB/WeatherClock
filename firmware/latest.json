@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "date": "2026-11-08",
+  "file": "weatherclock.bin",
+  "size": 572016,
+  "gz": "weatherclock.bin.gz",
+  "gzsize": 413288,
+  "sig": "WVKhU4id4MB4387V/ImLIhyxJ7EWMzB5qkdp8ptAMzeTveT+vDuDw2jGJ537/xbsndXWtrsN2YSdTztYLf4fozrUQFsDjRJfmhPBNj8tIwJVZTH9TsY2DwMWc5kOIJ6hFeDzbolvbOGRkjnazzQ1H52sFfDdDrBsy/3pnYW/AbD8bgv7wMCpXBPxUNRNXj5uM7KXPQtU9ddTScIW2DUGuobeCDaK0L3I7K5siCoxx+P8RBC7FNRjCrRma3b30MpPixVzsjOc9ABsnmn85xinf3mzNx+wGYwycVB1NlLjT6uorO1voUrN6fkaTWAxA1EI25ahAEiCvC7UwuZ7INSBCg==",
+  "gzsig": "jyDxf5M5WkuPSvVi9OQZx86fHt8DiihYgGmREHhzSElMTxZpVb5GQfm6xYXolFld5zVqFFeBRMxYwanQcG2KCf5gnmL64pgIeI8PWt54RzRKWRxCmlkXdHLIh6OdTjD59M+EwZhJ1o4WaIGwibASfVCCm3vYALqvhS3wWYcMK5XFZIaP/YGoPmQEpn9jJs2i8egNK/qaqNXGTr14iZOu7sNDMf7w3rFplV3aSAWIzhLmGMxzn2wtQvfXiS/0pYHftpMgBJVPuMfkdZtXFzatoM3MFblNDR7a5NltWPtXtPbGKK6oXMUnfD3UMupQlN2s40E54m7fDNxyMGciuHICsA==",
+  "panel": "panel-2fe99c1eaa3a0fd99e9579d5.html.gz",
+  "psri": "sha256-L+mcHqo6D9melXnV1uRwQSPvcwOQEbySO938l9R2MQ4=",
+  "notes": {
+    "en": [
+      "Weather Clock 2.0: animated weather faces, wind face, radar clock, fade transitions",
+      "First-install help with QR codes",
+      "Check for updates from the Settings page"
+    ],
+    "pt": [
+      "Weather Clock 2.0: animated weather faces, wind face, radar clock, fade transitions",
+      "First-install help with QR codes",
+      "Check for updates from the Settings page"
+    ],
+    "es": [
+      "Weather Clock 2.0: animated weather faces, wind face, radar clock, fade transitions",
+      "First-install help with QR codes",
+      "Check for updates from the Settings page"
+    ]
+  }
+}
