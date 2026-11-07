@@ -1206,6 +1206,7 @@ uint32_t colorTestUntil = 0;
 // EEPROM (seria uma gravação a cada troca): vale o que estiver salvo ao reiniciar.
 String rotList;
 uint32_t rotNext = 0;
+bool rotStepNow = false;  // weatherbox: scheduleView pede o próximo mostrador ao sair do álbum
 void rotSet(const String &v);
 void rotLoop();
 
@@ -1720,6 +1721,12 @@ void scheduleView() {
     if (!(inAlbum && next == curFile)) showAlbumItem(next);
   } else if (inAlbum) {
     stopAlbum();
+    // weatherbox: alternando com o álbum, o rodízio anda aqui, na volta para o relógio, e não pelo próprio
+    // timer: cada mostrador e cada item do álbum ficam exatamente "Segundos por item" na tela
+    rotNext = millis();
+    rotStepNow = true;
+    rotLoop();
+    rotStepNow = false;
   }
   viewUntil = now + cfg.albumDelay * 1000UL;
   if (!viewUntil) viewUntil = 1;
@@ -3206,6 +3213,7 @@ void rotSet(const String &v) {
 void rotLoop() {
   if (!cfg.rotMin || !rotList.length() || phase != IDLE || previewActive() || inAlbum) return;
   if ((int32_t)(millis() - rotNext) < 0) return;
+  if (cfg.mode == 2 && !album.empty() && !rotStepNow) return;  // alternando com o álbum, quem anda é scheduleView
   rotNext = millis() + cfg.rotMin * 60000UL;
   // o item depois do mostrador atual (ou o primeiro, se o atual não está na lista)
   String cur = cfg.theme == THEME_PACK ? String("p:") + cfg.facePkg : String("t:") + cfg.theme, l = rotList + ",";
