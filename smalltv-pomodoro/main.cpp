@@ -3165,6 +3165,8 @@ static int gzRead(struct uzlib_uncomp *m) {
   return gzBuf[0];
 }
 
+// weatherbox: o dicionário de 8 KB da conferência do .gz é reservado no começo do envio (ver otaSigBegin)
+static uint8_t *otaDict = nullptr;
 bool otaVerifyGz() {
   eboot_command cmd;
   if (eboot_command_read(&cmd) || cmd.action != ACTION_COPY_RAW) {
@@ -3172,7 +3174,8 @@ bool otaVerifyGz() {
     return false;
   }
   uint32_t src = cmd.args[0];
-  uint8_t *dict = (uint8_t *)malloc(8192), out[256];
+  uint8_t *dict = otaDict ? otaDict : (uint8_t *)malloc(8192), out[256];
+  otaDict = nullptr;  // agora é de quem confere: é liberado no fim, junto com o resto
   TINF_DATA *d = (TINF_DATA *)calloc(1, sizeof(TINF_DATA));  // ~1,2 KB de tabelas: fora da pilha
   gzBuf = (uint8_t *)malloc(512);
   if (dict && gzBuf && d) {
@@ -3233,10 +3236,19 @@ static br_sha256_context otaHash;
 // ocupar a RAM fixa o tempo todo.
 static uint8_t *otaSig = nullptr;
 static bool otaSigGiven;
+// weatherbox: a pilha extra do BearSSL (6,2 KB) é reservada no começo do envio, quando ainda há memória
+// inteira; no fim, depois de horas de fragmentação mais os buffers do envio, ela podia não caber
+static bool otaThunk = false;
 static void otaSigFree() {
   free(otaSig);
   otaSig = nullptr;
   otaSigGiven = false;
+  if (otaThunk) {
+    stack_thunk_del_ref();
+    otaThunk = false;
+  }
+  free(otaDict);  // envio interrompido antes da conferência
+  otaDict = nullptr;
 }
 
 static void otaSigBegin() {
@@ -3252,6 +3264,10 @@ static void otaSigBegin() {
   if (!otaSig) return;
   memcpy(otaSig, buf, 256);
   otaSigGiven = true;
+  if (ESP.getMaxFreeBlockSize() >= 7500) {  // add_ref aborta se não couber: só pede com folga
+    stack_thunk_add_ref();
+    otaThunk = true;
+  }
 }
 
 static bool otaSigOk() {
@@ -3260,7 +3276,7 @@ static bool otaSigOk() {
     ota.err = F("firmware sem assinatura (use o arquivo do site ou o modo de recuperacao)");
     return false;
   }
-  if (ESP.getMaxFreeBlockSize() < 7500) {  // a conta usa uma pilha extra de 6,2 KB
+  if (!otaThunk && ESP.getMaxFreeBlockSize() < 7500) {  // a conta usa uma pilha extra de 6,2 KB
     ota.err = F("sem memoria para conferir a assinatura");
     return false;
   }
@@ -3273,6 +3289,10 @@ static bool otaSigOk() {
   bool ok = thunk_br_rsa_i15_pkcs1_vrfy(otaSig, 256, BR_HASH_OID_SHA256, sizeof got, &key, got) &&
             !memcmp(got, want, sizeof got);
   stack_thunk_del_ref();
+  if (otaThunk) {  // weatherbox: devolve já a pilha reservada: a conferência do .gz que vem depois precisa da memória
+    stack_thunk_del_ref();
+    otaThunk = false;
+  }
   if (!ok) ota.err = F("assinatura invalida");
   return ok;
 }
@@ -3311,6 +3331,7 @@ void setupUpdate() {
       if (!authOk() || !ota.authOk) return askLogin();
       if (!ota.err.length() && !ota.finished) ota.err = F("envio incompleto");
       if (ota.err.length()) {
+        if (!inAlbum) packResume();  // não atualizou: o mostrador volta
         server.send(400, "text/plain", "Update error: " + ota.err);
         return;
       }
@@ -3321,6 +3342,7 @@ void setupUpdate() {
       HTTPUpload &up = server.upload();
       if (up.status == UPLOAD_FILE_START) {
         ota = {0, 0, 0, 0xFFFFFFFF, {0}, String(), authOk(), false, false, false};
+        packHold();  // weatherbox: libera a RAM do mostrador: a conferência da assinatura precisa de ~17 KB contíguos
         otaSigBegin();
         if (!ota.authOk) ota.err = F("senha");
         else if (inAlbum) stopAlbum();  // libera RAM e o LittleFS durante a gravação
@@ -3328,6 +3350,7 @@ void setupUpdate() {
         if (!ota.begun) {  // primeiro pedaço: .gz vai para o fim da área (tamanho do envio); .bin, para o espaço livre
           ota.begun = true;
           ota.gz = up.currentSize > 1 && up.buf[0] == 0x1F && up.buf[1] == 0x8B;
+          if (ota.gz && !otaDict && ESP.getMaxFreeBlockSize() >= 8192 + 1024) otaDict = (uint8_t *)malloc(8192);  // weatherbox
           uint32_t size = ota.gz ? server.header("Content-Length").toInt() : (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
           if (!size || !Update.begin(size, U_FLASH)) ota.err = size ? Update.getErrorString() : String(F("tamanho desconhecido"));
         }
