@@ -94,6 +94,9 @@ struct{bool exists(const String&){return true;}void mkdir(const char*){}File ope
 bool isJpg(String s){s.toLowerCase();return s.endsWith(".jpg")||s.endsWith(".jpeg");}
 bool isGif(String s){s.toLowerCase();return s.endsWith(".gif");}
 bool validGif(const String&){return true;}bool validJpg(const String&){return true;}void rebuildAlbum(){rebuilds++;}
+// weatherbox: low-memory animations (.wcr) and freeing the face pack while images are checked
+bool isWcr(String s){s.toLowerCase();return s.endsWith(".wcr");}bool validWcr(const String&){return true;}
+String packHeld;bool inAlbum=false;void packHold(){}void packResume(){}
 const char*tr(const char*a,const char*,const char*){return a;}
 File uploadFile,packUpload;String uploadPath,uploadError,packUploadError;
 UploadGate photoGate,packGate;bool packFaceReady=false;
