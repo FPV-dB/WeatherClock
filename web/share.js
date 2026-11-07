@@ -15,7 +15,7 @@ const plant = n => CARD_SPR[['p_semente', 0, 'p_flor', 'p_flor', 'p_verde', 'p_v
 const WDN=[['DOM','SEG','TER','QUA','QUI','SEX','SAB'],['SUN','MON','TUE','WED','THU','FRI','SAT'],['DOM','LUN','MAR','MIE','JUE','VIE','SAB']];
 const MON=[['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'],['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC']];
 const MINI=['...gGg...','.rRRgRRr.','rRhRRRRRr','rRRRRRRRr','rRRRRRRRr','.rRRRRRr.','..rrrrr..'];
-// o: {spr, SPR, t, LG, today, goal, streak, days}; devolve o canvas 1080x1350
+// o: {spr, SPR, t, LG, today, goal, streak, days}; returns the 1080x1350 canvas
 window.shareCard = function (o) {
  const {spr, SPR, t, LG, today, days} = o, G = o.goal, met = today >= G, sk = o.streak || 0, j = {days};
  const SPRP = n => n == 1 ? SPR.p_broto : plant(n);

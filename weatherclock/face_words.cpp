@@ -3,7 +3,7 @@
 #include "ui_kit.h"
 #include "assets.h"
 
-// ---------- tema 7: PALAVRAS ----------
+// ---------- theme 7: WORDS ----------
 // The time in words ("SAO DUAS E MEIA DA TARDE"), rounded to 5 minutes.
 // In English ("IT'S HALF PAST TWO IN THE AFTERNOON") and Spanish ("SON LAS DOS Y MEDIA DE LA TARDE") depending on uiLang.
 // Accents: '\x01' = Ê, '\x02' = Ã, '\x03' = É, '\x04' = Ñ (the built-in font is ASCII only; the mark is drawn).
@@ -39,14 +39,14 @@ static void wordText(int x, int y, uint8_t sz, uint16_t c, PGM_P str, uint8_t le
     char ch = pgm_read_byte(str + i), base = ch == '\x01' || ch == '\x03' ? 'E' : ch == '\x02' ? 'A' : ch == '\x04' ? 'N' : ch;
     G->drawChar(x, y, base, c, c, sz);
     float u = sz;
-    if (ch == '\x01') {  // circunflexo
+    if (ch == '\x01') {  // circumflex
       thickLine(x + 0.8f * u, y - 2, x + 2.5f * u, y - 2 - 1.6f * u, 2, c);
       thickLine(x + 2.5f * u, y - 2 - 1.6f * u, x + 4.2f * u, y - 2, 2, c);
-    } else if (ch == '\x02' || ch == '\x04') {  // til
+    } else if (ch == '\x02' || ch == '\x04') {  // tilde
       thickLine(x + 0.5f * u, y - 3, x + 1.6f * u, y - 2 - 1.5f * u, 2, c);
       thickLine(x + 1.6f * u, y - 2 - 1.5f * u, x + 3.2f * u, y - 3, 2, c);
       thickLine(x + 3.2f * u, y - 3, x + 4.4f * u, y - 2 - 1.5f * u, 2, c);
-    } else if (ch == '\x03') {  // agudo
+    } else if (ch == '\x03') {  // acute
       thickLine(x + 2.0f * u, y - 2, x + 3.4f * u, y - 2 - 1.8f * u, 2, c);
     }
   }

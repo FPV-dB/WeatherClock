@@ -67,7 +67,7 @@ static void streaks(const UiState &s) {
   const int n = s.wx.wind < 5 ? 8 : 16;
   const float span = 2.0f * (RING - 6);
   for (int i = 0; i < n; i++) {
-    const float lane = ((i * 37) % 23 - 11) * 5.6f;                       // afastamento lateral
+    const float lane = ((i * 37) % 23 - 11) * 5.6f;                       // sideways offset
     const float phase = (i * 0.61803f - (int)(i * 0.61803f)) * span;       // spread along the length
     const float along = fmodf(phase + s.ms / 1000.0f * speed * (0.75f + (i % 4) * 0.12f), span) - span / 2;
     const float x0 = CX - dy * lane + dx * along, y0 = CY + dx * lane + dy * along;

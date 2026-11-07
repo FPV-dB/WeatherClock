@@ -426,7 +426,8 @@ static int testSpriteLimits() {
 }
 
 int main() {
-  if (const char *l = getenv("SIM_LANG")) uiSetLang(atoi(l));  // 1 = English, 2 = Spanish (the official previews are in Portuguese)
+  uiSetLang(1);  // weatherbox: the official previews are in English
+  if (const char *l = getenv("SIM_LANG")) uiSetLang(atoi(l));  // 0 = Portuguese, 1 = English, 2 = Spanish
   // ---- clock: themes ----
   UiState s = base(14, 37, 25);
   s.theme = THEME_MATRIX;              shot("01_matriz", s, false);
@@ -533,7 +534,7 @@ int main() {
 
   assetSheet();
 
-  // ---- redesenho incremental ----
+  // ---- incremental redraw ----
   int fails = 0;
   for (int t = 0; t < THEME_COUNT; t++) {
     UiState st = base(14, 58, 50);

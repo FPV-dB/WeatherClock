@@ -3,7 +3,7 @@
 #include "ui_kit.h"
 #include "assets.h"
 
-// ---------- tema 0: MATRIZ ----------
+// ---------- theme 0: MATRIX ----------
 static const TimeLayout TL_CLOCK = {{20, 66, 136, 182}, 30, 8, 116};
 
 static void weatherCard(const UiState &s, int x, int y) {

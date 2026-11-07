@@ -8,10 +8,10 @@
 static const int GROUND_Y = 196;
 struct Rgb { uint8_t r, g, b; };
 static void skyColors(int hour, Rgb &top, Rgb &bot) {
-  if (hour >= 6 && hour < 8) { top = {59, 74, 140}; bot = {244, 162, 97}; }        // amanhecer
+  if (hour >= 6 && hour < 8) { top = {59, 74, 140}; bot = {244, 162, 97}; }        // dawn
   else if (hour >= 8 && hour < 17) { top = {46, 134, 222}; bot = {154, 208, 245}; } // day
-  else if (hour >= 17 && hour < 19) { top = {91, 58, 140}; bot = {242, 120, 92}; }  // entardecer
-  else { top = {7, 11, 31}; bot = {27, 37, 80}; }                                   // noite
+  else if (hour >= 17 && hour < 19) { top = {91, 58, 140}; bot = {242, 120, 92}; }  // dusk
+  else { top = {7, 11, 31}; bot = {27, 37, 80}; }                                   // night
 }
 static bool isNight(int hour) { return hour >= 19 || hour < 6; }
 static uint16_t skyAt(int y, int hour) {
@@ -72,7 +72,7 @@ static void tomatoScene(const UiState &s) {
   G->fillRect(0, GROUND_Y, 240, 6, uiRgb(76, 175, 80));
   G->fillRect(0, GROUND_Y + 6, 240, 4, uiRgb(46, 125, 50));
   G->fillRect(0, GROUND_Y + 10, 240, 240 - GROUND_Y - 10, uiRgb(92, 60, 42));
-  for (int i = 0; i < 12; i++) G->fillRect((i * 53 + 21) % 230, GROUND_Y - 4, 2, 4, uiRgb(76, 175, 80));  // tufos
+  for (int i = 0; i < 12; i++) G->fillRect((i * 53 + 21) % 230, GROUND_Y - 4, 2, 4, uiRgb(76, 175, 80));  // tufts
   // weatherbox: no tomato; the temperature is big in the middle of the scene, with a shadow
   if (show) {
     const int ty = GROUND_Y - 58;

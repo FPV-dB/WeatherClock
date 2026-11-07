@@ -3,9 +3,9 @@
   "author": "davicorrea0",
   "id": "brutal",
   "name": "Brutal",
-  "desc": "Neo-brutalismo: cores chapadas, bordas pretas e sombras duras",
-  "name_en": "Brutal",
-  "desc_en": "Neo-brutalism: flat colors, black borders and hard shadows",
+  "desc": "Neo-brutalism: flat colors, black borders and hard shadows",
+  "name_pt": "Brutal",
+  "desc_pt": "Neo-brutalismo: cores chapadas, bordas pretas e sombras duras",
   "bg": "#f4e04d",
   "layers": [
     {

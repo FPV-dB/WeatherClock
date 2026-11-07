@@ -19,14 +19,26 @@ enum : uint8_t { A_LEFT, A_CENTER, A_RIGHT };
 enum : uint8_t { W_ALWAYS, W_DAY, W_NIGHT, W_RAIN, W_DRY, W_WX, W_NOWX, W_GOAL, W_NOGOAL, W_STREAK,
                  // weatherbox: one condition per kind of sky, for animated weather icons
                  W_SUNNY, W_MOON, W_PARTLY, W_PARTLYNIGHT, W_CLOUDY, W_FOG, W_DRIZZLE, W_RAINY, W_SNOWY, W_STORM, W_WHENS };
-enum : uint8_t { V_SEC, V_MIN, V_HOUR, V_FOCOS, V_HUM, V_VARS };
+enum : uint8_t { V_SEC, V_MIN, V_HOUR, V_FOCUS, V_HUM, V_VARS };
 static const char TYPES[] PROGMEM = "rect\0circle\0line\0text\0sprite\0mascot\0weather\0bar\0hand\0image\0arc\0ticks\0plant";
 static const char FONTS[] PROGMEM = "pixel\0dm\0geo\0dseg\0bebas\0outfit\0righteous";
 static const char ALIGNS[] PROGMEM = "left\0center\0right";
 static const char WHENS[] PROGMEM = "always\0day\0night\0rain\0dry\0weather\0noweather\0goal\0nogoal\0streak"
                                     "\0sunny\0moon\0partly\0partlynight\0cloudy\0fog\0drizzle\0rainy\0snowy\0storm";
-static const char VARS[] PROGMEM = "sec\0min\0hour\0focos\0hum";
-static const char MOODS[] PROGMEM = "feliz\0dormindo\0focado\0relax\0comemorando\0guarda-chuva\0cachecol\0oculos\0auto";
+static const char VARS[] PROGMEM = "sec\0min\0hour\0focus\0hum";
+static const char MOODS[] PROGMEM = "happy\0sleeping\0focused\0relaxed\0cheering\0umbrella\0scarf\0glasses\0auto";
+// Packs made for the original firmware use Portuguese words: still accepted.
+static const char LEGACY[] PROGMEM = "focos\0focus\0feliz\0happy\0dormindo\0sleeping\0focado\0focused\0relax\0relaxed\0"
+                                    "comemorando\0cheering\0guarda-chuva\0umbrella\0cachecol\0scarf\0oculos\0glasses\0";
+static const char *legacyWord(const char *s, char *buf, size_t n) {
+  if (!s) return s;
+  for (PGM_P p = LEGACY; pgm_read_byte(p); p += strlen_P(p) + 1) {
+    PGM_P en = p + strlen_P(p) + 1;
+    if (!strcmp_P(s, p)) { strncpy_P(buf, en, n - 1); buf[n - 1] = 0; return buf; }
+    p = en;
+  }
+  return s;
+}
 static const int32_t C_NONE = -1, C_ACCENT = -2;
 static const uint8_t MAX_LAYERS = 48, MAX_SPRITES = 12, MAX_FRAMES = 8;
 static const uint16_t MAX_SPR_BYTES = 6144;
@@ -71,7 +83,7 @@ void facePackUnload() {
   pkId[0] = pkName[0] = pkDesc[0] = pkAuthor[0] = 0;
 }
 
-// ---------- leitura ----------
+// ---------- reading ----------
 // `list`: names in flash, separated by \0 (see TYPES, FONTS...)
 static uint8_t pick(const char *s, PGM_P list, uint8_t n, uint8_t def) {
   if (!s) return def;
@@ -317,8 +329,9 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     L.font = pick(l["font"] | (const char *)nullptr, FONTS, F_FONTS, F_PIXEL);
     L.align = pick(l["align"] | (const char *)nullptr, ALIGNS, 3, A_LEFT);
     L.when = pick(l["when"] | (const char *)nullptr, WHENS, W_WHENS, W_ALWAYS);
-    L.var = L.type == L_MASCOT ? pick(l["mood"] | (const char *)nullptr, MOODS, 9, 8)
-                               : pick(l["value"] | (const char *)nullptr, VARS, V_VARS, V_SEC);
+    char word[12];
+    L.var = L.type == L_MASCOT ? pick(legacyWord(l["mood"] | (const char *)nullptr, word, sizeof word), MOODS, 9, 8)
+                               : pick(legacyWord(l["value"] | (const char *)nullptr, word, sizeof word), VARS, V_VARS, V_SEC);
     if (L.font == 255 || L.align == 255 || L.when == 255 || L.var == 255) {
       snprintf_P(err, errLen, PSTR("layer %d: invalid font/align/when/value/mood"), nLay + 1);
       facePackUnload();
@@ -426,8 +439,8 @@ static void variable(const char *k, const UiState &s, char *v, size_t n) {
   else if (!strcmp_P(k, PSTR("RAIN"))) snprintf_P(v, n, PSTR("%s"), wx ? rainSoonText(s.wx.rainIn) : "");
   else if (!strcmp_P(k, PSTR("WX"))) snprintf_P(v, n, PSTR("%s"), wx ? weatherText(s.wx.code) : "");
   else if (!strcmp_P(k, PSTR("CITY"))) snprintf_P(v, n, PSTR("%s"), s.city ? s.city : "");
-  else if (!strcmp_P(k, PSTR("FOCOS"))) snprintf_P(v, n, PSTR("%u"), s.today);
-  else if (!strcmp_P(k, PSTR("META"))) snprintf_P(v, n, PSTR("%u"), s.dailyGoal);
+  else if (!strcmp_P(k, PSTR("FOCUS")) || !strcmp_P(k, PSTR("FOCOS"))) snprintf_P(v, n, PSTR("%u"), s.today);
+  else if (!strcmp_P(k, PSTR("GOAL")) || !strcmp_P(k, PSTR("META"))) snprintf_P(v, n, PSTR("%u"), s.dailyGoal);
   else if (!strcmp_P(k, PSTR("STREAK"))) snprintf_P(v, n, PSTR("%u"), s.streak);
   else if (!strcmp_P(k, PSTR("BEST"))) snprintf_P(v, n, PSTR("%u"), s.best);
   else if (!strcmp_P(k, PSTR("IP"))) snprintf_P(v, n, PSTR("%s"), s.ip ? s.ip : "");
@@ -507,7 +520,7 @@ static int value(const Layer &L, const UiState &s, int &mx) {
   switch (L.var) {
     case V_MIN: mx = 60; return s.timeOk ? s.now.tm_min : 0;
     case V_HOUR: mx = 24; return s.timeOk ? s.now.tm_hour : 0;
-    case V_FOCOS: mx = s.dailyGoal ? s.dailyGoal : 1; return s.today;
+    case V_FOCUS: mx = s.dailyGoal ? s.dailyGoal : 1; return s.today;
     case V_HUM: mx = 100; return s.weatherOn && s.wx.ok ? s.wx.hum : 0;
   }
   mx = 60;
@@ -726,7 +739,7 @@ static void arcRing(int cx, int cy, int r, int th, float f, uint16_t c, int32_t 
       }
     }
   }
-  if (f > 0 && f < 1 && th > 3) {  // pontas redondas
+  if (f > 0 && f < 1 && th > 3) {  // round ends
     float rm = r - th / 2.0f;
     G->fillCircle(cx, cy - (int)rm, th / 2, c);
     G->fillCircle(cx + (int)(sinf(a) * rm), cy - (int)(cosf(a) * rm), th / 2, c);

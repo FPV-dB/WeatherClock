@@ -188,7 +188,7 @@ int main(){
   assert(rtcClockRestore(c,tk+(uint32_t)(3100000.0/5.75),q12)==T+3);       // ~3.1 s later
   assert(rtcClockRestore(c,tk-5,q12)==-1);                                 // counter went back (powered on again): invalid
   assert(rtcClockRestore(c,tk+(uint32_t)(601e6/5.75),q12)==-1);            // stopped for more than 10 min
-  RtcClock bad=c;bad.sec++;assert(rtcClockRestore(bad,tk,q12)==-1);       // corrompido
+  RtcClock bad=c;bad.sec++;assert(rtcClockRestore(bad,tk,q12)==-1);       // corrupt
   RtcClock zero={0,0,0,0};assert(rtcClockRestore(zero,0,q12)==-1&&rtcClockRestore(c,tk,0)==-1);
   RtcClock old=rtcClockMake(1000,tk);assert(rtcClockRestore(old,tk,q12)==-1);
  }
@@ -209,7 +209,7 @@ int main(){
   assert(h.onWeather(T+86400*3-300,T+86400*3+30,90000)==T+86400*3+30&&h.ok(T+86400*3+30,90000));
   TimeGuard k;assert(k.onSntp(T,1000,true)==T&&!k.ok(T,1000));         // no weather: two syncs
   assert(k.onSntp(T+60,61000,true)==T+60&&k.ok(T+60,61000));
-  assert(k.onSntp(T-86400,121000,true)==T+120&&k.undone==1);           // salto: desfeito
+  assert(k.onSntp(T-86400,121000,true)==T+120&&k.undone==1);           // jump: undone
   assert(k.onSntp(T-86400+60,181000,true)==T-86400+60);                // repeated 1 min later: confirmed (without weather, that's the limit)
   TimeGuard w;w.confirm(T,4000000000u);assert(w.ok(T+400000,(uint32_t)(4000000000ull+400000000ull)));  // millis() wrapping to zero
  }

@@ -13,7 +13,7 @@
 extern Adafruit_GFX *G;  // the screen (in the simulator, a framebuffer)
 static const float K_PI = 3.14159265f;
 
-// paleta comum
+// shared palette
 static const uint16_t BG     = uiRgb(0, 0, 0);
 static const uint16_t CARD   = uiRgb(22, 22, 26);
 static const uint16_t CARD2  = uiRgb(44, 44, 50);
@@ -28,7 +28,7 @@ static const uint16_t CLOUD  = uiRgb(214, 220, 230);
 static const uint16_t DCLOUD = uiRgb(120, 126, 138);
 static const uint16_t RAIN   = uiRgb(90, 170, 255);
 
-// ---------- idioma (uiSetLang) ----------
+// ---------- language (uiSetLang) ----------
 extern char WD[7][4];   // abbreviated weekday in the current language ("TER", "TUE", "MAR")
 extern char MO[12][4];  // abbreviated month ("OUT", "OCT", "OCT")
 
@@ -41,7 +41,7 @@ void degree(int x, int y, uint8_t sz, uint16_t c);
 // weatherbox: clears the box and writes the text off-screen, in a single send: changes without flicker.
 // align: 'l' left (tx = start), 'r' right (tx = end), 'c' centre (tx = middle)
 void uiTextBox(int x, int y, int w, int h, uint16_t bg, int tx, int ty, uint8_t sz, uint16_t c, const char *s, char align = 'l');                 // degree sign drawn by hand
-void tempText(int cx, int y, uint8_t sz, uint16_t c, float v);     // "23°" centralizado
+void tempText(int cx, int y, uint8_t sz, uint16_t c, float v);     // "23°" centred
 void tempDesc(int cy, uint8_t sz, uint16_t ct, uint16_t cd, float t, const char *desc);  // "23° Rain"
 
 // ---------- flicker-free redraw ----------
@@ -49,7 +49,7 @@ void tempDesc(int cy, uint8_t sz, uint16_t ct, uint16_t cd, float t, const char 
 // or with no memory for the strip, straight to the screen.
 void uiPaint(bool direct, int x, int y, int w, int h, void (*draw)(void *), void *ctx);
 
-// ---------- formas ----------
+// ---------- shapes ----------
 void thickLine(float x0, float y0, float x1, float y1, float w, uint16_t c);  // pontas redondas
 uint16_t mix(uint16_t a, uint16_t b, float f);                                  // f=0 -> a, f=1 -> b
 void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h);            // RGB565 block (fast)
@@ -82,26 +82,26 @@ uint16_t mix16(uint16_t a, uint16_t b, int n);  // n/16 of b over a
 void geoDigit(float x, float y, int d, float s, float w, uint16_t c);
 
 // ---------- time and date ----------
-int displayHour(const UiState &s);                       // respeita o formato 12 h
+int displayHour(const UiState &s);                       // honours the 12 h format
 void dateLabel(const UiState &s, char *out, size_t n);   // "TER 20 OUT"
 void statusBar(const UiState &s, const char *right, uint16_t bg);  // date on the left, text on the right
 
 // ---------- weather ----------
-void weatherIcon(int cx, int cy, float s, int code, bool day, uint16_t bg, uint32_t ms = 0);  // s=1 -> ~40 px; ms>0 anima
+void weatherIcon(int cx, int cy, float s, int code, bool day, uint16_t bg, uint32_t ms = 0);  // s=1 -> ~40 px; ms>0 animates
 const char *weatherText(int code);                                          // "Rain", "Cloudy"...
 const char *rainSoonText(uint8_t minutes);  // "rain 15 min" / "rain soon" (UiWeather::rainIn); "" if 0
 void cloudShape(int cx, int cy, float s, uint16_t c);
 void sunShape(int cx, int cy, float s);
 void moonShape(int cx, int cy, float s, uint16_t bg);
 
-// ---------- mascote (sprites de assets/, ver assets.h) ----------
+// ---------- mascot (sprites from assets/, see assets.h) ----------
 enum Face : uint8_t { FACE_HAPPY, FACE_SLEEP, FACE_FOCUS, FACE_RELAX, FACE_CHEER, FACE_UMBRELLA, FACE_SCARF, FACE_SHADES };
-void mascot(int x, int y, int sc, uint8_t face, int32_t bg = UI_TRANSPARENT);  // tomate 16x16 x sc
+void mascot(int x, int y, int sc, uint8_t face, int32_t bg = UI_TRANSPARENT);  // 16x16 tomato x sc
 // Tomato plant by streak: seed, sprout, flower, green tomato, ripe and golden (7+ days)
 const UiSprite *plantSprite(uint16_t streak);
 void streakBadge(int x, int y, uint16_t streak, uint16_t c);  // flame + number; nothing if streak == 0
 
-// ---------- redesenho incremental ----------
+// ---------- incremental redraw ----------
 // Each area remembers what it showed and only repaints when it changes. Everything resets on a screen change.
 struct Cache { char s[40]; };
 bool changed(Cache &c, const char *now);  // true (and stores it) if the text changed

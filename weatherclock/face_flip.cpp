@@ -3,7 +3,7 @@
 #include "ui_kit.h"
 #include "assets.h"
 
-// ---------- tema 5: FLIP ----------
+// ---------- theme 5: FLIP ----------
 // Flip clock with the Bebas Neue font and a real turnover animation:
 // the top flap (old digit) falls towards the hinge, shrinking in perspective and
 // darkening, revealing the new digit; then the bottom flap (new digit) comes down covering
@@ -89,7 +89,7 @@ static const int16_t FLIP_PT[588][2] PROGMEM = {
   {196, 720}, {197, 361}, {229, 353}, {248, 330}, {254, 292}, {254, 292}, {254, 168}, {248, 130},
   {229, 108}, {197, 100}, {197, 100}, {165, 108}, {146, 130}, {140, 168}, {140, 168}, {140, 292},
   {146, 330}, {165, 353}, {197, 361}, {197, 361},
-  {50, 216}, {130, 216}, {130, 296}, {50, 296}, {50, 424}, {130, 424}, {130, 504}, {50, 504},  // ':' (dois quadrados)
+  {50, 216}, {130, 216}, {130, 296}, {50, 296}, {50, 424}, {130, 424}, {130, 504}, {50, 504},  // ':' (two squares)
 };
 static const uint16_t FLIP_CEND[18] PROGMEM = {39, 58, 72, 138, 225, 237, 242, 301, 365, 384, 392, 455, 474, 497, 561, 580, 584, 588};  // end (exclusive) of each contour
 static const uint8_t FLIP_DIG[11] = {0, 2, 3, 4, 5, 7, 8, 10, 11, 14, 16};  // first contour of each digit
@@ -159,7 +159,7 @@ static void flSubline(int d, int ox16, int sy, int sx16) {
     }
   const int c16 = FL_BW * 8;  // buffer centre in 1/16 px
   for (int k = 0; k + 1 < n; k += 2) {
-    int a = ox16 + xs[k] / 8, b = ox16 + xs[k + 1] / 8;  // fonte/8 = px
+    int a = ox16 + xs[k] / 8, b = ox16 + xs[k + 1] / 8;  // font/8 = px
     flSpan(c16 + (a - c16) * sx16 / 16, c16 + (b - c16) * sx16 / 16);
   }
 }
@@ -215,7 +215,7 @@ static void flipTopHalf(int cx, int oldV, int newV, float th) {
 // Bottom half for angle th (90 = edge-on, 180 = lying flat, covering).
 // The flap shows the bottom half of the new number; under it the old one still shows.
 static void flipBottomHalf(int cx, int oldV, int newV, float th) {
-  float phi = 180 - th;  // 0 = deitada
+  float phi = 180 - th;  // 0 = flat
   float a = phi * K_PI / 180, ca = cosf(a), sa = sinf(a);
   float dyMax = FL_HALF * ca * FL_D / (FL_D - FL_HALF * sa);
   int shadow = (int)((90 - phi) / 90 * 4);  // the arriving flap casts a shadow on the old number
@@ -250,7 +250,7 @@ static void flipStatic(int cx, int v) {
 // (angle grows with t²) and bounces lightly on impact. Driven by the clock, not by a number of
 // frames: lasts ~0.37 s with however many frames the device manages to draw.
 static void flipAnimate(int n, const int *cx, const int *oldV, const int *newV) {
-  const float T_FALL = 280, T_BOUNCE = 90, BOUNCE = 10;  // ms, ms, graus
+  const float T_FALL = 280, T_BOUNCE = 90, BOUNCE = 10;  // ms, ms, degrees
   uint32_t t0 = uiMillis ? uiMillis() : 0;
   float t = 0, prev = 0;
   for (;;) {

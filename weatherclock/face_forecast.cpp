@@ -4,7 +4,7 @@
 #include "ui_kit.h"
 
 static const int ROW_Y = 46, ROW_H = 38;     // first row and the height of each day
-static const int BAR_X = 156, BAR_W = 44;    // barra de temperatura
+static const int BAR_X = 156, BAR_W = 44;    // temperature bar
 
 // temperature colour: blue when cold, green mild, yellow warm, red hot
 static uint16_t tempColor(int t) {

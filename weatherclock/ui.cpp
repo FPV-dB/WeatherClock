@@ -18,7 +18,7 @@ Adafruit_GFX *G = nullptr;
 #include <string.h>
 
 
-// ---------- idioma ----------
+// ---------- language ----------
 static const char WD_L[3][7][4] PROGMEM = {{"DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"},
                                            {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"},
                                            {"DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"}};
@@ -27,11 +27,11 @@ static const char MO_L[3][12][4] PROGMEM = {{"JAN", "FEV", "MAR", "ABR", "MAI", 
                                             {"ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"}};
 static uint16_t rowBuf[240] __attribute__((aligned(4)));
 uint16_t *uiRowBuf() { return rowBuf; }
-uint8_t uiLang = 0;
-char WD[7][4] = {"DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"};  // Portuguese until uiSetLang
-char MO[12][4] = {"JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"};
+uint8_t uiLang = 1;
+char WD[7][4] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};  // English until uiSetLang
+char MO[12][4] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
 void uiSetLang(uint8_t lang) {
-  uiLang = lang < 3 ? lang : 0;
+  uiLang = lang < 3 ? lang : 1;
   memcpy_P(WD, WD_L[uiLang], sizeof WD);
   memcpy_P(MO, MO_L[uiLang], sizeof MO);
   uiInvalidate();
@@ -159,7 +159,7 @@ static const uint8_t DM[11][7] PROGMEM = {
     {0x02, 0x06, 0x0A, 0x12, 0x1F, 0x02, 0x02}, {0x1F, 0x10, 0x1E, 0x01, 0x01, 0x11, 0x0E},
     {0x06, 0x08, 0x10, 0x1E, 0x11, 0x11, 0x0E}, {0x1F, 0x01, 0x02, 0x04, 0x08, 0x08, 0x08},
     {0x0E, 0x11, 0x11, 0x0E, 0x11, 0x11, 0x0E}, {0x0E, 0x11, 0x11, 0x0F, 0x01, 0x02, 0x0C},
-    {0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00},  // 10 = sinal de menos
+    {0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00},  // 10 = minus sign
 };
 
 // p = cell size; d < 0 = blank digit. Lit cells are filled squares
@@ -374,7 +374,7 @@ void (*uiBlit)(int16_t, int16_t, uint16_t *, int16_t, int16_t) = nullptr;
 
 // ---------- vertical hardware scrolling (see ui.h) ----------
 void (*uiScrollHw)(int16_t, int16_t) = nullptr;
-static int16_t scrollRows = 0;  // 0 = parada
+static int16_t scrollRows = 0;  // 0 = still
 bool uiScrollBegin(int rows) {
   if (!uiScrollHw || rows <= 240 || rows > UI_PANEL_ROWS) return false;
   scrollRows = rows;
@@ -394,7 +394,7 @@ void uiScrollEnd() {
 }
 bool uiScrollActive() { return scrollRows != 0; }
 
-// ---------- recorte (clip) ----------
+// ---------- clipping ----------
 // Face packs redraw only the area that changed: G becomes this wrapper, which
 // discards whatever falls outside the rectangle and passes the rest on to the real screen.
 UiClip uiClip = {false, 0, 0, 0, 0};
@@ -749,7 +749,7 @@ void uiRenderPomodoro(const UiState &s) {
   if (s.celebrate) key = 64 + uiSpriteFrame(&SPR_TOMATO_DONE, s.ms);
   else key = (!s.running ? FACE_SLEEP : s.phase == PH_WORK ? FACE_FOCUS : FACE_RELAX) * 8 + (s.phase == PH_WORK ? act : 7);
   if (key != lastFace) {
-    if ((key >= 64) != (lastFace >= 64)) G->fillRect(84, 136, 72, 44, BG);  // troca de layout
+    if ((key >= 64) != (lastFace >= 64)) G->fillRect(84, 136, 72, 44, BG);  // layout change
     if (key >= 64) uiSprite(&SPR_TOMATO_DONE, 104, 138, 2, key - 64, BG);    // bg repaints the previous frame
     else {
       mascot(86, 144, 2, key / 8, BG);

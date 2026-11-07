@@ -1,5 +1,5 @@
 // weatherbox: own signing key (public only). Private key kept outside the repo.
-// id e103e5ccbc2b2a16
+// key id e103e5ccbc2b2a16
 #pragma once
 #include <pgmspace.h>
 static const uint8_t OTA_KEY_N[256] PROGMEM = {

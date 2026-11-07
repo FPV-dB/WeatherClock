@@ -3,7 +3,7 @@
 #include "ui_kit.h"
 #include "assets.h"
 
-// ---------- tema 4: NEON ----------
+// ---------- theme 4: NEON ----------
 // Neon tubes: wide dark halo + coloured tube + bright core. Pink hours, cyan minutes.
 static const uint16_t NEON_A = uiRgb(255, 64, 190), NEON_B = uiRgb(40, 220, 255);
 static const int NEON_X[4] = {6, 60, 134, 188}, NEON_Y = 46;

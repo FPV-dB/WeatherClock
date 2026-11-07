@@ -347,7 +347,8 @@ const LANGS=['pt','en','es'],I18N={};let BUILTIN=[];  // Portuguese/Spanish: web
 let LG=1;try{if(localStorage.lang!=null)LG=+localStorage.lang}catch(e){}
 // t('text {0}',a,b): translation of the English text, with {0}, {1}... substituted
 const t=(s,...a)=>(LG!=1&&I18N[s]?I18N[s][LG?1:0]:s).replace(/\{(\d)\}/g,(m,i)=>a[i]);
-const tName=e=>LG==1?e.name_en||e.name:LG==2?e.name_es||e.name:e.name,tDesc=e=>LG==1?e.desc_en||e.desc:LG==2?e.desc_es||e.desc:e.desc;
+// packs: English in name/desc (name_pt/name_es translations); older ones had Portuguese in name and English in name_en
+const tName=e=>LG==1?e.name_en||e.name:LG==2?e.name_es||e.name:e.name_pt||e.name,tDesc=e=>LG==1?e.desc_en||e.desc:LG==2?e.desc_es||e.desc:e.desc_pt||e.desc;
 // fixed page texts: keeps the original (English) and swaps in the language's
 function i18n(){document.documentElement.lang=LANGS[LG];document.documentElement.style.setProperty('--inuse',JSON.stringify(' · '+t('in use')));  // CSS text (::after)
  const tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);for(let n;n=tw.nextNode();){if(n._pt==null){const k=n.nodeValue.trim();if(!I18N[k])continue;n._pt=n.nodeValue}const k=n._pt.trim();n.nodeValue=n._pt.replace(k,t(k))}
@@ -490,7 +491,7 @@ function spr(g,S,x,y,sc){const p={};S.p.split(' ').forEach(e=>p[e[0]]='#'+e.slic
 Object.assign(SPR,{"ic_alvo":{"p":"o5a1a14 re8402f wf4f4f5","r":["....oooo....","..oorrrroo..",".orrwwwwrro.",".orwwrrwwro.","orwwrrrrwwro","orwrrwwrrwro","orwrrwwrrwro","orwwrrrrwwro",".orwwrrwwro.",".orrwwwwrro.","..oorrrroo..","....oooo...."]},"ic_diamante":{"p":"o1a3550 b8fd8ff B3a8fd8 wffffff","r":["............","..oooooooo..",".owbbbbbBBo.","owbbbbbbBBBo","oooooooooooo",".obbbbbbBBo.","..obbbbbBo..","...obbbBo...","....obBo....",".....oo.....","............","............"]},"ic_cesta":{"p":"g2e8034 Re8402f wffffff o3d2414 Yc8914a y8a5a2b","r":["....g...g...","..RRR.RRRR..",".RRwRRRwRRR.",".RRRRRRRRRR.","oooooooooooo","oYyYyYyYyYyo","oyYyYyYyYyYo",".oYyYyYyYyo.",".oyYyYyYyYo.","..oYyYyYyo..","..oooooooo..","............"]},"ic_celeiro":{"p":"o3d1510 Rc8342a wf4f4f5","r":[".....oo.....","....oRRo....","...oRRRRo...","..oRRRRRRo..",".oRRRwwRRRo.","oRRRRwwRRRRo",".oRRRRRRRRo.",".oRwwwwwwRo.",".oRwRwwRwRo.",".oRwwRRwwRo.",".oRwRwwRwRo.",".oooooooooo."]},"ic_raio":{"p":"o7a4a00 Yffd23f","r":["......oooo..",".....oYYYo..","....oYYYo...","...oYYYo....","..oYYYYooo..",".oYYYYYYYo..",".oooYYYYo...","...oYYYo....","..oYYYo.....",".oYYo.......",".oYo........",".oo........."]},"ic_calendario":{"p":"o6a6a74 Re8402f wf4f4f5 k2a2a2f G3ecf7a","r":["............",".oooooooooo.",".oRRRRRRRRo.",".oRwRRRRwRo.",".oooooooooo.",".owwwwwwwwo.",".owkwkwkwwo.",".owwwwwwwwo.",".owkwkwGGwo.",".owwwwwGGwo.",".oooooooooo.","............"]}});
 // golden tomato: the happy tomato with the palette swapped
 SPR.gold={p:SPR.t_feliz.p.split(' ').map(e=>({R:'Rffcc33',r:'rc48a12',h:'hfff2a8',p:'pffb347'})[e[0]]||e).join(' '),r:SPR.t_feliz.r};
-// sprite centralizado num canvas 16x16 (o CSS amplia)
+// sprite centred on a 16x16 canvas (CSS enlarges it)
 function sprCanvas(S){const c=document.createElement('canvas');c.width=c.height=16;spr(c.getContext('2d'),S,(16-S.r[0].length)>>1,(16-S.r.length)>>1,1);return c}
 document.documentElement.style.setProperty('--fire','url('+(()=>{const c=document.createElement('canvas');c.width=8;c.height=11;spr(c.getContext('2d'),SPR.chama,0,0,1);return c.toDataURL()})()+')');
 function loadStats(){return fetch('/api/stats').then(r=>r.json()).then(j=>{STATS=j;drawGame()}).catch(()=>{})}
@@ -610,7 +611,7 @@ function diagShow(s){const d=s.diag,c=$('diag'),q=d.rssi>=-60?'good':d.rssi>=-72
   r.append(el('b',null,t('Last crash')),el('span',null,'#'+k.n+' · '+t(RST[k.r]||'?',k.x,'0x'+k.epc)+' · v'+k.ver+(k.up?' · '+t('after {0} up',dur(k.up)):'')+' '),b);c.appendChild(r)}}
 // data-neg: ticked switch = 0. "Invert colors" is relative to normal (the IPS panel already starts with INVON)
 document.querySelectorAll('[data-k]').forEach(e=>{e.onchange=()=>{const v=e.type=='checkbox'?(e.checked!=e.hasAttribute('data-neg')?1:0):e.value;save({[e.dataset.k]:v}).then(()=>{toast(t('Saved'));if(e.dataset.k=='beta')checkUpdate()})}});
-// ---------- estado ----------
+// ---------- state ----------
 function beep(){try{actx=actx||new AudioContext();[0,.25,.5].forEach(d=>{const o=actx.createOscillator(),g=actx.createGain();
  o.frequency.value=880;g.gain.setValueAtTime(.2,actx.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d+.2);
  o.connect(g).connect(actx.destination);o.start(actx.currentTime+d);o.stop(actx.currentTime+d+.2)})}catch(e){}}
@@ -688,7 +689,7 @@ let qt;$('q').oninput=()=>{clearTimeout(qt);const q=$('q').value.trim();if(q.len
     tzLoad().then(m=>m[p.timezone]).catch(()=>null).then(tz=>save(Object.assign({lat:p.latitude,lon:p.longitude,city:name,won:1},tz?{tz}:{}))
      .then(()=>toast(t('City: ')+name+(tz?' · '+p.timezone:''))));r.innerHTML='';$('q').value=''};r.appendChild(b)});
   if(!r.children.length)r.textContent=t('No city found')}).catch(()=>toast(t('No internet in the browser'))),400)};
-// ---------- fotos ----------
+// ---------- photos ----------
 // ---------- storage: everything that takes up file storage (/api/storage) ----------
 // Groups by type; "Other" is what the clock doesn't use (on clocks that came from the original firmware, its files).
 // The clock marks with k what it needs to work (no delete button).

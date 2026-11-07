@@ -1,9 +1,9 @@
-// SmallTV Ultra (GeekMagic, ESP8266) - firmware alternativo
+// SmallTV Ultra (GeekMagic, ESP8266) - alternative firmware
 // Weather Clock: clock faces + weather + photo/GIF album + night brightness (base: SmallTV Pomodoro)
 //
-// Hardware (fonte: devices.esphome.io/devices/geekmagic-ultra):
+// Hardware (source: devices.esphome.io/devices/geekmagic-ultra):
 //   ST7789 240x240 screen, hardware SPI CLK=GPIO14 MOSI=GPIO13, no CS (SPI mode 3)
-//   DC=GPIO0  RST=GPIO2  Backlight=GPIO5 (PWM invertido)
+//   DC=GPIO0  RST=GPIO2  Backlight=GPIO5 (inverted PWM)
 // Flash: 4M2M layout (program up to ~1 MB; LittleFS at 0x200000-0x3FA000). Up to 1.23 the layout was 4M3M, like
 // the original firmware (LittleFS at 0x100000-0x3FA000, constants from the V9.0.50 binary, offset 0x14d00), which
 // left only ~1 MB for the program and the update copy. EEPROM (0x3FB000), RF cal and SDK data sit
@@ -129,11 +129,11 @@ struct Settings {
   // v4: panel tweaks (they vary from unit to unit) and the daily goal
   uint8_t bgr;          // 0 = RGB (the Ultra's default, same as smalltv-mod), 1 = BGR
   uint8_t invert;       // 1 = INVON (the IPS panel's default)
-  uint8_t flip;         // 1 = girar 180°
+  uint8_t flip;         // 1 = rotate 180°
   uint8_t dailyGoal;    // focus goal per day
   uint8_t activity;     // focus activity (UiActivity); new field at the end: old units read garbage and fall back to the default
   char facePkg[24];     // active face pack (/faces/<id>.json) when theme == THEME_PACK; same: garbage becomes ""
-  uint8_t lang;         // screen and panel language: 0 Portuguese, 1 English, 2 Spanish; same: garbage becomes 0
+  uint8_t lang;         // screen and panel language: 0 Portuguese, 1 English, 2 Spanish; same: garbage becomes 1 (English)
   uint8_t nightSun;     // night brightness from sunset to sunrise (Open-Meteo) instead of nightStart/nightEnd
   uint8_t rotMin;       // face rotation: minutes between changes (0 = off); list in /rotation.txt
   uint8_t alexa;        // 1 = shows up to Alexa as the "Pomodoro" light
@@ -258,7 +258,7 @@ void loadSettings() {
   if (cfg.theme >= THEME_COUNT && !(cfg.theme == THEME_PACK && cfg.facePkg[0])) cfg.theme = THEME_MATRIX;
   if (!cfg.dailyGoal) cfg.dailyGoal = 8;
   if (cfg.activity >= ACT_COUNT) cfg.activity = ACT_READ;
-  if (cfg.lang > 2) cfg.lang = 0;
+  if (cfg.lang > 2) cfg.lang = 1;
   if (cfg.nightSun > 1) cfg.nightSun = 0;
   if (cfg.rotMin > 240) cfg.rotMin = 0;
   if (cfg.alexa > 1) cfg.alexa = 1;  // memory of old units (0xFF): on
@@ -659,7 +659,7 @@ void mdnsLoop() {
 bool alexaUp = false;     // ouvindo a descoberta
 uint8_t alexaBri = 255;   // last requested brightness (1-255)
 uint32_t alexaSeen = 0;   // millis() of an Echo's last request (0 = none since power-on)
-IPAddress alexaIp;        // de onde veio
+IPAddress alexaIp;        // where it came from
 // last command for the panel: 0 none, 1 started/resumed focus, 2 paused, 3 focus of N min,
 // 4 ended, 5 short break, 6 long break, 7 back to focus, 8 break of N min
 uint8_t alexaLast = 0;
@@ -836,7 +836,7 @@ struct Weather {
   uint16_t version = 0;
   uint8_t nd = 0;  // forecast: today and the next days
   UiDay d[UI_DAYS];
-  uint8_t rainIn = 0;  // ver UiWeather::rainIn
+  uint8_t rainIn = 0;  // see UiWeather::rainIn
   uint8_t wind = 0, gust = 0;  // km/h (weatherbox)
   uint16_t wdir = 0;
   char tzName[40] = "";  // the city's time zone according to Open-Meteo (IANA, e.g. America/Sao_Paulo)
@@ -2537,7 +2537,7 @@ bool authCheck(bool reply) {
 bool authed() { return authCheck(true); }
 bool uploadAuthed() { return authCheck(false); }
 bool guard() { return (panelOk() || deny()) && authed(); }   // actions (POST)
-bool readOk() { return (hostOk() || deny()) && authed(); }   // leituras
+bool readOk() { return (hostOk() || deny()) && authed(); }   // reads
 
 // ---------- panel in file storage ----------
 // The panel (~19 KB compressed) takes no program flash: it lives in /www/<hash>.gz, where <hash> is the
@@ -2617,7 +2617,7 @@ void setupWeb() {
     server.sendHeader("Cache-Control", "no-cache");  // after a firmware update, the browser fetches the new panel
     File f = fsOk ? LittleFS.open("/www/" PANEL_HASH ".gz", "r") : File();
     if (f) {
-      server.streamFile(f, "text/html");  // .gz: o servidor manda "Content-Encoding: gzip"
+      server.streamFile(f, "text/html");  // .gz: the server sends "Content-Encoding: gzip"
       f.close();
       return;
     }
@@ -2824,7 +2824,7 @@ void setupWeb() {
       cfg.vcomChk = cfg.vcom ^ 0xDA;
       saveSettings();
     }
-    if (server.arg("save") == "1" || server.arg("stop") == "1") vcomTestUntil = millis();  // o loop encerra
+    if (server.arg("save") == "1" || server.arg("stop") == "1") vcomTestUntil = millis();  // the loop ends it
     server.send(200, "application/json", String(F("{\"vcom\":")) + cfg.vcom + "}");
   });
   server.on("/api/cmd", HTTP_POST, [] {
@@ -3111,7 +3111,7 @@ void setupWeb() {
     safeRestart();
   });
   setupUpdate();
-  server.on("/description.xml", HTTP_GET, sendHueDescription);  // Alexa (ponte Hue)
+  server.on("/description.xml", HTTP_GET, sendHueDescription);  // Alexa (Hue bridge)
   server.onNotFound(alexaApi);                                   // /api/<user>/lights...
   server.begin();
 }
@@ -3255,7 +3255,7 @@ static void otaSigBegin() {
   br_sha256_init(&otaHash);
   otaSigFree();
   const String &b64 = server.header("X-Firmware-Sig");
-  if (b64.length() < 340 || b64.length() > 348) return;  // 256 bytes = 344 caracteres
+  if (b64.length() < 340 || b64.length() > 348) return;  // 256 bytes = 344 characters
   char buf[264];
   base64_decodestate st;
   base64_init_decodestate(&st);
@@ -3357,7 +3357,7 @@ void setupUpdate() {
         if (!ota.gz) otaConsume(up.buf, up.currentSize);
         br_sha256_update(&otaHash, up.buf, up.currentSize);
         if (!ota.err.length() && Update.write(up.buf, up.currentSize) != up.currentSize) ota.err = Update.getErrorString();
-        if (ota.err.length()) Update.end();  // desiste: o firmware atual continua
+        if (ota.err.length()) Update.end();  // give up: the current firmware carries on
       } else if (up.status == UPLOAD_FILE_END && !ota.err.length()) {
         if (!ota.begun) ota.err = F("empty file");
         else if (ota.gz) {
@@ -3559,7 +3559,7 @@ bool portalMode = false;
 WiFiEventHandler wifiAuthHandler;
 volatile bool wifiDowngrade = false;
 
-static int authRank(uint8_t m) { return m == AUTH_OPEN ? 0 : m == AUTH_WEP ? 1 : 2; }  // WPA, WPA2 e misto: 2
+static int authRank(uint8_t m) { return m == AUTH_OPEN ? 0 : m == AUTH_WEP ? 1 : 2; }  // WPA, WPA2 and mixed: 2
 
 // A network saved by another firmware (the original) may not require WPA: now it does, as the core's begin() does
 // returns true if it had to change the saved network

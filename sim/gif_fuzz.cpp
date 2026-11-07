@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
         case 0: v[i] ^= 1 << (rng() % 8); break;
         case 1: v[i] = INTERESTING[rng() % sizeof INTERESTING]; break;
         case 2: v[i] = rng(); break;
-        case 3: if (i + 1 < v.size()) { v[i] = rng(); v[i + 1] = rng(); } break;  // tamanhos de 16 bits
+        case 3: if (i + 1 < v.size()) { v[i] = rng(); v[i + 1] = rng(); } break;  // 16-bit sizes
         case 4: v.resize(i + 1); break;                                              // truncated file
         case 5: { size_t l = 1 + rng() % 32; if (i + l <= v.size()) { auto copy = std::vector<uint8_t>(v.begin() + i, v.begin() + i + l); v.insert(v.begin() + i, copy.begin(), copy.end()); } } break;
         case 6: { size_t l = 1 + rng() % 32; if (i + l <= v.size()) v.erase(v.begin() + i, v.begin() + i + l); } break;

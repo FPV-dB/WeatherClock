@@ -3,7 +3,7 @@
 #include "ui_kit.h"
 #include "assets.h"
 
-// ---------- tema 6: LCD RETRÔ ----------
+// ---------- theme 6: RETRO LCD ----------
 // 80s wristwatch: grey-green screen, 7 segments with the unlit ones visible.
 static const uint16_t LCD_BG = uiRgb(166, 180, 140), LCD_ON = uiRgb(18, 24, 16), LCD_GHOST = uiRgb(161, 175, 136);  // ghost = just a trace, like a real LCD
 

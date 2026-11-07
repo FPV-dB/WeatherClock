@@ -1,12 +1,12 @@
 // Builds the outline tables in weatherclock/fonts.cpp from a TTF (digits 0-9 and ':').
 // usage: npm i opentype.js@1.3.4 && node fontgen.js <ttf> <NAME> [tolerance=10]
 //      with PREVIEW=file.png draws "14:37" to check the fill (non-zero rule)
-//      with TEXTO=1 builds text (A-Z, a-z, 0-9, space, ':', '-' and '%'): the 720 cell runs from the top of the
+//      with TEXT=1 builds text (A-Z, a-z, 0-9, space, ':', '-' and '%'): the 720 cell runs from the top of the
 //      capitals to the bottom of the descenders (g, p, y), advances are the font's own, and NAME_CHARS is written too
 const opentype = require('opentype.js'), fs = require('fs'), zlib = require('zlib');
 const [, , file, NAME, tolArg] = process.argv;
 const font = opentype.loadSync(file), CH = 720, tol = +(tolArg || 10);
-const TEXT = !!process.env.TEXTO;
+const TEXT = !!(process.env.TEXT || process.env.TEXTO);
 const chars = TEXT ? ' -%:0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' : '0123456789:';
 let top = -1e9, bot = 1e9;
 for (const c of TEXT ? 'Hdgpy' : '0123456789') { const b = font.charToGlyph(c).getBoundingBox(); top = Math.max(top, b.y2); bot = Math.min(bot, b.y1); }

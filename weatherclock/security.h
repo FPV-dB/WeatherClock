@@ -223,7 +223,7 @@ static size_t mdnsProbeQuery(uint8_t *o, size_t cap, const char *name) {
   o[i++] = 0;
   o[i++] = 0;
   o[i++] = 255;
-  o[i++] = 0x80;  // QU: responder direto
+  o[i++] = 0x80;  // QU: answer directly
   o[i++] = 1;
   return i;
 }
@@ -350,7 +350,7 @@ static int64_t rtcClockRestore(const RtcClock &r, uint32_t nowTicks, uint32_t ca
 // an SNTP jump is undone until it's confirmed. The focus history is only written with ok() == true.
 struct TimeGuard {
   int64_t ref = 0;              // last confirmed time (s since 1970)
-  uint32_t refMs = 0;           // millis() nesse momento
+  uint32_t refMs = 0;           // millis() at that moment
   int64_t cand = 0;             // SNTP time not yet confirmed
   uint32_t candMs = 0;
   bool confirmed = false;

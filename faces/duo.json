@@ -3,9 +3,9 @@
   "author": "davicorrea0",
   "id": "duo",
   "name": "Duo",
-  "desc": "Hora e minutos gigantes, um em cima do outro",
-  "name_en": "Duo",
-  "desc_en": "Giant hours stacked over minutes",
+  "desc": "Giant hours stacked over minutes",
+  "name_pt": "Duo",
+  "desc_pt": "Hora e minutos gigantes, um em cima do outro",
   "bg": "#000000",
   "layers": [
     {

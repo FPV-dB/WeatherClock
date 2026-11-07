@@ -1,6 +1,6 @@
 // Builds the compressed (gzip) panel from web/index.html into web/out/panel-<hash>.html.gz (it goes to the
 // site and from there into the clock's file storage) and weatherclock/web.h with the loader and the hash.
-// O navegador descompacta sozinho (Content-Encoding: gzip). ~70 KB viram ~19 KB.
+// The browser decompresses it by itself (Content-Encoding: gzip). ~70 KB become ~19 KB.
 // Edit web/index.html (Portuguese and Spanish texts: web/i18n.json) and run this script
 // (sim/build.sh already runs it). With terser installed (npm install in web/), the JavaScript is minified.
 //

@@ -23,7 +23,7 @@ enum UiActivity : uint8_t { ACT_READ = 0, ACT_STUDY, ACT_CODE, ACT_TASKS, ACT_DR
 // One forecast day (today is the first)
 struct UiDay {
   uint8_t code;        // WMO weather code
-  int8_t tmin, tmax;   // °C, arredondadas
+  int8_t tmin, tmax;   // °C, rounded
   uint8_t rain;        // chance of rain in %, 255 = no data
 };
 static const int UI_DAYS = 5;
@@ -60,7 +60,7 @@ struct UiState {
   UiWeather wx;
   const char *city;
   bool fahr;  // wx temperatures already in °F (the faces just draw the number; see uiTempC)
-  // geral
+  // general
   uint8_t theme;
   uint16_t accent;  // clock digit colour (RGB565)
   const char *ip;
@@ -139,7 +139,7 @@ bool uiScrollActive();
 // VSCSAD value (the RAM row where reading starts) for a screen offset. With "rotate 180°"
 // (MADCTL MY) the RAM is mirrored relative to what the viewer sees, so the direction flips:
 //   normal: displayed row n shows RAM row n + SAD, the content moves up with SAD = offset
-//   girado: SAD = (rows - offset) % rows
+//   rotated: SAD = (rows - offset) % rows
 inline uint16_t uiScrollSad(bool flip, int rows, int offset) {
   return (uint16_t)(flip && offset ? rows - offset : offset);
 }
