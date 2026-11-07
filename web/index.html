@@ -561,13 +561,13 @@ const unb64=d=>{const o=atob(d),u=new Uint8Array(o.length);for(let i=0;i<o.lengt
 async function backup(){try{const s=await (await fetch('/api/state')).json(),h=await (await fetch('/api/stats')).json(),c={...s.cfg};delete c.lock;
  const hk=await fetch('/api/hooks').then(r=>r.ok?r.json():null).catch(()=>null),fl=(await (await fetch('/api/files')).json()).files,media=[];
  for(let i=0;i<fl.length;i++){toast(t('Saving {0} of {1}...',i+1,fl.length));const r=await fetch('/fs?f='+encodeURIComponent(fl[i].n));if(!r.ok)throw fl[i].n;media.push({n:fl[i].n,d:b64(await r.arrayBuffer())})}
- const b={app:'smalltv-pomodoro',format:2,ver:s.ver,date:new Date().toISOString().slice(0,10),cfg:c,stats:h,faces:FACES.filter(f=>f.pkg).map(f=>f.pkg),hooks:hk,media};
+ const b={app:'weatherclock',format:2,ver:s.ver,date:new Date().toISOString().slice(0,10),cfg:c,stats:h,faces:FACES.filter(f=>f.pkg).map(f=>f.pkg),hooks:hk,media};
  const blob=new Blob([JSON.stringify(b)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='smalltv-backup-'+b.date+'.json';a.click();
  setTimeout(()=>URL.revokeObjectURL(a.href),60000);toast(t('Backup saved: settings, history, faces, alerts, photos and GIFs'));return true}
  catch(x){toast(t('Backup failed: ')+t(String(x)));return false}}
 function migDone(){$('mig').classList.remove('v');post('/api/migdone')}
 $('rbk').onchange=async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;
- let b;try{b=JSON.parse(await file.text())}catch(x){}if(!b||b.app!='smalltv-pomodoro'||!b.cfg)return toast(t('This file is not a SmallTV Pomodoro backup'));
+ let b;try{b=JSON.parse(await file.text())}catch(x){}if(!b||!['weatherclock','smalltv-pomodoro'].includes(b.app)||!b.cfg)return toast(t('This file is not a Weather Clock backup'));
  if(!confirm(t('Restore the backup from {0}? Current settings and history will be replaced.',b.date)))return;
  try{toast(t('Restoring...'));let lost=0;
   const have=new Set(FACES.filter(f=>f.pkg).map(f=>f.pkg)),miss=(b.faces||[]).filter(id=>!have.has(id));

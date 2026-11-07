@@ -1,0 +1,27 @@
+# Caderno com lápis: atividade "Estudar" no foco do Pomodoro.
+color o #2a2238   # contorno
+color e #8a8f9a   # espiral
+color p #f4efe2   # página
+color l #9ab8e0   # pauta
+color P #ff9fb0   # borracha
+color Y #ffc428   # lápis
+color y #c8780c   # sombra do lápis
+color w #f0c890   # madeira
+color t #3a2a20   # grafite
+
+.............oo.
+..e.e.e.e...oPPo
+.oeoeoeoeoo.oPPo
+.oppppppppo.oooo
+.ollllllllo.oYyo
+.oppppppppo.oYyo
+.ollllllllo.oYyo
+.oppppppppo.oYyo
+.ollllllllo.oYyo
+.oppppppppo.oYyo
+.ollllllllo.owwo
+.oppppppppo..tt.
+.oppppppppo.....
+.oooooooooo.....
+................
+................

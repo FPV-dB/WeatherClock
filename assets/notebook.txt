@@ -1,11 +1,11 @@
 # Notebook com código: atividade "Programar" no foco do Pomodoro.
-cor o #2a2a34   # contorno
-cor k #1a2030   # tela
-cor G #3ecf7a   # código
-cor B #4f8dff   # código
-cor Y #ffc428   # código
-cor m #c8ccd4   # base
-cor M #8a909c   # sombra da base
+color o #2a2a34   # contorno
+color k #1a2030   # tela
+color G #3ecf7a   # código
+color B #4f8dff   # código
+color Y #ffc428   # código
+color m #c8ccd4   # base
+color M #8a909c   # sombra da base
 
 ................
 ................

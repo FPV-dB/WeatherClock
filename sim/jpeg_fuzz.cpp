@@ -1,5 +1,5 @@
 #ifndef JPEG_SOURCE
-#define JPEG_SOURCE "../smalltv-pomodoro/src/JPEGDEC/JPEGDEC.cpp"
+#define JPEG_SOURCE "../weatherclock/src/JPEGDEC/JPEGDEC.cpp"
 #endif
 #include JPEG_SOURCE
 #include <vector>

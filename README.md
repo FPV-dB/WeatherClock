@@ -10,9 +10,9 @@ Changes in this fork:
 - Every built-in face shows weather instead of focus counts (Matrix, Neon, Flip, Retro LCD: wind + humidity; Tomato is now a weather **Scene**).
 - Face-pack `when` conditions for animated weather icons: `sunny`, `moon`, `partly`, `partlynight`, `cloudy`, `fog`, `drizzle`, `rainy`, `snowy`, `storm`.
 - Panel and website served from GitHub Pages (`https://fpv-db.github.io/WeatherClock/`), built with `scripts/build_panel.py`.
-- Updates over Wi-Fi are signed with this fork's own key (`smalltv-pomodoro/ota-public.pem`); the first install from another firmware goes through recovery mode.
+- Updates over Wi-Fi are signed with this fork's own key (`weatherclock/ota-public.pem`); the first install from another firmware goes through recovery mode.
 
-Build: see "Building" below (`arduino-cli compile --fqbn "esp8266:esp8266:generic:eesz=4M2M,xtal=160,ip=lm2n" --build-property "build.float=" --output-dir build smalltv-pomodoro`).
+Build: see "Building" below (`arduino-cli compile --fqbn "esp8266:esp8266:generic:eesz=4M2M,xtal=160,ip=lm2n" --build-property "build.float=" --output-dir build weatherclock`).
 
 ---
 
@@ -22,7 +22,7 @@ Build: see "Building" below (`arduino-cli compile --fqbn "esp8266:esp8266:generi
 
 Alternative firmware for the **GeekMagic SmallTV Ultra** (ESP8266, 240×240 ST7789 screen): a clock with 11 faces, a Pomodoro timer, weather, a photo/GIF album and a pixel art tomato mascot that grows a plant as you keep your focus streak.
 
-🌐 **Project website:** [davicorrea0.github.io/smalltv-pomodoro](https://davicorrea0.github.io/smalltv-pomodoro/): what changes on the clock, how to install it, and the [face gallery](https://davicorrea0.github.io/smalltv-pomodoro/galeria.html).
+🌐 **Project website:** [davicorrea0.github.io/smalltv-pomodoro](https://davicorrea0.github.io/weatherclock/): what changes on the clock, how to install it, and the [face gallery](https://davicorrea0.github.io/weatherclock/galeria.html).
 
 ![The 11 built-in clock faces](docs/clock-faces.png)
 
@@ -39,7 +39,7 @@ Alternative firmware for the **GeekMagic SmallTV Ultra** (ESP8266, 240×240 ST77
 - **Automatic time zone:** picking the city also sets the time zone with its daylight saving rules; if the clock's zone does not match the city's, the panel offers to fix it.
 - **Diagnostics:** the panel shows why the clock last restarted (with the crash cause and address), the Wi-Fi signal, the lowest free memory since boot and the uptime.
 - **Test versions:** an option in the panel to receive test builds before everyone else.
-- **Photo and GIF album:** uploads from the panel are cropped to 240×240 in the browser. Installing over the original firmware formats the file storage (the original's photos are not kept): see [docs/MIGRACAO-4M2M.md](docs/MIGRACAO-4M2M.md).
+- **Photo and GIF album:** uploads from the panel are cropped to 240×240 in the browser. Installing over the original firmware formats the file storage (the original's photos are not kept): see [docs/MIGRATION-4M2M.md](docs/MIGRATION-4M2M.md).
 - **Night brightness** that follows the sun (from sunset to sunrise, using the times Open-Meteo already sends with the weather) or a fixed schedule.
 - **Alexa voice control, no account or cloud:** the clock shows up to an Echo on the same network as three dimmable lights (a minimal Philips Hue bridge emulation, the same protocol as Espalexa). *Pomodoro*: "turn on" starts or resumes a focus session and the screen switches to the timer, "turn off" pauses it and, again, stops it, and "set Pomodoro to 40%" focuses for 40 minutes. *Break* and *Long break*: "turn on" starts the break (a percentage sets its minutes), "turn off" goes back to focus. The lit light shows the current phase in the Alexa app, and the web panel shows when an Echo last talked to the clock and its last command. **End-of-phase announcements:** paste a trigger URL from [Virtual Smart Home](https://www.virtualsmarthome.xyz/), Voice Monkey or IFTTT in the panel and the clock calls it when a focus session or a break ends, so an Alexa routine can say "Pomodoro done" (plain HTTP; those services accept it).
 - **Face rotation:** pick your favourite faces and the clock switches between them every 1 to 60 minutes.
@@ -101,7 +101,7 @@ Open the IP shown on the clock in any browser on the same network. Settings save
 
 If the clock freezes or keeps restarting (for example after an update), **unplug it and plug it back in 3 times in a row, leaving it on for less than 30 seconds each time**. On the third time it opens **recovery mode**: join the `SmallTV-Recuperacao` network and open `http://192.168.4.1` to upload a firmware (no password needed), reset the settings to defaults, forget the Wi-Fi or download your focus history. *Restart normally* goes back to the clock.
 
-If the clock does not turn on at all and recovery mode does not open, reflash it over USB-TTL without losing your photos and settings: see [docs/RECUPERACAO.md](docs/RECUPERACAO.md).
+If the clock does not turn on at all and recovery mode does not open, reflash it over USB-TTL without losing your photos and settings: see [docs/RECOVERY.md](docs/RECOVERY.md).
 
 To go back to the original firmware, open recovery mode and upload GeekMagic's `.bin` ([GeekMagicClock/smalltv-ultra](https://github.com/GeekMagicClock/smalltv-ultra)) there. Since 1.20.1, *Settings → Update firmware* only accepts firmware signed by this project (with its `.sig` file from the release).
 
@@ -111,16 +111,16 @@ To go back to the original firmware, open recovery mode and upload GeekMagic's `
 
 | Folder | Contents |
 |---|---|
-| `smalltv-pomodoro/` | Firmware (Arduino/ESP8266). `main.cpp`: Wi-Fi, weather, album, Pomodoro, history, updates, recovery and the web server. `ui.cpp` + `ui_kit.h`: the drawing core and kit. `face_*.cpp`: one file per face, registered in `faces_list.h`. `facepack.cpp`: the engine for downloadable faces. `fonts.cpp`: anti-aliased vector fonts. `assets.h` is generated from `assets/` |
+| `weatherclock/` | Firmware (Arduino/ESP8266). `main.cpp`: Wi-Fi, weather, album, Pomodoro, history, updates, recovery and the web server. `ui.cpp` + `ui_kit.h`: the drawing core and kit. `face_*.cpp`: one file per face, registered in `faces_list.h`. `facepack.cpp`: the engine for downloadable faces. `fonts.cpp`: anti-aliased vector fonts. `assets.h` is generated from `assets/` |
 | `web/` | Web panel: edit `web/index.html`; `web/build.js` minifies and gzips it into `web/out/panel-<hash>.html.gz` (published on the website) and generates `web.h` with the small loader (`web/loader.html`) and the expected hash |
-| `assets/` | Pixel art sprites (one `.txt` per sprite), palettes and the `gerar.js` generator |
+| `assets/` | Pixel art sprites (one `.txt` per sprite), palettes and the `generate.js` generator |
 | `faces/` | Downloadable face packages (`.json`), their previews and `catalog.json` |
 | `sim/` | Screen simulator for the PC, redraw tests, and the face preview and font generators |
 | `docs/` | README images and the guides for face packages and built-in faces |
 
 ## Asset library
 
-Every pixel art drawing (the tomato and its expressions, the plant stages, the flame, coffee, book, notebook, laptop, clipboard, paint palette, sun, moon, clouds and the end-of-Pomodoro animation) is a text file in `assets/`, one per sprite. `assets/gerar.js` turns them all into `smalltv-pomodoro/assets.h`: each sprite becomes `SPR_<NAME>` in flash (4 bits per pixel, ~130 bytes for a 16×16 sprite), using no RAM.
+Every pixel art drawing (the tomato and its expressions, the plant stages, the flame, coffee, book, notebook, laptop, clipboard, paint palette, sun, moon, clouds and the end-of-Pomodoro animation) is a text file in `assets/`, one per sprite. `assets/generate.js` turns them all into `weatherclock/assets.h`: each sprite becomes `SPR_<NAME>` in flash (4 bits per pixel, ~130 bytes for a 16×16 sprite), using no RAM.
 
 ![Asset preview sheet](docs/assets.png)
 
@@ -142,18 +142,18 @@ Every pixel art drawing (the tomato and its expressions, the plant stages, the f
    ```
 
    - every pixel row has the same length; `.` is transparent;
-   - `cor <character> #rrggbb` defines a colour (up to 15 per sprite); `paleta tomate` reuses the colours in `assets/paletas/tomate.txt`;
+   - `cor <character> #rrggbb` defines a colour (up to 15 per sprite); `paleta tomate` reuses the colours in `assets/palettes/tomate.txt`;
    - animation: separate frames with a `quadro` line and set each frame's duration with `ms 160`;
    - `fundo #rrggbb` only changes the sprite's background on the preview sheet.
 
    (The keywords are Portuguese: `cor` = colour, `paleta` = palette, `quadro` = frame, `fundo` = background.)
-2. Run `sim/build.sh` (or just `node assets/gerar.js`). Errors point to the file and line.
+2. Run `sim/build.sh` (or just `node assets/generate.js`). Errors point to the file and line.
 3. Draw it anywhere in `ui.cpp`:
 
    ```cpp
    uiSprite(&SPR_REGADOR, x, y);                // scale 1, transparent
    uiSprite(&SPR_REGADOR, x, y, 3, 0, BG);      // scale 3; transparent pixels painted with BG
-   uiSprite(&SPR_TOMATE_FIM, x, y, 2, uiSpriteFrame(&SPR_TOMATE_FIM, s.ms), BG);  // animation
+   uiSprite(&SPR_TOMATO_DONE, x, y, 2, uiSpriteFrame(&SPR_TOMATO_DONE, s.ms), BG);  // animation
    ```
 
    Passing a background colour repaints the sprite over the previous one without clearing the area first (no flicker).
@@ -162,13 +162,13 @@ To change an existing drawing, just edit its `.txt`: no code changes. The sheet 
 
 ## Downloadable faces (no firmware update)
 
-Besides the 11 built-in faces, the clock accepts **packages**: `.json` files of a few KB that describe a face in layers (text with variables such as `{HH}:{MM}`, `{TEMP}` and `{STREAK}`, the project's fonts, pixel art sprites, the weather icon, bars, progress rings, dial ticks, hands and the streak plant). Install them from the panel under *Clock → More faces*, from the online gallery or by picking the file. Format and examples (in Portuguese): **[docs/PACOTES.md](docs/PACOTES.md)** and the [`faces/`](faces) folder.
+Besides the 11 built-in faces, the clock accepts **packages**: `.json` files of a few KB that describe a face in layers (text with variables such as `{HH}:{MM}`, `{TEMP}` and `{STREAK}`, the project's fonts, pixel art sprites, the weather icon, bars, progress rings, dial ticks, hands and the streak plant). Install them from the panel under *Clock → More faces*, from the online gallery or by picking the file. Format and examples (in Portuguese): **[docs/FACE_PACKS.md](docs/FACE_PACKS.md)** and the [`faces/`](faces) folder.
 
 ![Some of the downloadable faces in the gallery](docs/packages.png)
 
 ## Creating a built-in face
 
-One `face_<name>.cpp` file and one line in `faces_list.h`: the panel gallery, the preview and the tests follow automatically. Step by step guide, template and what the drawing kit offers (in Portuguese): **[docs/CRIAR_MOSTRADOR.md](docs/CRIAR_MOSTRADOR.md)**.
+One `face_<name>.cpp` file and one line in `faces_list.h`: the panel gallery, the preview and the tests follow automatically. Step by step guide, template and what the drawing kit offers (in Portuguese): **[docs/MAKING_A_FACE.md](docs/MAKING_A_FACE.md)**.
 
 ## Screen simulator
 
@@ -185,8 +185,8 @@ arduino-cli core install esp8266:esp8266 --additional-urls https://arduino.esp82
 arduino-cli lib install "Adafruit GFX Library@1.13.0" "Adafruit ST7735 and ST7789 Library@1.11.0" "ArduinoJson@7.4.3"
 (cd web && npm install)  # optional: terser minifies the panel (~1 KB smaller)
 sim/build.sh   # generates assets.h and web.h, checks the code and tests the screens in the simulator
-sim/testes.sh  # Linux/WSL (g++-multilib): upload/host/password handlers, history, GIF and JPEG fuzzing
-./compilar.sh  # builds into build/ and checks the size
+sim/tests.sh  # Linux/WSL (g++-multilib): upload/host/password handlers, history, GIF and JPEG fuzzing
+./build.sh  # builds into build/ and checks the size
 ```
 
 `sim/build.sh` runs on Windows (Zig) and on Linux (Zig, or `g++ -m32` without it). Every push runs all of the above on GitHub Actions (`.github/workflows/firmware.yml`) and keeps the firmware as an artifact.
@@ -197,12 +197,12 @@ The time zone table (`web/tz.json`, IANA name → POSIX rule) is generated from 
 
 The panel's English and Spanish texts live in `web/i18n.json`, not in flash: `web/build.js` writes `web/out/i18n-<code>.json`, which is published in the website's `panel/` folder; the panel downloads it once and keeps it in the browser.
 
-`compilar.sh` builds without newlib's decimal number printf/scanf (`--build-property build.float=`, ~7 KB): the firmware never uses `%f` or parses decimals with it, and `sim/build.sh` rejects code that does.
+`build.sh` builds without newlib's decimal number printf/scanf (`--build-property build.float=`, ~7 KB): the firmware never uses `%f` or parses decimals with it, and `sim/build.sh` rejects code that does.
 
 ## Technical details
 
-- **4M2M flash layout** (since the version that follows 1.23.1): program up to ~1 MB (the ESP8266 execution ceiling) and a 2 MB LittleFS at `0x200000`. Up to 1.23 the layout was 4M3M, the same as the original firmware (3 MB LittleFS at `0x100000`), which left only ~1 MB for the program plus the update copy. EEPROM (`0x3FB000`), RF calibration and Wi-Fi data are at the same addresses in both layouts, so settings and the saved network survive. LittleFS is mounted **without auto-format**; the only formatting is the one-time migration at the first boot in 4M2M (an EEPROM mark says it already happened), after which the folders `/image`, `/gif` and `/faces` are recreated. Photos and GIFs: the panel saves them in the backup before the update and restores them after. Details, limits and procedure: [docs/MIGRACAO-4M2M.md](docs/MIGRACAO-4M2M.md).
-- **Compressed updates:** since 1.14 the clock also accepts `.bin.gz` firmware (~74% of the size, made by `compactar.js` with an 8 KB window). The `.gz` is written at the end of the 1 MB program area and the bootloader (eboot) decompresses it over the current firmware on reboot, so a corrupted file would leave the clock without firmware. Before allowing the swap, the clock reads the stored `.gz` back, decompresses all of it with the same uzlib the bootloader uses and checks the gzip CRC, the image header, size and CRC, and that the decompressed image ends before the `.gz`; otherwise it cancels the swap. This lifts the size limit from ~520 KB to ~600 KB while any clock is still in the 4M3M layout (`compilar.sh` checks it; see docs/MIGRACAO-4M2M.md). The original GeekMagic firmware can be installed as `.bin` while ours is under ~530 KB, and as `.bin.gz` after that.
+- **4M2M flash layout** (since the version that follows 1.23.1): program up to ~1 MB (the ESP8266 execution ceiling) and a 2 MB LittleFS at `0x200000`. Up to 1.23 the layout was 4M3M, the same as the original firmware (3 MB LittleFS at `0x100000`), which left only ~1 MB for the program plus the update copy. EEPROM (`0x3FB000`), RF calibration and Wi-Fi data are at the same addresses in both layouts, so settings and the saved network survive. LittleFS is mounted **without auto-format**; the only formatting is the one-time migration at the first boot in 4M2M (an EEPROM mark says it already happened), after which the folders `/image`, `/gif` and `/faces` are recreated. Photos and GIFs: the panel saves them in the backup before the update and restores them after. Details, limits and procedure: [docs/MIGRATION-4M2M.md](docs/MIGRATION-4M2M.md).
+- **Compressed updates:** since 1.14 the clock also accepts `.bin.gz` firmware (~74% of the size, made by `compress.js` with an 8 KB window). The `.gz` is written at the end of the 1 MB program area and the bootloader (eboot) decompresses it over the current firmware on reboot, so a corrupted file would leave the clock without firmware. Before allowing the swap, the clock reads the stored `.gz` back, decompresses all of it with the same uzlib the bootloader uses and checks the gzip CRC, the image header, size and CRC, and that the decompressed image ends before the `.gz`; otherwise it cancels the swap. This lifts the size limit from ~520 KB to ~600 KB while any clock is still in the 4M3M layout (`build.sh` checks it; see docs/MIGRATION-4M2M.md). The original GeekMagic firmware can be installed as `.bin` while ours is under ~530 KB, and as `.bin.gz` after that.
 - **Update checks:** the elf2bin tool writes the image size and a CRC32 into every ESP8266 Arduino image (offsets 4112 and 4116); all original V9.0.x firmwares have them too. `/update` checks them while the file arrives and only switches firmware if everything matches.
 - **Recovery:** a boot counter stored in EEPROM after the settings (it survives power loss, unlike RTC memory). Three boots shorter than 30 s in a row open recovery mode; staying on for 30 s, or a deliberate restart, resets it.
 - **Focus history:** one count per day in a 371-day ring (`/stats.bin` on LittleFS, ~380 bytes). Only the header stays in RAM. If a photo, face or panel upload is writing another file, the history write waits until that upload closes, avoiding simultaneous LittleFS writers.
@@ -212,9 +212,9 @@ The panel's English and Spanish texts live in `web/i18n.json`, not in flash: `we
 - **Translated text in flash:** `tr("pt", "en", "es")` keeps the three strings in flash with `PSTR` and copies only the current language into a small buffer, leaving the RAM the GIF decoder needs.
 - **RAM:** the GIF decoder needs ~24 KB of contiguous memory and the JPEG decoder ~18 KB. If memory runs short, the screen shows a notice instead of crashing.
 - **Network name (1.20.1):** the clock answers `http://smalltv.local` (shown on screen at startup). It probes the network first: if another clock already uses the name, it takes `smalltv-2.local`, `-3`… `smalltv-xxxx.local` (4 hex digits from the chip) always works as a fallback. It uses a minimal mDNS responder that only serves its own A record (~1.7 KB instead of ~21 KB for the core library; packet parser tested with malformed and looping packets in `sim/security_test.cjs`). The web server accepts that exact name besides IPv4 addresses, so DNS rebinding stays blocked.
-- **Signed updates (1.20.1):** RSA-2048 over the SHA-256 of the uploaded `.bin`/`.bin.gz`, sent in the `X-Firmware-Sig` header and checked with BearSSL before `Update.end(true)` (~6.5 KB of firmware). The signature is never appended to the image: the 1.20.0 test build did that and the bootloader read the trailer as the image size. See [docs/ASSINATURAS.md](docs/ASSINATURAS.md).
+- **Signed updates (1.20.1):** RSA-2048 over the SHA-256 of the uploaded `.bin`/`.bin.gz`, sent in the `X-Firmware-Sig` header and checked with BearSSL before `Update.end(true)` (~6.5 KB of firmware). The signature is never appended to the image: the 1.20.0 test build did that and the bootloader read the trailer as the image size. See [docs/SIGNATURES.md](docs/SIGNATURES.md).
 - **GIF validation:** uploads and existing album files are checked before decoding (complete blocks, palettes, frame bounds, up to 480×480 and 2,000 frames). The bundled decoder uses checked reads and bounds LZW codes, dictionary links and compressed input. See [the GIF hardening notes](docs/GIF-SECURITY.md) for test coverage and limits.
-- **Wi-Fi downgrade guard:** the ESP8266 SDK can be pushed by a forged beacon to drop to an unencrypted (open) connection with a rogue access point ([CVE-2020-12638](https://nvd.nist.gov/vuln/detail/CVE-2020-12638), not fixed by Espressif for this SDK). Since 1.18.2 the clock watches the Wi-Fi authentication mode and reconnects as soon as it gets weaker, and a saved network (including one set up by the original firmware) only accepts WPA or better. The SDK in use (2.2.1+100, 2019-07-03) already includes Espressif's fix for the beacon crash (CVE-2019-12588). FragAttacks have no fix for this SDK: keep the panel password on and, if your router allows it, put the clock on a guest/IoT network. [docs/FRAGATTACKS-TESTE.md](docs/FRAGATTACKS-TESTE.md) (in Portuguese) shows how to measure which of them affect your clock with the researcher's test tool.
+- **Wi-Fi downgrade guard:** the ESP8266 SDK can be pushed by a forged beacon to drop to an unencrypted (open) connection with a rogue access point ([CVE-2020-12638](https://nvd.nist.gov/vuln/detail/CVE-2020-12638), not fixed by Espressif for this SDK). Since 1.18.2 the clock watches the Wi-Fi authentication mode and reconnects as soon as it gets weaker, and a saved network (including one set up by the original firmware) only accepts WPA or better. The SDK in use (2.2.1+100, 2019-07-03) already includes Espressif's fix for the beacon crash (CVE-2019-12588). FragAttacks have no fix for this SDK: keep the panel password on and, if your router allows it, put the clock on a guest/IoT network. [docs/FRAGATTACKS-TEST.md](docs/FRAGATTACKS-TEST.md) (in Portuguese) shows how to measure which of them affect your clock with the researcher's test tool.
 - **Protected clock time (1.19.1):** the SNTP client in the ESP8266 core accepts any reply, so one injected UDP packet could change the time and wipe the focus history. The time only counts for the history once it matches the local time Open-Meteo sends over TCP (or, without weather, two consecutive syncs that agree); a jump that is not confirmed is undone, and a date in the past never erases anything. Wrong panel passwords make that IP wait 1 s instead of freezing the whole clock, and SSDP answers at most 4 times per second.
 
 ### Pinout
@@ -235,8 +235,8 @@ The panel's English and Spanish texts live in `web/i18n.json`, not in flash: `we
 - Flip face digits: [Bebas Neue](https://github.com/dharmatype/Bebas-Neue) (Dharma Type, SIL Open Font License 1.1 — see `licenses/BebasNeue-OFL.txt`), also converted to polygons
 - `outfit` and `righteous` package fonts: [Outfit](https://github.com/Outfitio/Outfit-Fonts) (The Outfit Project Authors) and [Righteous](https://fonts.google.com/specimen/Righteous) (Astigmatic), SIL Open Font License 1.1 — see `licenses/`; digit outlines generated by `sim/fontgen.js`
 - [uzlib](https://github.com/pfalcon/uzlib) (Paul Sokolovsky, zlib license — see `licenses/uzlib-LICENSE.txt`), the decompressor from the ESP8266 core, used to check compressed updates
-- [JPEGDEC](https://github.com/bitbank2/JPEGDEC) 1.8.4 (BitBank Software, Apache License 2.0 — see `licenses/JPEGDEC-LICENSE.txt`), included in `smalltv-pomodoro/src/JPEGDEC` with one change: its color and range lookup tables (7.7 KB) are computed at the start of each decode and freed at the end instead of living in RAM all the time
-- [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF) 2.2.3 (BitBank Software, Apache License 2.0 — see `licenses/AnimatedGIF-LICENSE.txt`), included in `smalltv-pomodoro/src/AnimatedGIF` with a checked sequential parser and bounds checks in the standard LZW decoder; `gif.inl` is named `gif_inl.h` for Arduino builds. This firmware uses RAW scanline callbacks, without Turbo or a framebuffer.
+- [JPEGDEC](https://github.com/bitbank2/JPEGDEC) 1.8.4 (BitBank Software, Apache License 2.0 — see `licenses/JPEGDEC-LICENSE.txt`), included in `weatherclock/src/JPEGDEC` with one change: its color and range lookup tables (7.7 KB) are computed at the start of each decode and freed at the end instead of living in RAM all the time
+- [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF) 2.2.3 (BitBank Software, Apache License 2.0 — see `licenses/AnimatedGIF-LICENSE.txt`), included in `weatherclock/src/AnimatedGIF` with a checked sequential parser and bounds checks in the standard LZW decoder; `gif.inl` is named `gif_inl.h` for Arduino builds. This firmware uses RAW scanline callbacks, without Turbo or a framebuffer.
 - Libraries: Adafruit GFX and ST7789, ArduinoJson
 
 ## License
@@ -245,7 +245,7 @@ The panel's English and Spanish texts live in `web/i18n.json`, not in flash: `we
 
 Third-party parts keep their own licenses (copies in [`licenses/`](licenses)):
 
-- The digit outlines derived from DSEG7, Bebas Neue, Outfit and Righteous (in `smalltv-pomodoro/fonts.cpp` and the faces that use them) remain under the SIL Open Font License 1.1.
-- uzlib (`smalltv-pomodoro/src/uzlib/`) is under the zlib license.
-- JPEGDEC (`smalltv-pomodoro/src/JPEGDEC/`) is under the Apache License 2.0.
-- AnimatedGIF (`smalltv-pomodoro/src/AnimatedGIF/`) is under the Apache License 2.0. Local changes are described in `docs/GIF-SECURITY.md`.
+- The digit outlines derived from DSEG7, Bebas Neue, Outfit and Righteous (in `weatherclock/fonts.cpp` and the faces that use them) remain under the SIL Open Font License 1.1.
+- uzlib (`weatherclock/src/uzlib/`) is under the zlib license.
+- JPEGDEC (`weatherclock/src/JPEGDEC/`) is under the Apache License 2.0.
+- AnimatedGIF (`weatherclock/src/AnimatedGIF/`) is under the Apache License 2.0. Local changes are described in `docs/GIF-SECURITY.md`.

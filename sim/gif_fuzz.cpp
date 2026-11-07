@@ -3,11 +3,11 @@
 //   ./fuzz run <arquivo.gif>               decodifica um arquivo (para reproduzir)
 //   ./fuzz fuzz <seeds> <casos> <saida>    corrompe as sementes e testa cada caso num processo filho
 #ifndef GIF_UPSTREAM
-#include "../smalltv-pomodoro/src/AnimatedGIF/AnimatedGIF.cpp"
+#include "../weatherclock/src/AnimatedGIF/AnimatedGIF.cpp"
 #else
 #include "AnimatedGIF.cpp"
 #endif
-#include "../smalltv-pomodoro/gifcheck.h"
+#include "../weatherclock/gifcheck.h"
 #include <dirent.h>
 #include <signal.h>
 #include <sys/wait.h>

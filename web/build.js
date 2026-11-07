@@ -1,5 +1,5 @@
 // Gera o painel comprimido (gzip) a partir de web/index.html em web/out/panel-<hash>.html.gz (vai para o
-// site e daí para a memória de arquivos do relógio) e smalltv-pomodoro/web.h com o carregador e o hash.
+// site e daí para a memória de arquivos do relógio) e weatherclock/web.h com o carregador e o hash.
 // O navegador descompacta sozinho (Content-Encoding: gzip). ~70 KB viram ~19 KB.
 // Edite web/index.html (textos em inglês e espanhol: web/i18n.json) e rode este script
 // (sim/build.sh já roda). Com o terser instalado (npm install em web/), o JavaScript sai minificado.
@@ -10,7 +10,7 @@
 // A cada versão, publique os arquivos de web/out/ na pasta panel/ do site (gh-pages).
 const fs = require('fs'), path = require('path'), zlib = require('zlib'), crypto = require('crypto');
 const src = path.join(__dirname, 'index.html');
-const out = path.join(__dirname, '..', 'smalltv-pomodoro', 'web.h');
+const out = path.join(__dirname, '..', 'weatherclock', 'web.h');
 
 (async () => {
   let html = fs.readFileSync(src, 'utf8');

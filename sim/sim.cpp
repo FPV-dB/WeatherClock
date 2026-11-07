@@ -9,9 +9,9 @@
 #include <string.h>
 #include <stdlib.h>
 #define UI_ASSET_LIST  // assets.h inclui a lista com o nome de cada asset (para a folha de prévia)
-#include "../smalltv-pomodoro/ui_kit.h"
-#include "../smalltv-pomodoro/assets.h"
-#include "../smalltv-pomodoro/facepack.h"
+#include "../weatherclock/ui_kit.h"
+#include "../weatherclock/assets.h"
+#include "../weatherclock/facepack.h"
 #include <chrono>
 #include <dirent.h>
 #include <vector>

@@ -1,6 +1,6 @@
 // Compile the actual upload handlers with an in-memory filesystem/server double.
 const fs=require('fs'),path=require('path');
-const source=fs.readFileSync(path.join(__dirname,'../smalltv-pomodoro/main.cpp'),'utf8');
+const source=fs.readFileSync(path.join(__dirname,'../weatherclock/main.cpp'),'utf8');
 function fn(name){const a=source.indexOf(`void ${name}() {`),b=source.indexOf('\n}',a);if(a<0||b<0)throw Error(name);return source.slice(a,b+2);}
 for(const name of ['handleUpload','handlePackUpload','handlePanelUpload'])
  if(!fn(name).includes('uploadAuthed()'))throw Error(`${name} bypasses upload throttle`);
@@ -37,19 +37,19 @@ for(const [name,hs] of [['setupWeb',['Origin','X-Firmware-Sig','Authorization','
  if(ch.length!==1||!hs.every(h=>ch[0][1].includes('"'+h+'"')))throw Error(name+': collectHeaders must be called once with '+hs);
 }
 { // signer and verifier agree on the published key; a changed byte or another key fails
- const crypto=require('crypto'),{sign,verify,rawKey}=require('../scripts/assinar.cjs');
- const kh=fs.readFileSync(path.join(__dirname,'../smalltv-pomodoro/ota_key.h'),'utf8');
+ const crypto=require('crypto'),{sign,verify,rawKey}=require('../scripts/sign.cjs');
+ const kh=fs.readFileSync(path.join(__dirname,'../weatherclock/ota_key.h'),'utf8');
  const bytes=name=>Buffer.from(kh.match(new RegExp(name+'\\[\\d+\\] PROGMEM = \\{([^}]*)\\}'))[1].match(/0x[0-9a-f]{2}/g).map(Number));
  const raw=rawKey();
  if(!bytes('OTA_KEY_N').equals(raw.n)||!bytes('OTA_KEY_E').equals(raw.e)||raw.n.length!==256)
-  throw Error('ota_key.h differs from ota-public.pem (node scripts/assinar.cjs header)');
+  throw Error('ota_key.h differs from ota-public.pem (node scripts/sign.cjs header)');
  const k=crypto.generateKeyPairSync('rsa',{modulusLength:2048}),data=crypto.randomBytes(5000),sig=sign(data,k.privateKey);
  if(!verify(data,sig,k.publicKey)||sig.length!==256||sig.toString('base64').length!==344)throw Error('sign/verify');
  const bad=Buffer.from(data);bad[100]^=1;
  if(verify(bad,sig,k.publicKey)||verify(data,sig))throw Error('tampered file or foreign key accepted');
 }
-{ // scripts/conferir-gz.cjs: a .bin.gz is checked the way the eboot consumes it
- const crypto=require('crypto'),zlib=require('zlib'),{conferir}=require('../scripts/conferir-gz.cjs');
+{ // scripts/check-gz.cjs: a .bin.gz is checked the way the eboot consumes it
+ const crypto=require('crypto'),zlib=require('zlib'),{conferir}=require('../scripts/check-gz.cjs');
  const rnd=crypto.randomBytes(20000),bin=Buffer.concat([Buffer.from([0xe9,3,2,0]),rnd,Buffer.alloc(100),rnd]); // repeats 20 KB apart: needs a window > 8 KB
  const gz=zlib.gzipSync(bin,{level:9,windowBits:13,memLevel:9}),bad=(b,g)=>conferir(b,g).length>0;
  if(bad(bin,gz))throw Error('conferir-gz rejects a good .bin.gz: '+conferir(bin,gz));
@@ -62,7 +62,7 @@ for(const [name,hs] of [['setupWeb',['Origin','X-Firmware-Sig','Authorization','
  if(!bad(nomagic,zlib.gzipSync(nomagic,{level:9,windowBits:13})))throw Error('conferir-gz accepts a .bin without magic 0xE9');
 }
 const out=process.argv[2];if(!out)throw Error('output.cpp required');
-const header=path.relative(path.dirname(path.resolve(out)),path.resolve(__dirname,'../smalltv-pomodoro/security.h')).replaceAll('\\','/');
+const header=path.relative(path.dirname(path.resolve(out)),path.resolve(__dirname,'../weatherclock/security.h')).replaceAll('\\','/');
 fs.writeFileSync(out,`#include "${header}"
 #include <string>
 #include <cassert>

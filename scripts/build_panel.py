@@ -1,7 +1,7 @@
 """Python port of web/build.js (without terser): builds the gzipped panel, its side files and web.h.
 
 python -I build_panel.py <firmware-src dir>
-Writes web/out/* (publish to the site's panel/ folder) and smalltv-pomodoro/web.h.
+Writes web/out/* (publish to the site's panel/ folder) and weatherclock/web.h.
 """
 import base64, gzip, hashlib, io, json, os, re, sys
 
@@ -66,7 +66,7 @@ hdr += f"static const uint8_t LOADER_HTML_GZ[{len(lg)}] PROGMEM = {{"
 for i, b in enumerate(lg):
     hdr += ("" if i % 24 else "\n  ") + f"0x{b:02x},"
 hdr += "\n};\n"
-open(os.path.join(root, "smalltv-pomodoro", "web.h"), "w", encoding="utf-8").write(hdr)
+open(os.path.join(root, "weatherclock", "web.h"), "w", encoding="utf-8").write(hdr)
 json.dump({"panel": pfile, "psri": psri, "psize": len(g),
            "site": [pfile, f"i18n-{ver}.json", f"tz-{tzv}.json", f"share-{shv}.js"]},
           open(os.path.join(out, "panel.json"), "w"))

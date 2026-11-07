@@ -19,6 +19,8 @@ web/node_modules/
 web/out/
 build/testes/
 
-# chaves de assinatura nunca vão ao Git (a privada fica em ~/.smalltv-pomodoro)
+# chaves de assinatura nunca vão ao Git (a privada fica em ~/.weatherclock)
 *.key
 *private*.pem
+sim/sim-mac
+sim/*.o

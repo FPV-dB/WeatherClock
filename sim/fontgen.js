@@ -1,4 +1,4 @@
-// Gera as tabelas de contorno de smalltv-pomodoro/fonts.cpp a partir de um TTF (dígitos 0-9 e ':').
+// Gera as tabelas de contorno de weatherclock/fonts.cpp a partir de um TTF (dígitos 0-9 e ':').
 // uso: npm i opentype.js@1.3.4 && node fontgen.js <ttf> <NOME> [tolerância=10]
 //      com PREVIEW=arquivo.png desenha "14:37" para conferir o preenchimento (regra não-zero)
 //      com TEXTO=1 gera texto (A-Z, a-z, 0-9, espaço, ':', '-' e '%'): a célula de 720 vai do topo das

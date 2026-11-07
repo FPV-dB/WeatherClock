@@ -1,0 +1,19 @@
+# Focado (sobrancelhas franzidas): durante o foco.
+palette tomato
+
+......gGGg......
+....gGGGGGGg....
+...rRRgGGgRRr...
+..rRRRRggRRRRr..
+.rRhhRRRRRRRRRr.
+.rRhRRRRRRRRRRr.
+rRRRkRRRRRRkRRRr
+rRRRRkRRRRkRRRRr
+rRRRRRRRRRRRRRRr
+rRRRRkRRRRkRRRRr
+rRRRRRRRRRRRRRRr
+.rRRRRRRRRRRRRr.
+.rRRRRkkkkRRRRr.
+..rrRRRRRRRRrr..
+....rrrrrrrr....
+................

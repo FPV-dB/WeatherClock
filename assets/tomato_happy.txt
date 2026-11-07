@@ -1,0 +1,19 @@
+# O mascote padrão: tomate sorrindo.
+palette tomato
+
+......gGGg......
+....gGGGGGGg....
+...rRRgGGgRRr...
+..rRRRRggRRRRr..
+.rRhhRRRRRRRRRr.
+.rRhRRRRRRRRRRr.
+rRRRRRRRRRRRRRRr
+rRRRRRRRRRRRRRRr
+rRRRRkRRRRkRRRRr
+rRRRRkRRRRkRRRRr
+rRRpRRRRRRRRpRRr
+.rRRRRkRRkRRRRr.
+.rRRRRRkkRRRRRr.
+..rrRRRRRRRRrr..
+....rrrrrrrr....
+................

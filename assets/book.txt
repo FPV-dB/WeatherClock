@@ -1,0 +1,24 @@
+# Livro aberto: aparece ao lado do tomate durante o foco do Pomodoro.
+color o #2a2238   # contorno
+color p #f4efe2   # página
+color P #d6cfbc   # sombra da página
+color l #9aa0b0   # linhas de texto
+color c #4f8dff   # capa
+color R #e8402f   # marcador
+
+................
+................
+................
+..ooooo..ooooo..
+.opppppoopppppo.
+.opllllooplllpo.
+.opppppoopppppo.
+.oplllpoopllllo.
+.opppppoopppppo.
+.opllllooplllpo.
+.opppppoopppppo.
+.oPPPPPooPPPPPo.
+occcccccccccccco
+.ooooooooooRooo.
+...........R....
+................

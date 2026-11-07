@@ -1,4 +1,4 @@
-#include "../smalltv-pomodoro/gifcheck.h"
+#include "../weatherclock/gifcheck.h"
 #include <vector>
 #include <cassert>
 #include <cstdio>
