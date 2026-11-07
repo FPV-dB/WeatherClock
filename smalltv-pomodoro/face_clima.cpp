@@ -4,13 +4,31 @@
 #include "assets.h"
 
 // ---------- tema 3: CLIMA ----------
+// weatherbox: números na Outfit e rótulos em pixel, como no Weather Half. Os dígitos negativos levam um traço.
+static void outfitNum(int cx, int y, int h, const char *v, uint16_t c, uint16_t bg, char unit) {
+  const bool neg = v[0] == '-';
+  const char *d = neg ? v + 1 : v;
+  const int dw = vecWidth(VF_OUTFIT, d, h), mw = neg ? h / 3 + 2 : 0;
+  const int uw = unit == 'o' ? h / 5 + 4 : unit == '%' ? 12 : 0;
+  int x = cx - (mw + dw + uw) / 2;
+  if (neg) {
+    G->fillRect(x, y + h / 2 - h / 16, h / 3, h / 8 + 1, c);
+    x += mw;
+  }
+  vecText(VF_OUTFIT, x, y, h, d, c, bg);
+  x += dw + 2;
+  if (unit == 'o') {
+    const int r = h / 10 + 1;
+    G->drawCircle(x + r, y + r + 1, r, c);
+    if (h > 30) G->drawCircle(x + r, y + r + 1, r - 1, c);
+  } else if (unit == '%') text(x, y + h - 16, 2, c, "%");
+}
+
 static void miniCard(int x, const char *label, const char *value, bool deg) {
   const int y = 160, w = 70, h = 72, cx = x + w / 2;
   G->fillRoundRect(x, y, w, h, 12, CARD);
   textC(cx, y + 12, 1, MUTED, label);
-  int vw = textW(value, 3) + (deg ? 10 : 0);
-  text(cx - vw / 2, y + 34, 3, TEXT, value);
-  if (deg) degree(cx - vw / 2 + textW(value, 3) + 3, y + 34, 2, TEXT);
+  outfitNum(cx, y + 32, 28, value, TEXT, CARD, deg ? 'o' : '%');
 }
 
 // Bloco do clima (abaixo da barra de cima), desenhado fora da tela e mandado pronto: sem piscar.
@@ -23,23 +41,9 @@ static void paintWeather(void *c) {
     return;
   }
   weatherIcon(64, 82, 1.6f, s.wx.code, s.wx.day, BG);
-  int v = (int)lroundf(s.wx.t);
-  if (v < -9) v = -9;
-  if (v > 199) v = 199;
-  const int P = 7, Y = 52;
-  if (v >= 100) {  // °F em dia quente: três dígitos menores (5 px) no mesmo espaço, centrados na altura
-    for (int i = 0; i < 3; i++) dmDigit(118 + i * 30, Y + 7, i == 0 ? v / 100 : i == 1 ? v / 10 % 10 : v % 10, 5, TEXT, BG, true);
-  } else if (v < 0) {
-    dmDigit(124, Y, DM_MINUS, P, TEXT, BG, true);
-    dmDigit(164, Y, -v, P, TEXT, BG, true);
-  } else if (v < 10) {
-    dmDigit(144, Y, v, P, TEXT, BG, true);
-  } else {
-    dmDigit(124, Y, v / 10, P, TEXT, BG, true);
-    dmDigit(164, Y, v % 10, P, TEXT, BG, true);
-  }
-  G->drawCircle(214, Y + 6, 6, TEXT);
-  G->drawCircle(214, Y + 6, 5, TEXT);
+  char tv[8];
+  snprintf(tv, sizeof tv, "%d", (int)lroundf(s.wx.t));
+  outfitNum(166, 46, 58, tv, TEXT, BG, 'o');
   char desc[24];
   snprintf(desc, sizeof desc, "%s", s.wx.rainIn ? rainSoonText(s.wx.rainIn) : weatherText(s.wx.code));
   textC(120, 124, 2, TEXT, desc);
@@ -51,7 +55,7 @@ static void paintWeather(void *c) {
   char a[8], b[8], h[8];
   snprintf(a, sizeof a, "%d", (int)lroundf(s.wx.tmin));
   snprintf(b, sizeof b, "%d", (int)lroundf(s.wx.tmax));
-  snprintf(h, sizeof h, "%d%%", s.wx.hum);
+  snprintf(h, sizeof h, "%d", s.wx.hum);
   miniCard(8, "MIN", a, true);
   miniCard(85, "MAX", b, true);
   miniCard(162, tr("UMIDADE", "HUMIDITY", "HUMEDAD"), h, false);
@@ -67,8 +71,12 @@ void themeWeather(const UiState &s, bool full) {
     text(10, 7, 1, MUTED, l);
   }
   if (changed(cC, hm)) {
-    G->fillRect(150, 0, 90, 22, BG);
-    textR(230, 4, 2, s.accent, hm);
+    struct T { const char *hm; uint16_t c; } t = {hm, s.accent};
+    uiPaint(full, 150, 0, 90, 22, [](void *p) {  // fora da tela: a hora troca sem piscar
+      const T &t = *(const T *)p;
+      G->fillRect(150, 0, 90, 22, BG);
+      vecText(VF_OUTFIT, 230 - vecWidth(VF_OUTFIT, t.hm, 18), 3, 18, t.hm, t.c, BG);
+    }, &t);
   }
   if (!(full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn)) return;
   lastWx = s.wx.version;
