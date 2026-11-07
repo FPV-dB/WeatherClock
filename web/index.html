@@ -303,6 +303,7 @@ nav button[hidden],[hidden]{display:none!important}
   <small hidden>O aviso de atualização passa a oferecer também as versões de teste, antes de todo mundo. Elas podem ter problemas; o modo de recuperação continua disponível.</small>
   <div class="row" style="margin:10px 0 8px"><button class="btn" onclick="backup()">Fazer backup</button><button class="btn" onclick="$('rbk').click()">Restaurar backup</button></div>
   <input id="rbk" type="file" accept=".json,application/json" hidden>
+  <p style="margin:0 0 10px"><button class="btn p" onclick="checkUpdate(true)">Check for updates</button></p>
   <div class="row"><button class="btn" onclick="location='/update'">Atualizar firmware</button>
   <button class="btn" onclick="if(confirm(t('Apagar Wi-Fi salvo e reiniciar?')))post('/api/wifireset').then(()=>toast(t('Reiniciando...')))">Resetar Wi-Fi</button></div>
   <p><button class="btn" id="fmt" hidden onclick="if(confirm(t('Formatar a memória? Todas as fotos e GIFs serão apagados.')))post('/api/format').then(r=>r.text()).then(x=>{toast(t(x));files()})">Formatar memória de arquivos</button></p>
@@ -486,9 +487,10 @@ async function shareDay(){if(!st)return;if(!STATS)await loadStats();
 // ---------- versão nova (firmware/latest.json no site) ----------
 let UPD=null,updating=false,updChecked=false,lastToday=-1;
 // com "Receber versões de teste" ligado, firmware/beta.json também conta: vale a mais nova das duas
-function checkUpdate(){const get=f=>fetch(SITE+'firmware/'+f,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+function checkUpdate(manual){const get=f=>fetch(SITE+'firmware/'+f,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
  Promise.all([get('latest.json'),st&&st.cfg.beta?get('beta.json'):null]).then(([a,b])=>{let u=a;if(b&&(!u||vnum(b.version)>vnum(u.version)))u=Object.assign({beta:1},b);
-  if(!u||!st||vnum(u.version)<=vnum(st.ver))return;UPD=u;let skip='';try{skip=localStorage.updSkip||''}catch(e){}if(skip==u.version)return;showUpdate()})}
+  if(!u||!st||vnum(u.version)<=vnum(st.ver)){if(manual)toast(u?t('Up to date (version {0})',st?st.ver:''):t('Could not reach the update site'));return}
+  UPD=u;let skip='';try{skip=localStorage.updSkip||''}catch(e){}if(skip==u.version&&!manual)return;showUpdate();if(manual)window.scrollTo(0,0)})}
 function showUpdate(){const u=UPD;if(!u)return;$('updt').textContent=t(u.beta?'Versão de teste {0} disponível':'Nova versão {0} disponível',u.version);const n=$('updn');n.innerHTML='';
  ((u.notes||{})[LANGS[LG]]||(u.notes||{}).pt||[]).forEach(x=>n.appendChild(el('li',null,x)));$('upd').classList.add('v')}
 function skipUpdate(){try{localStorage.updSkip=UPD.version}catch(e){}$('upd').classList.remove('v')}

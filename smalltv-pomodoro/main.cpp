@@ -46,7 +46,7 @@ extern "C" uint32_t _FS_start;
 
 void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h);  // ui.cpp: recorta para a área suja; fora da tela, cai na faixa
 
-#define FW_VERSION "1.23.5"
+#define FW_VERSION "2.0.0"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
 #define HOSTNAME   "weatherclock"
 #define AP_NAME    "WeatherClock-Setup"
 
