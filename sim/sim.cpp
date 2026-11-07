@@ -519,11 +519,11 @@ int main() {
   }
 
   // ---- telas avulsas ----
-  { Frame *f = new Frame(); uiBegin(f); uiMessage("Configure o Wi-Fi", "SmallTV-Pomodoro", "Conecte nessa rede e abra", "http://192.168.4.1"); save(*f, "12_portal"); delete f; }
+  { Frame *f = new Frame(); uiBegin(f); uiMessage("Set up Wi-Fi", "WeatherClock-Setup", "password: ab12cd34", "http://192.168.4.1"); save(*f, "12_portal"); delete f; }
   { Frame *f = new Frame(); uiBegin(f);  // tela de início: etapa do Wi-Fi, da hora e pronto
-    uiMessage("SmallTV Pomodoro", "Conectando Wi-Fi", "v1.0", ""); uiBootProgress(300, 0); save(*f, "12b_inicio_wifi");
-    uiMessage("Acertando a hora", "smalltv-1a2b.local", "192.168.1.108", ""); uiBootProgress(900, 1); save(*f, "12c_inicio_hora");
-    uiMessage("Conectado", "smalltv-1a2b.local", "192.168.1.108", ""); uiBootProgress(900, 2); save(*f, "12d_inicio_pronto"); delete f; }
+    uiMessage("Weather Clock", "Connecting Wi-Fi", "v1.0", ""); uiBootProgress(300, 0); save(*f, "12b_inicio_wifi");
+    uiMessage("Weather Clock", "Setting the time", "weatherclock.local", "192.168.1.178"); uiBootProgress(900, 1); save(*f, "12c_inicio_hora");
+    uiMessage("Weather Clock", "Connected", "weatherclock.local", "192.168.1.178"); uiBootProgress(900, 2); save(*f, "12d_inicio_pronto"); delete f; }
   { Frame *f = new Frame(); uiBegin(f);  // sem hora: o mostrador com o indicador "sincronizando"
     UiState t = base(14, 58, 50); t.timeOk = false; t.theme = 0; uiRenderClock(t); uiSyncHint(400); save(*f, "12e_sem_hora"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiColorTest(); save(*f, "13_teste_cores"); delete f; }

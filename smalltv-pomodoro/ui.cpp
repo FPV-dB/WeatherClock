@@ -768,9 +768,11 @@ void uiMessage(const char *title, const char *l1, const char *l2, const char *l3
   screen = SCR_MSG;
   bootLast = -1;
   G->fillScreen(BG);
-  mascot(96, 34, 3, FACE_HAPPY);  // conjunto (tomate, textos e a barra do início) centralizado na altura
-  textC(120, 98, 2, TEXT, title);
-  textC(120, 126, 2, WORK, l1);
+  // weatherbox: logotipo de sol com nuvem e o título na fonte Outfit, no lugar do tomate
+  weatherIcon(120, 50, 1.45f, 2, true, BG);
+  const int tw = vecWidth(VF_OUTFIT_TXT, title, 28);
+  vecText(VF_OUTFIT_TXT, 120 - tw / 2, 88, 28, title, TEXT, BG);
+  textC(120, 126, 2, LONG, l1);
   textC(120, 158, 1, MUTED, l2);
   textC(120, 172, 1, MUTED, l3);
 }
@@ -779,7 +781,7 @@ void uiMessage(const char *title, const char *l1, const char *l2, const char *l3
 void uiMessageLine(const char *l1) {
   if (screen != SCR_MSG) return;
   G->fillRect(0, 124, 240, 20, BG);
-  textC(120, 126, 2, WORK, l1);
+  textC(120, 126, 2, LONG, l1);
 }
 
 // Tela de início: barra em pixel art (moldura de cantos recortados e 16 blocos de 8x8). Enquanto falta alguma
@@ -800,14 +802,14 @@ void uiBootProgress(uint32_t ms, uint8_t done) {
   bootLast = pos;
   for (int i = 0; i < N; i++) {
     bool on = pos == N || (i >= pos && i < pos + LIT);
-    G->fillRect(x0 + 4 + i * (B + GAP), y0 + 4, B, B, on ? WORK : CARD2);
+    G->fillRect(x0 + 4 + i * (B + GAP), y0 + 4, B, B, on ? LONG : CARD2);
   }
 }
 
 // Enquanto o relógio não tem hora: quatro pontinhos no alto, um aceso que vai e volta, por cima do mostrador
 void uiSyncHint(uint32_t ms) {
   int p = ms / 200 % 6, on = p < 4 ? p : 6 - p;
-  for (int i = 0; i < 4; i++) G->fillCircle(108 + i * 8, 5, 2, i == on ? WORK : MUTED);
+  for (int i = 0; i < 4; i++) G->fillCircle(108 + i * 8, 5, 2, i == on ? LONG : MUTED);
 }
 
 void uiColorTest() {
