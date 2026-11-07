@@ -1,29 +1,23 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "date": "2026-11-08",
   "file": "weatherclock.bin",
   "size": 572016,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 413288,
-  "sig": "WVKhU4id4MB4387V/ImLIhyxJ7EWMzB5qkdp8ptAMzeTveT+vDuDw2jGJ537/xbsndXWtrsN2YSdTztYLf4fozrUQFsDjRJfmhPBNj8tIwJVZTH9TsY2DwMWc5kOIJ6hFeDzbolvbOGRkjnazzQ1H52sFfDdDrBsy/3pnYW/AbD8bgv7wMCpXBPxUNRNXj5uM7KXPQtU9ddTScIW2DUGuobeCDaK0L3I7K5siCoxx+P8RBC7FNRjCrRma3b30MpPixVzsjOc9ABsnmn85xinf3mzNx+wGYwycVB1NlLjT6uorO1voUrN6fkaTWAxA1EI25ahAEiCvC7UwuZ7INSBCg==",
-  "gzsig": "jyDxf5M5WkuPSvVi9OQZx86fHt8DiihYgGmREHhzSElMTxZpVb5GQfm6xYXolFld5zVqFFeBRMxYwanQcG2KCf5gnmL64pgIeI8PWt54RzRKWRxCmlkXdHLIh6OdTjD59M+EwZhJ1o4WaIGwibASfVCCm3vYALqvhS3wWYcMK5XFZIaP/YGoPmQEpn9jJs2i8egNK/qaqNXGTr14iZOu7sNDMf7w3rFplV3aSAWIzhLmGMxzn2wtQvfXiS/0pYHftpMgBJVPuMfkdZtXFzatoM3MFblNDR7a5NltWPtXtPbGKK6oXMUnfD3UMupQlN2s40E54m7fDNxyMGciuHICsA==",
-  "panel": "panel-2fe99c1eaa3a0fd99e9579d5.html.gz",
-  "psri": "sha256-L+mcHqo6D9melXnV1uRwQSPvcwOQEbySO938l9R2MQ4=",
+  "gzsize": 413286,
+  "sig": "CZpdDJ93/rWxGtpsZ9Y6/vkoWnIC/+BYoBxW05KYvkhpnwCVK/tRnQmLLCIK5sV+xt/J0hHtzOVecgZXMKgjF+1Gz8EIIs4/4EYwGl9d0LcjKRpIl1RdcLM9JWTWf/nF/EY46HI3STXHkI4wAG7PHzj9BS9vHzvVEVoayN7KJtiwp+QSfadTL7K0hjfO0DnlGIx7+L9UUH1e17sXkGKcw4f1TIRgwj2RJ92sroRteeuqRM9GnzgDg+M70qHDYyguiKGUR4Yxsct1V12jwypfCvkP5+HrZ0yPlqiJZw85sSthKL1/FOsFfhCXCLUvRmzyR9Xa0EgDtx/ZTZ2fGF0bQQ==",
+  "gzsig": "ivgHvjiUAO9mOFEkkLz+DSZIO7RkWMRA585u3MeFN0dLwA3ACi9j5IcVx6ollneQyAgRJGZ8+PpHAlG5Z9QlOqH0OCbZHIIEdL7GlhLYvoyyzv9nQ8p34DnpH+gOoJ6mAPqfv1nfNXXRYBQtVwTlXoOVTtn5EweP416GdMr5GObhypvsmjqEuL0VfWXX2yzaVvHvIBjA8xyYx5nqVDSXMKOa0vV+PUvsbw/itNEiha62nE8MHi/Ot4RuS+w6g8wRguxliyH7QaeEl/AxA+HN/C6rTYsYPBJjrkqm0wKXqcnTTbW7QpiINyqG9ps0hY0r3UaZaV+5Rb1IUW2owBWeww==",
+  "panel": "panel-1e126bcad3d75f25968818c4.html.gz",
+  "psri": "sha256-HhJrytPXXyWWiBjED5r/iyR0r9tW75EiyslU36jVQAE=",
   "notes": {
     "en": [
-      "Weather Clock 2.0: animated weather faces, wind face, radar clock, fade transitions",
-      "First-install help with QR codes",
-      "Check for updates from the Settings page"
+      "New page icon: a sun and cloud instead of the tomato"
     ],
     "pt": [
-      "Weather Clock 2.0: animated weather faces, wind face, radar clock, fade transitions",
-      "First-install help with QR codes",
-      "Check for updates from the Settings page"
+      "New page icon: a sun and cloud instead of the tomato"
     ],
     "es": [
-      "Weather Clock 2.0: animated weather faces, wind face, radar clock, fade transitions",
-      "First-install help with QR codes",
-      "Check for updates from the Settings page"
+      "New page icon: a sun and cloud instead of the tomato"
     ]
   }
 }
