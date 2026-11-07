@@ -1177,6 +1177,19 @@ struct DrawProbe {
 
 void renderClock() {
   DrawProbe probe;
+  // weatherbox: primeira instalação, já no Wi-Fi mas sem cidade: tela com QR code para abrir o painel
+  static bool citySetup = false;
+  if (WiFi.status() == WL_CONNECTED && !cfg.city[0]) {
+    if (!citySetup) {
+      citySetup = true;
+      uiSetupCity(WiFi.localIP().toString().c_str(), lanName[0] ? lanName : netName);
+    }
+    return;
+  }
+  if (citySetup) {
+    citySetup = false;
+    uiInvalidate();
+  }
   UiState s = makeState();
   if (!s.timeOk) {  // sem hora ainda: nunca parece travado
     syncHintOn = true;
@@ -3475,7 +3488,7 @@ void startPortal() {
   WiFi.softAP(AP_NAME, cfg.apPass);
   dns.start(53, "*", WiFi.softAPIP());
   String pw = String(tr("senha: ", "password: ", "clave: ")) + cfg.apPass;
-  message(tr("Configure o Wi-Fi", "Set up Wi-Fi", "Configura el Wi-Fi"), AP_NAME, pw.c_str(), "http://192.168.4.1");
+  uiSetupWifi(AP_NAME, cfg.apPass);  // weatherbox: passos e QR code para entrar na rede pelo celular
   server.on("/", HTTP_GET, [] {
     int n = WiFi.scanNetworks();
     String opts;
@@ -3499,7 +3512,11 @@ void startPortal() {
     p += tr("Senha", "Password", "Contrase&ntilde;a");
     p += F("<input name=p type=password><button>");
     p += tr("Conectar", "Connect", "Conectar");
-    p += F("</button></form>");
+    p += F("</button></form><p style='color:#aaa;font-size:14px'>");
+    p += tr("Use uma rede de 2,4 GHz: o relogio nao enxerga redes de 5 GHz. Se o roteador junta as duas com o mesmo nome, costuma funcionar.",
+            "Use a 2.4 GHz network: the clock can't see 5 GHz ones. If your router uses one name for both, that usually works.",
+            "Usa una red de 2,4 GHz: el reloj no ve redes de 5 GHz. Si el router usa un solo nombre para ambas, suele funcionar.");
+    p += F("</p>");
     server.send(200, "text/html", p);
   });
   server.on("/save", HTTP_POST, [] {

@@ -93,7 +93,10 @@ uint8_t uiSpriteFrame(const UiSprite *s, uint32_t ms);  // quadro da animação 
 void uiBegin(Adafruit_GFX *gfx);
 // Chamado entre os quadros de animação (ex.: virada do Flip) para ceder tempo ao Wi-Fi.
 extern void (*uiFrameHook)();
-void uiCornerClock(const char *hm);  // weatherbox: hora atual no canto de baixo, por cima do radar
+void uiCornerClock(const char *hm);
+// weatherbox: telas da primeira instalação, com QR code para o celular
+void uiSetupWifi(const char *ssid, const char *pass);     // entrar na rede do relógio
+void uiSetupCity(const char *ip, const char *host);       // abrir o painel e escolher a cidade  // weatherbox: hora atual no canto de baixo, por cima do radar
 // Relógio em ms para animações guiadas por tempo (firmware: millis). Sem ele, passos de 20 ms.
 extern uint32_t (*uiMillis)();
 // Envia um bloco de pixels RGB565 para a tela. O firmware aponta para o método rápido do

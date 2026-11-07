@@ -813,6 +813,74 @@ void uiCornerClock(const char *hm) {
   text(x0, y0, 2, TEXT, hm);
 }
 
+// ---------- weatherbox: primeira instalação ----------
+#include "src/qrcode/qrcode.h"
+// QR code com margem branca de 2 módulos, centrado em cx a partir de y; devolve a altura usada
+static int drawQr(int cx, int y, const char *data, int maxPx) {
+  QRCode qr;
+  uint8_t buf[300];
+  int v = 2;
+  for (; v <= 7; v++)
+    if (qrcode_getBufferSize(v) <= sizeof buf && qrcode_initText(&qr, buf, v, ECC_LOW, data) == 0) break;
+  if (v > 7) return 0;
+  const int n = qr.size + 4, px = maxPx / n > 1 ? maxPx / n : 1, side = n * px, x0 = cx - side / 2;
+  G->fillRoundRect(x0 - 2, y - 2, side + 4, side + 4, 6, uiRgb(255, 255, 255));
+  for (int my = 0; my < qr.size; my++)
+    for (int mx = 0; mx < qr.size; mx++)
+      if (qrcode_getModule(&qr, mx, my)) G->fillRect(x0 + (mx + 2) * px, y + (my + 2) * px, px, px, 0);
+  return side;
+}
+
+static void setupTitle(const char *t) {
+  const int w = vecWidth(VF_OUTFIT_TXT, t, 24);
+  vecText(VF_OUTFIT_TXT, 120 - w / 2, 4, 24, t, TEXT, BG);
+}
+
+void uiSetupWifi(const char *ssid, const char *pass) {
+  uiScrollEnd();
+  screen = SCR_MSG;
+  G->fillScreen(BG);
+  setupTitle(tr("Configurar o Wi-Fi", "Set up Wi-Fi", "Configurar el Wi-Fi"));
+  char q[96];
+  snprintf(q, sizeof q, "WIFI:T:WPA;S:%s;P:%s;;", ssid, pass);
+  const int h = drawQr(120, 32, q, 104);
+  int y = 32 + h + 6;
+  textC(120, y, 1, LONG, tr("1. Aponte a camera do celular", "1. Scan with your phone's camera", "1. Escanea con la camara del movil"));
+  y += 12;
+  char l[48];
+  snprintf(l, sizeof l, tr("ou entre em %s", "or join %s", "o entra en %s"), ssid);
+  textC(120, y, 1, MUTED, l);
+  y += 10;
+  snprintf(l, sizeof l, tr("senha: %s", "password: %s", "clave: %s"), pass);
+  textC(120, y, 1, TEXT, l);
+  y += 14;
+  textC(120, y, 1, LONG, tr("2. Escolha a sua rede Wi-Fi", "2. Pick your home Wi-Fi", "2. Elige tu red Wi-Fi"));
+  y += 10;
+  textC(120, y, 1, MUTED, tr("(abre sozinho ou va a 192.168.4.1)", "(opens by itself, or go to 192.168.4.1)", "(se abre solo o ve a 192.168.4.1)"));
+  y += 14;
+  textC(120, y, 1, SUN, tr("So Wi-Fi de 2,4 GHz (nao 5 GHz)", "2.4 GHz Wi-Fi only (not 5 GHz)", "Solo Wi-Fi de 2,4 GHz (no 5 GHz)"));
+}
+
+void uiSetupCity(const char *ip, const char *host) {
+  uiScrollEnd();
+  screen = SCR_MSG;
+  G->fillScreen(BG);
+  setupTitle(tr("Quase pronto!", "Almost done!", "Casi listo!"));
+  char u[48];
+  snprintf(u, sizeof u, "http://%s/", ip);
+  const int h = drawQr(120, 34, u, 112);
+  int y = 34 + h + 8;
+  textC(120, y, 1, LONG, tr("Aponte a camera para escolher", "Scan with your phone to choose", "Escanea con el movil para elegir"));
+  y += 10;
+  textC(120, y, 1, LONG, tr("a sua cidade", "your city and see the weather", "tu ciudad y ver el clima"));
+  y += 14;
+  snprintf(u, sizeof u, tr("ou abra %s", "or open %s", "o abre %s"), ip);
+  textC(120, y, 1, TEXT, u);
+  y += 10;
+  snprintf(u, sizeof u, "(%s.local)", host);
+  textC(120, y, 1, MUTED, u);
+}
+
 // Enquanto o relógio não tem hora: quatro pontinhos no alto, um aceso que vai e volta, por cima do mostrador
 void uiSyncHint(uint32_t ms) {
   int p = ms / 200 % 6, on = p < 4 ? p : 6 - p;
