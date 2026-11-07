@@ -1,6 +1,7 @@
-# Build e testes automáticos: a cada envio, compila o firmware e roda o simulador (redesenho, troca de
-# telas) e os testes de segurança (handlers, histórico, fuzzing de GIF e JPEG em 32 bits com ASan/UBSan).
-# Ações fixadas por hash de commit; arduino-cli conferido pelo SHA-256 oficial. Nada aqui publica nada.
+# Automatic build and tests: on every push, build the firmware and run the simulator (redraw and flicker
+# checks, screen changes) and the security tests (handlers, history, GIF and JPEG fuzzing in 32-bit with
+# ASan/UBSan). Actions are pinned by commit hash; arduino-cli is checked against the official SHA-256.
+# Nothing here publishes anything.
 name: firmware
 
 on:
@@ -15,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     env:
-      ARDUINO_CLI_VERSION: "1.5.1"  # (ARDUINO_CLI é o caminho do programa no compilar.sh)
+      ARDUINO_CLI_VERSION: "1.5.1"
       ESP8266_CORE: "esp8266:esp8266@3.1.2"
       ESP8266_INDEX: "https://arduino.esp8266.com/stable/package_esp8266com_index.json"
       GFX: /home/runner/Arduino/libraries/Adafruit_GFX_Library
@@ -25,12 +26,12 @@ jobs:
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
         with:
-          node-version: "24.18.0"  # a mesma do build local: o gzip do painel (web.h) sai igual byte a byte
+          node-version: "24.18.0"
 
-      - name: g++ de 32 bits (simulador e testes)
+      - name: 32-bit g++ (simulator and tests)
         run: sudo apt-get update -q && sudo apt-get install -y -q g++-multilib
 
-      - name: arduino-cli (conferido pelo SHA-256 do release oficial)
+      - name: arduino-cli (checked against the official release SHA-256)
         run: |
           set -o pipefail
           base="https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}"
@@ -40,31 +41,26 @@ jobs:
           mkdir -p "$HOME/bin" && tar -xzf "$file" -C "$HOME/bin" arduino-cli
           echo "$HOME/bin" >> "$GITHUB_PATH"
 
-      - name: núcleo ESP8266 e bibliotecas (versões do projeto)
+      - name: ESP8266 core and libraries (project versions)
         run: |
           arduino-cli core update-index --additional-urls "$ESP8266_INDEX"
           arduino-cli core install "$ESP8266_CORE" --additional-urls "$ESP8266_INDEX"
           arduino-cli lib install "Adafruit GFX Library@1.13.0" "Adafruit ST7735 and ST7789 Library@1.11.0" \
             "Adafruit BusIO@1.17.4" "ArduinoJson@7.4.3"
 
-      - name: painel (terser da versão fixa do web/package.json)
-        run: cd web && npm install --no-audit --no-fund
-
-      - name: simulador (mostradores, redesenho incremental, troca de telas) e painel
+      - name: Simulator (faces, incremental redraw, screen changes) and web panel
         run: |
-          want=$(grep "conteúdo do painel antes do gzip" smalltv-pomodoro/web.h)
+          want=$(grep "sha256" smalltv-pomodoro/web.h | head -2)
           bash sim/build.sh
           git checkout -- faces/ docs/ || true
-          got=$(grep "conteúdo do painel antes do gzip" smalltv-pomodoro/web.h)
-          # o conteúdo do painel tem que ser o commitado; os bytes do gzip podem variar de máquina para máquina,
-          # então o firmware é compilado com o web.h commitado (o painel publicado sai da mesma máquina que ele)
-          [ "$want" = "$got" ] || { echo "::error::painel (web/) mudou sem o web.h ser regerado: rode sim/build.sh e commite"; exit 1; }
-          git checkout -- smalltv-pomodoro/web.h
+          got=$(grep "sha256" smalltv-pomodoro/web.h | head -2)
+          # the committed web.h must match the web panel source (web/): rebuild it with scripts/build_panel.py
+          [ "$want" = "$got" ] || { echo "::error::web panel (web/) changed but smalltv-pomodoro/web.h was not rebuilt: run python3 scripts/build_panel.py . and commit"; exit 1; }
 
-      - name: testes de segurança (handlers, histórico, fuzzing de GIF e JPEG)
+      - name: Security tests (handlers, history, GIF and JPEG fuzzing)
         run: bash sim/testes.sh 3000
 
-      - name: firmware
+      - name: Firmware
         run: sh compilar.sh
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2

@@ -19,10 +19,10 @@ if [ -n "$LOCALAPPDATA" ]; then TARGET=x86-windows-gnu; BIN=sim.exe; else TARGET
 # sem zig (Linux): o g++ de 32 bits (pacote g++-multilib), o mesmo dos testes de GIF e JPEG; com
 # _FILE_OFFSET_BITS=64, senão o readdir de 32 bits falha em pastas com inode grande (WSL) e os pacotes ficam de fora
 if [ -n "$ZIG" ]; then CXX="$ZIG c++ -target $TARGET"; else CXX="g++ -m32 -D_FILE_OFFSET_BITS=64"; fi
-$CXX -O1 -std=c++17 -DARDUINO=100 -DARDUINOJSON_ENABLE_ARDUINO_STRING=0 -DARDUINOJSON_ENABLE_ARDUINO_STREAM=0 -DARDUINOJSON_ENABLE_ARDUINO_PRINT=0 -DARDUINOJSON_ENABLE_PROGMEM=0 -Ishim -I"$GFX" -I"${JSON:-$HOME/Documents/Arduino/libraries/ArduinoJson/src}" sim.cpp ../smalltv-pomodoro/ui.cpp ../smalltv-pomodoro/face_*.cpp ../smalltv-pomodoro/facepack.cpp ../smalltv-pomodoro/fonts.cpp "$GFX/Adafruit_GFX.cpp" -o "$BIN" || exit 1
+$CXX -O1 -std=c++17 -DARDUINO=100 -DARDUINOJSON_ENABLE_ARDUINO_STRING=0 -DARDUINOJSON_ENABLE_ARDUINO_STREAM=0 -DARDUINOJSON_ENABLE_ARDUINO_PRINT=0 -DARDUINOJSON_ENABLE_PROGMEM=0 -Ishim -I"$GFX" -I"${JSON:-$HOME/Documents/Arduino/libraries/ArduinoJson/src}" sim.cpp ../smalltv-pomodoro/ui.cpp ../smalltv-pomodoro/face_*.cpp ../smalltv-pomodoro/facepack.cpp ../smalltv-pomodoro/fonts.cpp "$GFX/Adafruit_GFX.cpp" -x c++ ../smalltv-pomodoro/src/qrcode/qrcode.c -o "$BIN" || exit 1
 ./"$BIN"; r=$?
 node png.js > /dev/null
 node faces.js
 node catalog.js
-node ../web/build.js
+python3 ../scripts/build_panel.py ..  # weatherbox: Python port of web/build.js (no terser), the one releases use
 exit $r

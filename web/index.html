@@ -131,7 +131,7 @@ nav button[hidden],[hidden]{display:none!important}
 #rotlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:6px 0 4px}
 #rotlist label{display:flex;gap:8px;align-items:center;justify-content:flex-start;padding:8px 10px;border-radius:10px;background:var(--card2);font-size:14px;margin:0}
 #rotlist input{margin:0}
-#radarc{margin-bottom:16px}.warn{background:rgba(255,196,0,.12);border:1px solid rgba(255,196,0,.5);color:var(--fg);border-radius:10px;padding:10px 12px;margin:10px 0 6px;font-size:14px}#welcome{margin-bottom:16px;border:1px solid var(--long)}#welcome p{color:var(--mut);margin:6px 0 12px}#radarc img{display:block;width:100%;max-width:240px;aspect-ratio:1;margin:8px auto 0;border-radius:12px;image-rendering:pixelated}
+#radarc{margin-bottom:16px}.warn{background:rgba(255,196,0,.12);border:1px solid rgba(255,196,0,.5);color:var(--fg);border-radius:10px;padding:10px 12px;margin:10px 0 6px;font-size:14px}#welcome{margin-bottom:16px;border:1px solid var(--long)}#welcome p{color:var(--mut);margin:6px 0 12px}#radarc canvas{display:block;width:100%;max-width:240px;aspect-ratio:1;margin:8px auto 0;border-radius:12px;image-rendering:pixelated}
 
 </style></head><body>
 <header><b>Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span></header>
@@ -146,7 +146,7 @@ nav button[hidden],[hidden]{display:none!important}
  <div class="side">
  <div class="card" id="welcome" hidden><b>Welcome to your Weather Clock!</b><p>Choose your city and the clock will show your local weather and time.</p><button class="btn p" onclick="tab(3);setTimeout(()=>{const q=$('q');q.scrollIntoView({block:'center'});q.focus()},80)">Choose my city</button></div>
  <div class="card" id="now"></div>
- <div class="card" id="radarc" hidden><small>Rain radar · Bureau of Meteorology, last 30 min</small><img id="radarimg" alt="Rain radar"></div>
+ <div class="card" id="radarc" hidden><small>Rain radar · Bureau of Meteorology, last 30 min</small><canvas id="radarimg" width="240" height="240" aria-label="Rain radar"></canvas></div>
  <div class="card hero"><div class="scr"><img id="curimg" alt=""></div><div><small>Mostrador atual</small><b id="curname">—</b><p id="curdesc"></p></div></div>
  </div>
  <div class="body">
@@ -380,7 +380,8 @@ function tab(i){if(i==1)i=0;curTab=i;document.querySelectorAll('.tab').forEach((
  try{localStorage.tab=i}catch(e){}if(i==2){files();radarLoad()}if(i==3)hooksLoad();if(i==1&&!STATS)loadStats();window.scrollTo(0,0)}
 const fkey=f=>f.pkg?'p:'+f.pkg:'t:'+f.t;  // embutido "t:N" ou pacote "p:id"
 const curKey=s=>s.cfg.theme==200?'p:'+s.cfg.pkg:'t:'+s.cfg.theme;
-const faceSrc=f=>f.src||(f.pkg?'/face?pkg='+encodeURIComponent(f.pkg):SITE+'img/faces/face-'+f.t+'.png');  // embutidos: prévia no site (não ocupa a flash)
+const ANIMF=[3,8,9,10,11];  // weatherbox: mostradores animados têm prévia em GIF
+const faceSrc=f=>f.src||(f.pkg?'/face?pkg='+encodeURIComponent(f.pkg):SITE+'img/faces/face-'+f.t+(ANIMF.includes(f.t)?'.gif':'.png'));  // embutidos: prévia no site (não ocupa a flash)
 // sem prévia guardada no relógio: tenta a do site (mesmo id); se não houver, mostra o nome
 // Fila de imagens do relógio: o servidor do ESP8266 atende uma conexão por vez e derruba parte
 // das requisições quando o navegador pede várias de uma vez. Carrega uma por vez e tenta de novo.
@@ -421,7 +422,7 @@ async function radarLoad(){try{if(!RADARS)RADARS=(await (await fetch(SITE+'radar
  sel.innerHTML='';const o0=document.createElement('option');o0.value=0;o0.textContent=t('Nearest to {0}',c.city||t('your city'))+(has?' ('+list[0].name+')':'');sel.appendChild(o0);
  list.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=r.name+', '+r.state+(r.d!=null?' · '+r.d+' km':'');sel.appendChild(o)});
  sel.value=cur.id;radarRanges(cur.km);
- const f=(await (await fetch('/api/files')).json()).files.find(x=>x.n=='/image/radar.gif');
+ const f=(await (await fetch('/api/files')).json()).files.find(x=>/\/image\/radar\.(wcr|gif)$/.test(x.n));
  $('rstat').textContent=f?t('Radar images are arriving from the computer program.'):t('No radar image yet: the program on the computer isn\'t running, or hasn\'t sent one yet.')}
  catch(e){$('rstat').textContent=t('Could not load the radar list.')}}
 function radarPick(){const id=+$('rsel').value,c=st?st.cfg:{};if(id||!RADARS)return RADARS&&RADARS.find(r=>r.id==id);
@@ -429,8 +430,21 @@ function radarPick(){const id=+$('rsel').value,c=st?st.cfg:{};if(id||!RADARS)ret
 function radarRanges(km){const r=radarPick(),k=$('rkm'),keep=km||+k.value||64;k.innerHTML='';((r&&r.ranges)||[64,128,256,512]).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=t('{0} km radius',v);k.appendChild(o)});
  k.value=[...k.options].some(o=>+o.value==keep)?keep:k.options[0].value}
 function radarSave(){post('/api/radar',new URLSearchParams({id:$('rsel').value,km:$('rkm').value})).then(r=>toast(r.ok?t('Saved: the program uses it from its next update'):t('Falha: ')+r.status))}
-function radarDraw(){const i=$('radarimg'),v=Math.floor(Date.now()/120000);if(!i||i.dataset.v==v)return;i.dataset.v=v;
- i.onload=()=>{$('radarc').hidden=false};i.onerror=()=>{$('radarc').hidden=true};i.src='/fs?f=%2Fimage%2Fradar.gif&v='+v}
+// weatherbox: o radar vem como .wcr (pixels RGB565 em RLE, quadros só com o que mudou): decodifica aqui e anima
+let RW={v:-1,frames:null,delays:null,k:0,t:0};
+function wcrDecode(buf){const b=new Uint8Array(buf),dv=new DataView(buf);if(String.fromCharCode(...b.slice(0,4))!='WCR2')return null;
+ const n=b[8],wrap=b[9]==1,delays=[];let o=10;for(let i=0;i<n;i++){delays.push(dv.getUint16(o,true));o+=2}
+ const px=new Uint16Array(240*240),frames=[];
+ for(let f=0;f<n;f++){const len=dv.getUint32(o,true);o+=4;const e=o+len;let i=0;
+  while(o<e){const c=b[o];if(c&0x80){i+=(c&0x7F)+1;o++}else{px.fill(b[o+1]|b[o+2]<<8,i,i+c);i+=c;o+=3}}
+  const im=new ImageData(240,240),d=im.data;for(let k=0;k<px.length;k++){const v=px[k];d[k*4]=(v>>11)*255/31;d[k*4+1]=(v>>5&63)*255/63;d[k*4+2]=(v&31)*255/31;d[k*4+3]=255}
+  frames.push(im)}
+ if(wrap){frames.pop();delays.pop()}  // o último quadro só leva de volta ao primeiro
+ return{frames,delays}}
+function radarDraw(){const c=$('radarimg'),v=Math.floor(Date.now()/120000);if(!c)return;
+ if(RW.v!=v){RW.v=v;fetch('/fs?f=%2Fimage%2Fradar.wcr&v='+v).then(r=>r.ok?r.arrayBuffer():null).then(b=>{const w=b&&wcrDecode(b);$('radarc').hidden=!w;if(w){RW.frames=w.frames;RW.delays=w.delays;RW.k=0;RW.t=0;radarTick()}}).catch(()=>{$('radarc').hidden=true})}}
+function radarTick(){if(!RW.frames)return;const c=$('radarimg');c.getContext('2d').putImageData(RW.frames[RW.k],0,0);
+ const d=RW.delays[RW.k]||500;RW.k=(RW.k+1)%RW.frames.length;clearTimeout(RW.t);RW.t=setTimeout(radarTick,d)}
 function rotDraw(){const box=$('rotlist');if(!box||!FACES.length)return;const rk=rotKeys(),sig=FACES.map(f=>f.n).join()+'|'+rk.join();if(box.dataset.sig==sig)return;box.dataset.sig=sig;box.innerHTML='';
  FACES.forEach(f=>{const k=fkey(f),l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.checked=rk.includes(k);
   i.onchange=()=>{const cur=rotKeys().filter(x=>x!=k);save({rot:(i.checked?cur.concat(k):cur).join(',')}).then(()=>toast(i.checked?t('Added to rotation'):t('Removed from rotation')))};

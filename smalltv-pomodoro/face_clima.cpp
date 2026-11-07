@@ -40,7 +40,7 @@ static void paintWeather(void *c) {
     textC(120, 124, 1, MUTED, tr("defina a cidade no painel", "set the city in the panel", "elige la ciudad en el panel"));
     return;
   }
-  weatherIcon(64, 82, 1.6f, s.wx.code, s.wx.day, BG);
+  weatherIcon(64, 82, 1.6f, s.wx.code, s.wx.day, BG, s.ms | 1);
   char tv[8];
   snprintf(tv, sizeof tv, "%d", (int)lroundf(s.wx.t));
   outfitNum(166, 46, 58, tv, TEXT, BG, 'o');
@@ -61,6 +61,14 @@ static void paintWeather(void *c) {
   miniCard(162, tr("UMIDADE", "HUMIDITY", "HUMEDAD"), h, false);
 }
 
+// weatherbox: só o ícone grande é redesenhado (fora da tela) para animar
+static const int IC_X = 12, IC_Y = 36, IC_W = 106, IC_H = 86;
+static void paintIcon(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(IC_X, IC_Y, IC_W, IC_H, BG);
+  weatherIcon(64, 82, 1.6f, s.wx.code, s.wx.day, BG, s.ms | 1);
+}
+
 void themeWeather(const UiState &s, bool full) {
   char hm[8] = "--:--";
   if (s.timeOk) snprintf(hm, sizeof hm, "%02d:%02d", displayHour(s), s.now.tm_min);
@@ -77,7 +85,14 @@ void themeWeather(const UiState &s, bool full) {
       vecText(VF_OUTFIT, 230 - vecWidth(VF_OUTFIT, t.hm, 18), 3, 18, t.hm, t.c, BG);
     }, &t);
   }
-  if (!(full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn)) return;
+  static uint32_t lastAnim = 0;
+  if (!(full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn)) {
+    if (s.weatherOn && s.wx.ok && s.ms - lastAnim >= 150) {
+      lastAnim = s.ms;
+      uiPaint(false, IC_X, IC_Y, IC_W, IC_H, paintIcon, (void *)&s);
+    }
+    return;
+  }
   lastWx = s.wx.version;
   lastWxOn = s.weatherOn;
   uiPaint(full, 0, 24, 240, 216, paintWeather, (void *)&s);
