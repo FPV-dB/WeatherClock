@@ -3544,6 +3544,18 @@ void loop() {
   diagLoop();
   if (bootCount && millis() > 30000) setBootCount(0);  // ficou ligado: não foi uma inicialização curta
   if (memRestartAt && millis() - memRestartAt > 2000) safeRestart();  // dá tempo de responder a quem pediu
+  // weatherbox: reinício diário às 4h (hora local) para a memória começar limpa; só depois de 2 h ligado,
+  // para não repetir no mesmo minuto, e nunca no meio de uma atualização de firmware
+  static uint32_t nightlyCheck = 0;
+  if (millis() - nightlyCheck > 20000) {
+    nightlyCheck = millis();
+    if (millis() > 7200000UL && timeValid() && !Update.isRunning()) {
+      time_t now = time(nullptr);
+      struct tm t;
+      localtime_r(&now, &t);
+      if (t.tm_hour == 4 && t.tm_min < 5) safeRestart();
+    }
+  }
   if (recoveryMode) {
     server.handleClient();
     return;
