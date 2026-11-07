@@ -1,19 +1,19 @@
-// Gera weatherclock/assets.h a partir dos sprites em assets/*.txt.
+// Builds weatherclock/assets.h from the sprites in assets/*.txt.
 //
-// Uso: node assets/generate.js   (o sim/build.sh já roda este script antes de compilar)
+// Usage: node assets/generate.js   (sim/build.sh already runs this script before compiling)
 //
-// Formato de um sprite (um arquivo por sprite; o nome do arquivo vira o nome do asset):
+// Sprite format (one file per sprite; the file name becomes the asset name):
 //
-//   # comentário (também no fim de uma linha: "cor k #280e0c   # olhos")
-//   paleta tomate          inclui as cores de assets/palettes/tomate.txt (opcional)
-//   cor k #280e0c          caractere -> cor (sobrescreve a paleta incluída)
-//   ms 200                 duração de cada quadro, para animações (opcional)
-//   quadro                 começa um quadro novo (opcional se houver só um)
-//   fundo #a6b48c          cor de fundo na folha de prévia (opcional; para sprites de fundo claro)
-//   ......gGGg......       uma linha de pixels por linha de texto; '.' = transparente
+//   # comment (also at the end of a line: "color k #280e0c   # eyes")
+//   palette tomato         includes the colours from assets/palettes/tomato.txt (optional)
+//   color k #280e0c        character -> colour (overrides the included palette)
+//   ms 200                 duration of each frame, for animations (optional)
+//   frame                  starts a new frame (optional if there is only one)
+//   background #a6b48c     background colour on the preview sheet (optional; for sprites on a light background)
+//   ......gGGg......       one row of pixels per line of text; '.' = transparent
 //
-// Todos os quadros têm o mesmo tamanho. Até 15 cores por sprite (4 bits por pixel).
-// tomato_happy.txt vira SPR_TOMATO_HAPPY em C++.
+// All frames are the same size. Up to 15 colours per sprite (4 bits per pixel).
+// tomato_happy.txt becomes SPR_TOMATO_HAPPY in C++.
 
 const fs = require('fs'), path = require('path');
 const DIR = __dirname, OUT = path.join(DIR, '..', 'weatherclock', 'assets.h');
@@ -23,22 +23,22 @@ function fail(file, line, msg) {
   process.exit(1);
 }
 
-// "#e8402f" -> RGB565 (a mesma conta de uiRgb)
+// "#e8402f" -> RGB565 (the same maths as uiRgb)
 function rgb565(file, line, hex) {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex);
-  if (!m) fail(file, line, `cor inválida "${hex}" (use #rrggbb)`);
+  if (!m) fail(file, line, `invalid colour "${hex}" (use #rrggbb)`);
   const v = parseInt(m[1], 16), r = v >> 16, g = (v >> 8) & 255, b = v & 255;
   return ((r & 0xf8) << 8) | ((g & 0xfc) << 3) | (b >> 3);
 }
 
 function readPalette(name, into, from, fromLine) {
   const file = path.join(DIR, 'palettes', name + '.txt');
-  if (!fs.existsSync(file)) fail(from, fromLine, `paleta "${name}" não existe (${path.relative(DIR, file)})`);
+  if (!fs.existsSync(file)) fail(from, fromLine, `palette "${name}" does not exist (${path.relative(DIR, file)})`);
   fs.readFileSync(file, 'utf8').split(/\r?\n/).forEach((raw, i) => {
-    const l = raw.replace(/\s+#\s.*$/, '').trim();  // "# texto" no fim da linha é comentário
+    const l = raw.replace(/\s+#\s.*$/, '').trim();  // "# text" at the end of a line is a comment
     if (!l || l.startsWith('#')) return;
     const m = /^color\s+(\S)\s+(\S+)$/.exec(l);
-    if (!m) fail(file, i + 1, `esperava "cor <caractere> #rrggbb"`);
+    if (!m) fail(file, i + 1, `expected "color <character> #rrggbb"`);
     into.set(m[1], rgb565(file, i + 1, m[2]));
   });
 }
@@ -52,28 +52,28 @@ function parse(file) {
     let m;
     if ((m = /^palette\s+(\S+)$/.exec(l))) return readPalette(m[1], colors, file, ln);
     if ((m = /^color\s+(\S)\s+(\S+)$/.exec(l))) {
-      if (m[1] === '.') fail(file, ln, `"." é reservado para transparente`);
+      if (m[1] === '.') fail(file, ln, `"." is reserved for transparent`);
       return colors.set(m[1], rgb565(file, ln, m[2]));
     }
     if ((m = /^ms\s+(\d+)$/.exec(l))) return (ms = Math.min(+m[1], 65535));
     if ((m = /^background\s+(\S+)$/.exec(l))) return (bg = rgb565(file, ln, m[1]));
     if (l === 'frame') return frames.push((cur = []));
-    if (/\s/.test(l)) fail(file, ln, `linha não reconhecida: "${l}"`);
+    if (/\s/.test(l)) fail(file, ln, `unrecognised line: "${l}"`);
     if (!cur) frames.push((cur = []));
-    if (w && l.length !== w) fail(file, ln, `linha com ${l.length} pixels; as anteriores têm ${w}`);
+    if (w && l.length !== w) fail(file, ln, `line with ${l.length} pixels; the previous ones have ${w}`);
     w = l.length;
-    for (const ch of l) if (ch !== '.' && !colors.has(ch)) fail(file, ln, `caractere "${ch}" sem cor (falta "cor ${ch} #rrggbb")`);
+    for (const ch of l) if (ch !== '.' && !colors.has(ch)) fail(file, ln, `character "${ch}" has no colour (missing "color ${ch} #rrggbb")`);
     cur.push({ row: l, ln });
   });
   if (!frames.length || !frames[0].length) fail(file, 1, 'nenhum pixel');
   const h = frames[0].length;
-  frames.forEach(f => f.length !== h && fail(file, f[0] ? f[0].ln : 1, `quadro com ${f.length} linhas; o primeiro tem ${h}`));
-  if (frames.length > 1 && !ms) fail(file, 1, 'animação sem "ms <duração de cada quadro>"');
-  if (w > 255 || h > 255 || frames.length > 255) fail(file, 1, 'sprite grande demais (máx. 255x255, 255 quadros)');
-  // só as cores realmente usadas entram no sprite, na ordem em que aparecem
+  frames.forEach(f => f.length !== h && fail(file, f[0] ? f[0].ln : 1, `frame with ${f.length} lines; the first has ${h}`));
+  if (frames.length > 1 && !ms) fail(file, 1, 'animation without "ms <duration of each frame>"');
+  if (w > 255 || h > 255 || frames.length > 255) fail(file, 1, 'sprite too large (max 255x255, 255 frames)');
+  // only the colours actually used go into the sprite, in the order they appear
   const used = [];
   for (const f of frames) for (const { row } of f) for (const ch of row) if (ch !== '.' && !used.includes(ch)) used.push(ch);
-  if (used.length > 15) fail(file, 1, `${used.length} cores; o máximo é 15`);
+  if (used.length > 15) fail(file, 1, `${used.length} colours; the maximum is 15`);
   const bytes = [];
   for (const f of frames) {
     const idx = [];
@@ -86,19 +86,19 @@ function parse(file) {
 const files = fs.readdirSync(DIR).filter(f => f.endsWith('.txt')).sort();
 const hex = (v, n) => '0x' + v.toString(16).padStart(n, '0');
 const wrap = (items, per) => items.reduce((o, v, k) => o + (k % per ? ' ' : '\n    ') + v + ',', '');
-let out = `// assets.h — GERADO por assets/generate.js a partir de assets/*.txt. Não edite à mão:
-// mude o .txt e rode "node assets/generate.js" (o sim/build.sh já faz isso).
+let out = `// assets.h — GENERATED by assets/generate.js from assets/*.txt. Do not edit by hand:
+// edit the .txt and run "node assets/generate.js" (sim/build.sh already does this).
 #pragma once
 #include "ui.h"
 `;
 const names = [];
 for (const f of files) {
   const name = f.replace(/\.txt$/, '');
-  if (!/^[a-z0-9_]+$/.test(name)) fail(path.join(DIR, f), 1, 'nome de arquivo deve ter só a-z, 0-9 e _');
+  if (!/^[a-z0-9_]+$/.test(name)) fail(path.join(DIR, f), 1, 'file names may only use a-z, 0-9 and _');
   const s = parse(path.join(DIR, f)), id = 'SPR_' + name.toUpperCase();
   names.push([name, id, s.bg]);
   out += `
-// ${name}: ${s.w}x${s.h}${s.frames > 1 ? `, ${s.frames} quadros de ${s.ms} ms` : ''}
+// ${name}: ${s.w}x${s.h}${s.frames > 1 ? `, ${s.frames} frames of ${s.ms} ms` : ''}
 static const uint16_t ${id}_PAL[] PROGMEM = {${s.pal.map(v => hex(v, 4)).join(', ')}};
 static const uint8_t ${id}_PX[] PROGMEM = {${wrap(s.bytes.map(v => hex(v, 2)), 16)}
 };
@@ -106,9 +106,9 @@ static const UiSprite ${id} PROGMEM = {${s.w}, ${s.h}, ${s.frames}, ${s.ms}, ${i
 `;
 }
 out += `
-// Lista de todos os assets (só para a folha de prévia do simulador; não ocupa a flash do firmware)
+// List of all assets (only for the simulator preview sheet; takes no firmware flash)
 #ifdef UI_ASSET_LIST
-struct UiAssetEntry { const char *name; const UiSprite *sprite; int32_t bg; };  // bg -1 = fundo padrão
+struct UiAssetEntry { const char *name; const UiSprite *sprite; int32_t bg; };  // bg -1 = default background
 static const UiAssetEntry UI_ASSETS[] = {
 ${names.map(([n, id, bg]) => `    {"${n}", &${id}, ${bg < 0 ? -1 : hex(bg, 4)}},`).join('\n')}
 };

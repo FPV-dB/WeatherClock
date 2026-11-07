@@ -1,20 +1,20 @@
-// Mostrador Flip: plaquinhas com a fonte Bebas Neue e virada animada.
-// Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
+// Flip face: flip cards with the Bebas Neue font and an animated turnover.
+// Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
 
 // ---------- tema 5: FLIP ----------
-// Relógio de plaquinhas com a fonte Bebas Neue e animação de virada de verdade:
-// a aba de cima (dígito antigo) cai em direção à dobradiça encolhendo em perspectiva e
-// escurecendo, revelando o dígito novo; depois a aba de baixo (dígito novo) desce cobrindo
-// o antigo. O cartão é desenhado linha a linha com escala vertical, então cada quadro da
-// animação é só "qual linha da fonte cai em qual linha da tela".
+// Flip clock with the Bebas Neue font and a real turnover animation:
+// the top flap (old digit) falls towards the hinge, shrinking in perspective and
+// darkening, revealing the new digit; then the bottom flap (new digit) comes down covering
+// the old one. The card is drawn line by line with vertical scaling, so each frame of the
+// animation is just "which font line lands on which screen line".
 //
-// O ESP8266 não tem unidade de ponto flutuante: o preenchimento é todo em inteiros
-// (escala 1/8 px por unidade da fonte, cobertura de borda em 1/16 px, 4 sub-linhas por linha).
+// The ESP8266 has no floating-point unit: the fill is all integer maths
+// (scale 1/8 px per font unit, edge coverage in 1/16 px, 4 sub-lines per line).
 
-// Bebas Neue (Dharma Type, SIL Open Font License 1.1): contornos dos dígitos 0-9 com as curvas
-// convertidas em segmentos. Unidades da fonte: célula de 400 x 720, y a partir do topo.
+// Bebas Neue (Dharma Type, SIL Open Font License 1.1): outlines of the digits 0-9 with the curves
+// converted to segments. Font units: 400 x 720 cell, y from the top.
 static const int16_t FLIP_PT[588][2] PROGMEM = {
   {200, 720}, {162, 717}, {129, 709}, {100, 694}, {76, 674}, {57, 649}, {44, 619}, {36, 584},
   {33, 544}, {33, 544}, {33, 176}, {36, 136}, {44, 102}, {57, 71}, {76, 46}, {100, 26},
@@ -91,26 +91,26 @@ static const int16_t FLIP_PT[588][2] PROGMEM = {
   {146, 330}, {165, 353}, {197, 361}, {197, 361},
   {50, 216}, {130, 216}, {130, 296}, {50, 296}, {50, 424}, {130, 424}, {130, 504}, {50, 504},  // ':' (dois quadrados)
 };
-static const uint16_t FLIP_CEND[18] PROGMEM = {39, 58, 72, 138, 225, 237, 242, 301, 365, 384, 392, 455, 474, 497, 561, 580, 584, 588};  // fim (exclusivo) de cada contorno
-static const uint8_t FLIP_DIG[11] = {0, 2, 3, 4, 5, 7, 8, 10, 11, 14, 16};  // primeiro contorno de cada dígito
+static const uint16_t FLIP_CEND[18] PROGMEM = {39, 58, 72, 138, 225, 237, 242, 301, 365, 384, 392, 455, 474, 497, 561, 580, 584, 588};  // end (exclusive) of each contour
+static const uint8_t FLIP_DIG[11] = {0, 2, 3, 4, 5, 7, 8, 10, 11, 14, 16};  // first contour of each digit
 static const uint8_t BEBAS_GLYPH[12] PROGMEM = {0, 2, 3, 4, 5, 7, 8, 10, 11, 14, 16, 18};  // + ':'
 static const uint16_t BEBAS_ADV[11] PROGMEM = {400, 400, 400, 400, 400, 400, 400, 400, 400, 400, 180};
-const VecFont VF_BEBAS = {FLIP_PT, FLIP_CEND, BEBAS_GLYPH, BEBAS_ADV};  // pacotes de mostrador (fonts.cpp)
+const VecFont VF_BEBAS = {FLIP_PT, FLIP_CEND, BEBAS_GLYPH, BEBAS_ADV};  // face packs (fonts.cpp)
 static const int FLIP_CW = 400, FLIP_CH = 720;
 
 
 
 static const int FL_W = 108, FL_H = 124, FL_HALF = 62, FL_Y = 40;
-static const int FL_EXT = 4;             // folga lateral: a borda da aba "cresce" em perspectiva
+static const int FL_EXT = 4;             // side margin: the flap's edge "grows" in perspective
 static const int FL_BW = FL_W + 2 * FL_EXT;
-static const int FL_DTOP = 17;           // topo do dígito dentro do cartão (dígito = 720/8 = 90 px)
-static const int FL_X[2] = {8, 124};     // cartão das horas e dos minutos
-static const float FL_D = 14.0f * FL_HALF;  // distância do observador (perspectiva sutil)
+static const int FL_DTOP = 17;           // top of the digit inside the card (digit = 720/8 = 90 px)
+static const int FL_X[2] = {8, 124};     // hours and minutes card
+static const float FL_D = 14.0f * FL_HALF;  // viewer distance (subtle perspective)
 static const uint16_t FL_TOP = uiRgb(46, 46, 52), FL_BOT = uiRgb(37, 37, 42), FL_FG = uiRgb(244, 242, 234);
-static const uint8_t FL_CORNER[10] = {7, 5, 3, 2, 2, 1, 1, 0, 0, 0};  // recuo dos cantos arredondados (raio 10)
+static const uint8_t FL_CORNER[10] = {7, 5, 3, 2, 2, 1, 1, 0, 0, 0};  // inset of the rounded corners (radius 10)
 static uint8_t flCov[FL_BW];
 
-// Mistura inteira de cores RGB565: n/16 de b sobre a.
+// Integer RGB565 colour blend: n/16 of b over a.
 uint16_t mix16(uint16_t a, uint16_t b, int n) {
   if (n <= 0) return a;
   if (n >= 16) return b;
@@ -119,7 +119,7 @@ uint16_t mix16(uint16_t a, uint16_t b, int n) {
   return ((ar + (br - ar) * n / 16) << 11) | ((ag + (bg - ag) * n / 16) << 5) | (ab + (bb - ab) * n / 16);
 }
 
-// Acumula a cobertura de um trecho [a, b) em 1/16 de pixel.
+// Accumulates the coverage of a span [a, b) in 1/16 of a pixel.
 static void flSpan(int a, int b) {
   if (a < 0) a = 0;
   if (b > FL_BW * 16) b = FL_BW * 16;
@@ -134,13 +134,13 @@ static void flSpan(int a, int b) {
   if (ib < FL_BW) flCov[ib] += b & 15;
 }
 
-// Uma sub-linha de um dígito: cruzamentos com as arestas (regra par-ímpar, que trata os furos).
-// ox16 = origem do dígito (1/16 px, coordenadas do buffer); sx16 = escala horizontal x16 em torno do centro.
+// One sub-line of a digit: crossings with the edges (even-odd rule, which handles the holes).
+// ox16 = digit origin (1/16 px, buffer coordinates); sx16 = horizontal scale x16 around the centre.
 static void flSubline(int d, int ox16, int sy, int sx16) {
   if (sy < 0 || sy >= FLIP_CH) return;
   int xs[24], n = 0;
   for (int c = FLIP_DIG[d]; c < FLIP_DIG[d + 1]; c++) {
-    // tabelas em PROGMEM (flash): no ESP8266, "const" comum ocuparia RAM
+    // tables in PROGMEM (flash): on the ESP8266 a plain "const" would take RAM
     int s = c ? pgm_read_word(&FLIP_CEND[c - 1]) : 0, e = pgm_read_word(&FLIP_CEND[c]);
     for (int i = s; i < e; i++) {
       int j = i + 1 < e ? i + 1 : s;
@@ -151,34 +151,34 @@ static void flSubline(int d, int ox16, int sy, int sx16) {
       }
     }
   }
-  for (int i = 1; i < n; i++)  // ordenação por inserção (poucos cruzamentos)
+  for (int i = 1; i < n; i++)  // insertion sort (few crossings)
     for (int k = i; k > 0 && xs[k] < xs[k - 1]; k--) {
       int t = xs[k];
       xs[k] = xs[k - 1];
       xs[k - 1] = t;
     }
-  const int c16 = FL_BW * 8;  // centro do buffer em 1/16 px
+  const int c16 = FL_BW * 8;  // buffer centre in 1/16 px
   for (int k = 0; k + 1 < n; k += 2) {
     int a = ox16 + xs[k] / 8, b = ox16 + xs[k + 1] / 8;  // fonte/8 = px
     flSpan(c16 + (a - c16) * sx16 / 16, c16 + (b - c16) * sx16 / 16);
   }
 }
 
-// Desenha a linha de tela FL_Y+yr do cartão em cx mostrando a linha de origem srcTop (px do
-// cartão, fracionária, altura dy) do par "value", com escala horizontal sx e escurecida em shade/16.
+// Draws screen line FL_Y+yr of the card at cx showing source line srcTop (card px,
+// fractional, height dy) of the "value" pair, with horizontal scale sx and darkened by shade/16.
 static void flRow(int cx, int yr, int value, float srcTop, float dy, int shade, float sx = 1) {
   memset(flCov, 0, sizeof flCov);
   int sx16 = (int)(sx * 16 + 0.5f);
   if (value >= 0)
     for (int j = 0; j < 4; j++) {
-      int sy = (int)((srcTop + (j + 0.5f) * dy / 4 - FL_DTOP) * 8);  // linha de origem em unidades da fonte
+      int sy = (int)((srcTop + (j + 0.5f) * dy / 4 - FL_DTOP) * 8);  // source line in font units
       flSubline(value / 10, (FL_EXT + 4) * 16, sy, sx16);
       flSubline(value % 10, (FL_EXT + 54) * 16, sy, sx16);
     }
   uint16_t bg = srcTop < FL_HALF ? FL_TOP : FL_BOT;
   uint16_t pal[17], b = mix16(bg, BG, shade), f = mix16(FL_FG, BG, shade);
   for (int i = 0; i <= 16; i++) pal[i] = mix16(b, f, i);
-  // silhueta: cartão (com cantos arredondados da linha de origem) escalado em torno do centro
+  // silhouette: card (with the source line's rounded corners) scaled around the centre
   int sr = (int)srcTop;
   int inset = sr < 10 ? FL_CORNER[sr < 0 ? 0 : sr] : sr >= FL_H - 10 ? FL_CORNER[FL_H - 1 - sr] : 0;
   float half = (FL_W / 2 - inset) * sx;
@@ -191,20 +191,20 @@ static void flRow(int cx, int yr, int value, float srcTop, float dy, int shade, 
   blit(cx - FL_EXT, FL_Y + yr, flRowBuf, FL_BW, 1);
 }
 
-// Metade de cima do cartão para o ângulo th da aba (0 = em pé, cobrindo; 90 = de lado).
-// A aba mostra a metade de cima do número antigo; atrás dela aparece o número novo.
+// Top half of the card for flap angle th (0 = upright, covering; 90 = edge-on).
+// The flap shows the top half of the old number; behind it the new number appears.
 static void flipTopHalf(int cx, int oldV, int newV, float th) {
   float a = th * K_PI / 180, ca = cosf(a), sa = sinf(a);
-  // altura aparente da aba projetada (r = FL_HALF)
+  // apparent height of the projected flap (r = FL_HALF)
   float dyMax = th < 90 ? FL_HALF * ca * FL_D / (FL_D - FL_HALF * sa) : 0;
-  int shadow = (int)((90 - th) / 90 * 5);  // a aba ainda em pé faz sombra no número novo
+  int shadow = (int)((90 - th) / 90 * 5);  // the flap still upright casts a shadow on the new number
   for (int yr = 0; yr < FL_HALF - 1; yr++) {
-    float dy = FL_HALF - yr - 0.5f;  // distância até a dobradiça
+    float dy = FL_HALF - yr - 0.5f;  // distance to the hinge
     if (th < 90 && dy <= dyMax) {
-      // projeção inversa: ponto da aba a r da dobradiça aparece a dy = r·cos·D/(D - r·sen)
+      // inverse projection: a flap point at r from the hinge appears at dy = r·cos·D/(D - r·sin)
       float r = dy * FL_D / (FL_D * ca + dy * sa);
       float sx = FL_D / (FL_D - r * sa);
-      float q = FL_D * ca + dy * sa, step = FL_D * FL_D * ca / (q * q);  // linhas de origem por linha de tela
+      float q = FL_D * ca + dy * sa, step = FL_D * FL_D * ca / (q * q);  // source lines per screen line
       flRow(cx, yr, oldV, FL_HALF - r - step / 2, step, (int)(th / 90 * 9), sx);
     } else {
       flRow(cx, yr, newV, yr, 1, th < 90 ? shadow : 0);
@@ -212,13 +212,13 @@ static void flipTopHalf(int cx, int oldV, int newV, float th) {
   }
 }
 
-// Metade de baixo para o ângulo th (90 = de lado, 180 = deitada cobrindo).
-// A aba mostra a metade de baixo do número novo; embaixo dela ainda aparece o antigo.
+// Bottom half for angle th (90 = edge-on, 180 = lying flat, covering).
+// The flap shows the bottom half of the new number; under it the old one still shows.
 static void flipBottomHalf(int cx, int oldV, int newV, float th) {
   float phi = 180 - th;  // 0 = deitada
   float a = phi * K_PI / 180, ca = cosf(a), sa = sinf(a);
   float dyMax = FL_HALF * ca * FL_D / (FL_D - FL_HALF * sa);
-  int shadow = (int)((90 - phi) / 90 * 4);  // a aba chegando faz sombra no número antigo
+  int shadow = (int)((90 - phi) / 90 * 4);  // the arriving flap casts a shadow on the old number
   for (int yr = FL_HALF + 1; yr < FL_H; yr++) {
     float dy = yr - FL_HALF + 0.5f;
     if (dy <= dyMax) {
@@ -239,16 +239,16 @@ static void flipHinge(int cx) {
   G->fillCircle(cx + FL_W - 1, FL_Y + FL_HALF, 3, BG);
 }
 
-// Cartão parado mostrando "v".
+// Still card showing "v".
 static void flipStatic(int cx, int v) {
   for (int yr = 0; yr < FL_H; yr++)
     if (yr != FL_HALF - 1 && yr != FL_HALF) flRow(cx, yr, v, yr, 1, 0);
   flipHinge(cx);
 }
 
-// Vira até 2 cartões ao mesmo tempo. Física simples: a aba cai com aceleração constante
-// (ângulo cresce com t²) e quica de leve ao bater. Guiado pelo relógio, não por número de
-// quadros: dura ~0,37 s com quantos quadros o aparelho conseguir desenhar.
+// Flips up to 2 cards at once. Simple physics: the flap falls with constant acceleration
+// (angle grows with t²) and bounces lightly on impact. Driven by the clock, not by a number of
+// frames: lasts ~0.37 s with however many frames the device manages to draw.
 static void flipAnimate(int n, const int *cx, const int *oldV, const int *newV) {
   const float T_FALL = 280, T_BOUNCE = 90, BOUNCE = 10;  // ms, ms, graus
   uint32_t t0 = uiMillis ? uiMillis() : 0;
@@ -261,7 +261,7 @@ static void flipAnimate(int n, const int *cx, const int *oldV, const int *newV) 
     for (int i = 0; i < n; i++) {
       if (th < 90) flipTopHalf(cx[i], oldV[i], newV[i], th);
       else {
-        if (prev < 90) flipTopHalf(cx[i], oldV[i], newV[i], 90);  // a aba passou: número novo inteiro em cima
+        if (prev < 90) flipTopHalf(cx[i], oldV[i], newV[i], 90);  // the flap has passed: the whole new number on top
         flipBottomHalf(cx[i], oldV[i], newV[i], th);
       }
       flipHinge(cx[i]);
@@ -275,7 +275,7 @@ static void flipAnimate(int n, const int *cx, const int *oldV, const int *newV) 
 
 static void pill(int x, int w) { G->fillRoundRect(x, 186, w, 28, 14, CARD); }
 
-// Pílulas de baixo, desenhadas fora da tela e mandadas prontas (sem piscar)
+// Bottom pills, drawn off-screen and sent finished (no flicker)
 static void paintWxPill(void *c) {
   const UiState &s = *(const UiState *)c;
   G->fillRect(8, 184, 110, 32, BG);
@@ -285,7 +285,7 @@ static void paintWxPill(void *c) {
     tempText(80, 193, 2, TEXT, s.wx.t);
   } else textC(62, 197, 1, MUTED, tr("sem clima", "no weather", "sin clima"));
 }
-static void paintWindPill(void *c) {  // weatherbox: vento no lugar dos focos
+static void paintWindPill(void *c) {  // weatherbox: wind instead of the focus count
   const UiState &s = *(const UiState *)c;
   G->fillRect(122, 184, 112, 32, BG);
   pill(125, 105);
@@ -302,7 +302,7 @@ void themeFlip(const UiState &s, bool full) {
     uiTextBox(0, 8, 240, 18, BG, 120, 12, 2, MUTED, d, 'c');
   }
   int h = s.timeOk ? displayHour(s) : -1, m = s.timeOk ? s.now.tm_min : -1;
-  // na primeira vez desenha parado; depois, as plaquinhas que mudaram viram juntas
+  // the first time it draws still; after that, the cards that changed flip together
   int cx[2], ov[2], nv[2], n = 0;
   const int v[2] = {h, m};
   for (int i = 0; i < 2; i++) {

@@ -1,7 +1,7 @@
-// Comprime um firmware para a atualização comprimida do relógio: node compress.js <firmware.bin>
-// Gera <firmware.bin>.gz com janela de 8 KB: é o que o relógio consegue conferir antes de liberar a troca
-// (um .gz com janela maior é recusado). Serve também para o firmware original da GeekMagic, para voltar
-// a ele quando o nosso firmware passar de ~530 KB.
+// Compresses a firmware for the clock's compressed update: node compress.js <firmware.bin>
+// Writes <firmware.bin>.gz with an 8 KB window: that is what the clock can check before allowing the swap
+// (a .gz with a bigger window is refused). Also works for the original GeekMagic firmware, to go back
+// to it once our firmware exceeds ~530 KB.
 const fs = require('fs'), zlib = require('zlib');
 const f = process.argv[2];
 if (!f) { console.log('uso: node compress.js <firmware.bin>'); process.exit(1); }

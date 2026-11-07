@@ -1,10 +1,10 @@
-# Xícara de café: aparece ao lado do tomate nas pausas do Pomodoro.
-color o #3a2a20   # contorno
-color m #f0ece4   # louça
-color M #c8c0b4   # sombra da louça
-color c #6b3e26   # café
-color R #e8402f   # faixa vermelha
-color s #c8d0dc   # vapor
+# Coffee cup: shown next to the tomato during Pomodoro breaks.
+color o #3a2a20   # outline
+color m #f0ece4   # china
+color M #c8c0b4   # china shadow
+color c #6b3e26   # coffee
+color R #e8402f   # red stripe
+color s #c8d0dc   # steam
 
 ................
 ....s....s......

@@ -1,8 +1,8 @@
-# Sol: céu da cena Tomate durante o dia.
-color Y #ffc428   # sol
-color y #e08a10   # contorno
-color w #fff0a0   # brilho
-color o #ffa030   # raios
+# Sun: sky of the Scene face during the day.
+color Y #ffc428   # sun
+color y #e08a10   # outline
+color w #fff0a0   # shine
+color o #ffa030   # rays
 
 .......oo.......
 ..o....oo....o..

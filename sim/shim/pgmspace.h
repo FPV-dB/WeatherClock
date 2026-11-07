@@ -1,5 +1,5 @@
 #pragma once
-// No PC não há flash separada: PROGMEM some e as leituras são acessos normais.
+// The PC has no separate flash: PROGMEM disappears and reads are normal accesses.
 #include <string.h>
 #define PROGMEM
 #define pgm_read_byte(addr) (*(const unsigned char *)(addr))

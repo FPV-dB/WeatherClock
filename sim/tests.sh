@@ -1,9 +1,9 @@
 #!/bin/bash
-# Testes de C++ do firmware (Linux/WSL, g++ com multilib), em 32 bits como o ESP8266, com ASan/UBSan:
-#  - handlers reais de upload, host e senha (security_test.cjs) e histórico de focos (stats_test.cjs);
-#  - GIF e JPEG: as amostras válidas precisam decodificar e o fuzzing não pode achar erro de memória.
-# Uso: sim/tests.sh [casos de fuzzing por formato, padrão 5000]
-# Os .cpp dos dois primeiros testes são gerados com node; sem node (WSL), passe a pasta já gerada em GEN.
+# Firmware C++ tests (Linux/WSL, g++ with multilib), in 32-bit like the ESP8266, with ASan/UBSan:
+#  - real upload, host and password handlers (security_test.cjs) and focus history (stats_test.cjs);
+#  - GIF and JPEG: valid samples must decode and fuzzing must not find a memory error.
+# Usage: sim/tests.sh [fuzzing cases per format, default 5000]
+# The .cpp files of the first two tests are generated with node; without node (WSL), pass the already generated folder in GEN.
 set -euo pipefail
 cd "$(dirname "$0")"
 N="${1:-5000}"
@@ -18,12 +18,12 @@ for t in sec stats; do
   g++ -std=c++17 -fsanitize=address,undefined -g -w "$G/$t.cpp" -o "$T/$t"
   "$T/$t"
 done
-# saída completa em arquivo; um erro em qualquer um interrompe tudo (set -e) e mostra o fim do log
+# full output to a file; an error in any of them stops everything (set -e) and shows the end of the log
 for f in gif jpeg; do
   if ! bash "test-$f.sh" "$f-seeds" "$N" > "$T/$f.log" 2>&1; then
     tail -20 "$T/$f.log"
-    echo "testes: FALHA no $f (log completo em $T/$f.log)"
+    echo "tests: FAILED in $f (full log in $T/$f.log)"
     exit 1
   fi
 done
-echo "testes: ok (handlers, histórico, $N casos de fuzzing de GIF e de JPEG)"
+echo "tests: ok (handlers, history, $N GIF and JPEG fuzzing cases)"

@@ -1,11 +1,11 @@
-// ui.cpp — sistema visual "Tomate" para a tela 240x240 do SmallTV.
+// ui.cpp — the visual system for the Weather Clock's 240x240 screen (base: the SmallTV Pomodoro "Tomato" style).
 //
-// Princípios (pensados para um IPS de 1,54" visto a ~1 m):
-//  - fundo preto puro (o IPS fica realmente escuro) e cartões cinza-escuro arredondados;
-//  - números em pixel art sólido (mesma estética do mascote): traços grossos e contínuos,
-//    legíveis de longe; sem flicker, porque cada célula é sempre repintada (cor ou fundo);
-//  - só a fonte 6x8 embutida, em escala inteira (pixels nítidos, nada borrado);
-//  - redesenho incremental: cada área guarda o que mostrou e só repinta se mudou.
+// Principles (designed for a 1.54" IPS seen from ~1 m):
+//  - pure black background (the IPS gets really dark) and rounded dark-grey cards;
+//  - numbers in solid pixel art (same look as the mascot): thick, continuous strokes,
+//    readable from afar; no flicker, because every cell is always repainted (colour or background);
+//  - only the built-in 6x8 font, at integer scale (sharp pixels, nothing blurry);
+//  - incremental redraw: each area remembers what it showed and only repaints if it changed.
 
 #include "ui.h"
 #include "assets.h"
@@ -28,7 +28,7 @@ static const char MO_L[3][12][4] PROGMEM = {{"JAN", "FEV", "MAR", "ABR", "MAI", 
 static uint16_t rowBuf[240] __attribute__((aligned(4)));
 uint16_t *uiRowBuf() { return rowBuf; }
 uint8_t uiLang = 0;
-char WD[7][4] = {"DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"};  // português até o uiSetLang
+char WD[7][4] = {"DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"};  // Portuguese until uiSetLang
 char MO[12][4] = {"JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"};
 void uiSetLang(uint8_t lang) {
   uiLang = lang < 3 ? lang : 0;
@@ -44,12 +44,12 @@ const char *trP(PGM_P pt, PGM_P en, PGM_P es) {
   b[sizeof buf[0] - 1] = 0;
   return b;
 }
-// rótulos dentro do anel do Pomodoro: até 11 caracteres
+// labels inside the Pomodoro ring: up to 11 characters
 static const char *phaseLabel(uint8_t p) {
   return p == PH_WORK ? tr("FOCO", "FOCUS", "FOCO") : p == PH_SHORT ? tr("PAUSA", "BREAK", "PAUSA") : p == PH_LONG ? tr("PAUSA LONGA", "LONG BREAK", "PAUSA LARGA") : "";
 }
 
-// ---------- texto (fonte 6x8 embutida) ----------
+// ---------- text (built-in 6x8 font) ----------
 int textW(const char *s, uint8_t sz) {
   int n = strlen(s);
   return n ? n * 6 * sz - sz : 0;
@@ -68,7 +68,7 @@ void degree(int x, int y, uint8_t sz, uint16_t c) {
   G->drawCircle(x + r, y + r, r, c);
   if (sz >= 3) G->drawCircle(x + r, y + r, r - 1, c);
 }
-// "23°" centralizado em cx
+// "23°" centred on cx
 void tempText(int cx, int y, uint8_t sz, uint16_t c, float v) {
   char b[8];
   snprintf(b, sizeof b, "%d", (int)lroundf(v));
@@ -78,7 +78,7 @@ void tempText(int cx, int y, uint8_t sz, uint16_t c, float v) {
   degree(x + textW(b, sz) + sz + 1, y, sz, c);
 }
 
-// Linha grossa com pontas arredondadas (dois triângulos + dois círculos).
+// Thick line with rounded ends (two triangles + two circles).
 void thickLine(float x0, float y0, float x1, float y1, float w, uint16_t c) {
   float dx = x1 - x0, dy = y1 - y0, len = sqrtf(dx * dx + dy * dy), r = w / 2;
   if (len > 0.01f) {
@@ -92,7 +92,7 @@ void thickLine(float x0, float y0, float x1, float y1, float w, uint16_t c) {
   }
 }
 
-// ---------- cache de áreas ----------
+// ---------- area cache ----------
 bool changed(Cache &c, const char *now) {
   if (strcmp(c.s, now) == 0) return false;
   strncpy(c.s, now, sizeof c.s - 1);
@@ -100,11 +100,11 @@ bool changed(Cache &c, const char *now) {
   return true;
 }
 
-// Tela na frente: o número do mostrador (0..THEME_COUNT-1) ou uma das telas abaixo. Os números das outras
-// telas ficam longe dos mostradores: até a 1.19 o Pomodoro era 10, o mesmo do 11º mostrador (Previsão LCD),
-// e ao trocar entre os dois a tela não era limpa (um aparecia por cima do outro).
+// Screen in front: the face number (0..THEME_COUNT-1) or one of the screens below. The other screens'
+// numbers stay well away from the faces: up to 1.19 the Pomodoro was 10, the same as the 11th face (Forecast LCD),
+// and switching between the two didn't clear the screen (one appeared on top of the other).
 enum : int8_t { SCR_PACK = 100, SCR_POMO, SCR_MSG, SCR_COLOR, SCR_ERROR, SCR_VCOM };
-static_assert(THEME_COUNT < SCR_PACK, "número de mostrador colidiria com o de outra tela");
+static_assert(THEME_COUNT < SCR_PACK, "a face number would collide with another screen's");
 static int8_t screen = -1;
 Cache cStatL, cStatR, cA, cB, cC;
 int8_t lastDig[4], lastColon;
@@ -114,7 +114,7 @@ int8_t lastFace;
 uint16_t lastWx;
 
 static void resetCaches() {
-  cStatL.s[0] = cStatR.s[0] = cA.s[0] = cB.s[0] = cC.s[0] = 1;  // valor impossível
+  cStatL.s[0] = cStatR.s[0] = cA.s[0] = cB.s[0] = cC.s[0] = 1;  // impossible value
   cStatL.s[1] = cStatR.s[1] = cA.s[1] = cB.s[1] = cC.s[1] = 0;
   for (auto &d : lastDig) d = -2;
   lastColon = -1;
@@ -124,7 +124,7 @@ static void resetCaches() {
   lastWx = 0xFFFF;
 }
 
-uint32_t uiEnters = 0;  // quantas vezes a tela inteira foi trocada (main.cpp mede o tempo desse desenho)
+uint32_t uiEnters = 0;  // how many times the whole screen was changed (main.cpp times that drawing)
 static bool enter(int8_t id) {
   if (screen == id) return false;
   screen = id;
@@ -141,7 +141,7 @@ void uiBegin(Adafruit_GFX *gfx) {
   uiScrollEnd();
   screen = -1;
 }
-static bool slideOn = false;  // a próxima tela cheia (screen == -1) substitui um mostrador do firmware
+static bool slideOn = false;  // the next full screen (screen == -1) replaces a firmware face
 void uiInvalidate() {
   screen = -1;
   slideOn = false;
@@ -152,7 +152,7 @@ void uiInvalidateSlide() {
   slideOn = was;
 }
 
-// ---------- dígitos em pixel art 5x7 (células sólidas) ----------
+// ---------- 5x7 pixel-art digits (solid cells) ----------
 static const uint8_t DM[11][7] PROGMEM = {
     {0x0E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E}, {0x04, 0x0C, 0x04, 0x04, 0x04, 0x04, 0x0E},
     {0x0E, 0x11, 0x01, 0x06, 0x08, 0x10, 0x1F}, {0x1F, 0x01, 0x02, 0x06, 0x01, 0x11, 0x0E},
@@ -162,15 +162,15 @@ static const uint8_t DM[11][7] PROGMEM = {
     {0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00},  // 10 = sinal de menos
 };
 
-// p = tamanho da célula; d < 0 = dígito apagado. Células acesas são quadrados cheios
-// (traço contínuo); com drawOff, as apagadas recebem "off" (a cor do fundo), o que
-// substitui o dígito anterior sem limpar a área antes (sem flicker).
+// p = cell size; d < 0 = blank digit. Lit cells are filled squares
+// (continuous stroke); with drawOff, unlit ones get "off" (the background colour), which
+// replaces the previous digit without clearing the area first (no flicker).
 void dmDigit(int x, int y, int d, int p, uint16_t on, uint16_t off, bool drawOff) {
   for (int row = 0; row < 7; row++) {
     uint8_t bits = d < 0 ? 0 : pgm_read_byte(&DM[d][row]);
     for (int col = 0; col < 5;) {
       bool lit = bits & (0x10 >> col);
-      int run = 1;  // junta células vizinhas iguais num retângulo só (menos chamadas SPI)
+      int run = 1;  // merges equal neighbouring cells into a single rectangle (fewer SPI calls)
       while (col + run < 5 && (bool)(bits & (0x10 >> (col + run))) == lit) run++;
       if (lit || drawOff) G->fillRect(x + col * p, y + row * p, run * p, p, lit ? on : off);
       col += run;
@@ -207,7 +207,7 @@ void dateLabel(const UiState &s, char *out, size_t n) {
   else snprintf(out, n, "%s", tr("SINCRONIZANDO", "SYNCING", "SINCRONIZANDO"));
 }
 
-// Barra superior: data à esquerda, texto livre (IP/hora) à direita.
+// Top bar: date on the left, free text (IP/time) on the right.
 void statusBar(const UiState &s, const char *right, uint16_t bg) {
   char l[24];
   dateLabel(s, l, sizeof l);
@@ -232,14 +232,14 @@ void uiTextBox(int x, int y, int w, int h, uint16_t bg, int tx, int ty, uint8_t 
   uiPaint(false, x, y, w, h, paintTextBox, &j);
 }
 
-// ---------- ícones de clima ----------
+// ---------- weather icons ----------
 void cloudShape(int cx, int cy, float s, uint16_t c) {
   G->fillCircle(cx - 8 * s, cy + 3 * s, 8 * s, c);
   G->fillCircle(cx + 2 * s, cy - 3 * s, 11 * s, c);
   G->fillCircle(cx + 12 * s, cy + 4 * s, 7 * s, c);
   G->fillRoundRect(cx - 16 * s, cy + 3 * s, 35 * s, 9 * s, 4 * s, c);
 }
-static float sunSpin = 0;  // weatherbox: giro dos raios (radianos) para o ícone animado
+static float sunSpin = 0;  // weatherbox: rotation of the rays (radians) for the animated icon
 void sunShape(int cx, int cy, float s) {
   for (int i = 0; i < 8; i++) {
     float a = i * K_PI / 4 + sunSpin;
@@ -253,14 +253,14 @@ void moonShape(int cx, int cy, float s, uint16_t bg) {
   G->fillCircle(cx, cy, 12 * s, uiRgb(244, 236, 200));
   G->fillCircle(cx + 6 * s, cy - 4 * s, 10 * s, bg);
 }
-// Desenha sobre uma área já limpa com "bg". Com ms > 0 (weatherbox) o ícone anima: raios girando, nuvem
-// indo e vindo, chuva e neve caindo, neblina deslizando e o raio piscando. Com ms = 0 fica como antes.
+// Draws over an area already cleared with "bg". With ms > 0 (weatherbox) the icon animates: rays turning, cloud
+// drifting back and forth, rain and snow falling, fog sliding and lightning flashing. With ms = 0 it stays as before.
 void weatherIcon(int cx, int cy, float s, int c, bool day, uint16_t bg, uint32_t ms) {
   bool rain = (c >= 51 && c <= 67) || (c >= 80 && c <= 82);
   bool snow = (c >= 71 && c <= 77) || c == 85 || c == 86;
   bool storm = c >= 95;
   const float t = ms / 1000.0f;
-  const float drift = ms ? sinf(t * 1.6f) * 2.5f * s : 0;  // nuvem balança de lado
+  const float drift = ms ? sinf(t * 1.6f) * 2.5f * s : 0;  // cloud sways sideways
   sunSpin = ms ? t * 0.6f : 0;
   if (c == 0) {
     if (day) sunShape(cx, cy, s);
@@ -275,7 +275,7 @@ void weatherIcon(int cx, int cy, float s, int c, bool day, uint16_t bg, uint32_t
       G->fillRoundRect(cx - 18 * s + dx, cy - 10 * s + i * 7 * s, 36 * s, 3 * s + 1, 2, CLOUD);
     }
   } else {
-    // a chuva e a neve caem num ciclo de 10*s px, por baixo da nuvem
+    // rain and snow fall in a 10*s px cycle, under the cloud
     const float fall = ms ? fmodf(t * 18 * s, 10 * s) : 0;
     if (rain)
       for (int i = -1; i <= 1; i++)
@@ -287,7 +287,7 @@ void weatherIcon(int cx, int cy, float s, int c, bool day, uint16_t bg, uint32_t
       for (int i = -1; i <= 1; i++)
         G->fillCircle(cx + i * 9 * s + (ms ? sinf(t * 2 + i) * 2 * s : 0), cy + 12 * s + fmodf(fall + (i + 1) * 3.3f * s, 10 * s), 2 * s + 1, TEXT);
     cloudShape(cx + drift, cy - 4 * s, s, storm || rain ? DCLOUD : CLOUD);
-    if (storm && (!ms || (ms / 150) % 10 < 3)) {  // pisca em ~30% do tempo
+    if (storm && (!ms || (ms / 150) % 10 < 3)) {  // flashes for ~30% of the time
       G->fillTriangle(cx + 2 * s, cy + 6 * s, cx - 6 * s, cy + 16 * s, cx + 1 * s, cy + 15 * s, SUN);
       G->fillTriangle(cx - 1 * s, cy + 13 * s, cx + 6 * s, cy + 13 * s, cx - 4 * s, cy + 24 * s, SUN);
     }
@@ -299,7 +299,7 @@ const char *rainSoonText(uint8_t m) {
   static char b[20];
   if (!m) return "";
   if (m < 15) return tr("chuva logo", "rain soon", "lluvia ya");
-  snprintf(b, sizeof b, tr("chuva %u min", "rain %u min", "lluvia %u min"), m);  // curto: cabe ao lado do tomate
+  snprintf(b, sizeof b, tr("chuva %u min", "rain %u min", "lluvia %u min"), m);  // short: fits beside the tomato
   return b;
 }
 
@@ -315,7 +315,7 @@ const char *weatherText(int c) {
   return "";
 }
 
-// ---------- sprites em pixel art (assets/*.txt -> assets.h) ----------
+// ---------- pixel-art sprites (assets/*.txt -> assets.h) ----------
 void uiSprite(const UiSprite *sp, int x, int y, uint8_t sc, uint8_t frame, int32_t bg) {
   UiSprite s;
   memcpy_P(&s, sp, sizeof s);
@@ -323,7 +323,7 @@ void uiSprite(const UiSprite *sp, int x, int y, uint8_t sc, uint8_t frame, int32
   auto at = [&](int i) { uint8_t b = pgm_read_byte(px + i / 2); return i & 1 ? b & 15 : b >> 4; };
   for (int r = 0; r < s.h; r++)
     for (int c = 0; c < s.w;) {
-      int i = r * s.w + c, v = at(i), run = 1;  // junta pixels vizinhos iguais num retângulo só
+      int i = r * s.w + c, v = at(i), run = 1;  // merges equal neighbouring pixels into a single rectangle
       while (c + run < s.w && at(i + run) == v) run++;
       if (v || bg >= 0) G->fillRect(x + c * sc, y + r * sc, run * sc, sc, v ? pgm_read_word(s.pal + v - 1) : (uint16_t)bg);
       c += run;
@@ -336,7 +336,7 @@ uint8_t uiSpriteFrame(const UiSprite *sp, uint32_t ms) {
   return s.frames > 1 && s.frameMs ? ms / s.frameMs % s.frames : 0;
 }
 
-// Mascote: tomate 16x16 com uma expressão por asset.
+// Mascot: 16x16 tomato with one expression per asset.
 static const UiSprite *const FACES[] PROGMEM = {&SPR_TOMATO_HAPPY, &SPR_TOMATO_SLEEPING, &SPR_TOMATO_FOCUSED, &SPR_TOMATO_RELAXED,
                                         &SPR_TOMATO_CHEERING, &SPR_TOMATO_UMBRELLA, &SPR_TOMATO_SCARF, &SPR_TOMATO_GLASSES};
 
@@ -356,7 +356,7 @@ void streakBadge(int x, int y, uint16_t streak, uint16_t c) {
   text(x + 10, y + 2, 1, c, n);
 }
 
-// Atividades do foco (UiActivity): objeto ao lado do tomate e título da tela do Pomodoro.
+// Focus activities (UiActivity): object beside the tomato and the Pomodoro screen's title.
 static const UiSprite *const ACTIVITY_SPRITE[ACT_COUNT] PROGMEM = {&SPR_BOOK, &SPR_JOTTER, &SPR_NOTEBOOK, &SPR_CLIPBOARD, &SPR_PAINT_PALETTE};
 static const char *activityLabel(uint8_t a) {
   switch (a) {
@@ -368,11 +368,11 @@ static const char *activityLabel(uint8_t a) {
   return tr("LENDO", "READING", "LEYENDO");
 }
 
-void (*uiFrameHook)() = nullptr;     // o firmware usa para ceder tempo ao Wi-Fi entre quadros
-uint32_t (*uiMillis)() = nullptr;    // relógio em ms (firmware: millis); sem ele, passos fixos de 20 ms
+void (*uiFrameHook)() = nullptr;     // the firmware uses it to give time to Wi-Fi between frames
+uint32_t (*uiMillis)() = nullptr;    // clock in ms (firmware: millis); without it, fixed 20 ms steps
 void (*uiBlit)(int16_t, int16_t, uint16_t *, int16_t, int16_t) = nullptr;
 
-// ---------- rolagem vertical por hardware (ver ui.h) ----------
+// ---------- vertical hardware scrolling (see ui.h) ----------
 void (*uiScrollHw)(int16_t, int16_t) = nullptr;
 static int16_t scrollRows = 0;  // 0 = parada
 bool uiScrollBegin(int rows) {
@@ -395,8 +395,8 @@ void uiScrollEnd() {
 bool uiScrollActive() { return scrollRows != 0; }
 
 // ---------- recorte (clip) ----------
-// Os pacotes de mostrador redesenham só a área que mudou: G passa a ser este embrulho, que
-// descarta o que cai fora do retângulo e repassa o resto para a tela de verdade.
+// Face packs redraw only the area that changed: G becomes this wrapper, which
+// discards whatever falls outside the rectangle and passes the rest on to the real screen.
 UiClip uiClip = {false, 0, 0, 0, 0};
 static Adafruit_GFX *realG = nullptr;
 
@@ -439,9 +439,9 @@ void uiClipEnd() {
   G = realG;
 }
 
-// ---------- desenho fora da tela (uiOffscreen) ----------
-// Sem frame buffer (240x240 x 2 bytes não cabe na RAM): G passa a ser esta faixa de memória, que
-// recorta tudo para (bx, by, bw, bh). Os blits (fontes vetoriais, imagens) também caem nela.
+// ---------- off-screen drawing (uiOffscreen) ----------
+// No frame buffer (240x240 x 2 bytes doesn't fit in RAM): G becomes this strip of memory, which
+// clips everything to (bx, by, bw, bh). Blits (vector fonts, images) land in it too.
 class BufGfx : public Adafruit_GFX {
  public:
   uint16_t *buf = nullptr;
@@ -485,7 +485,7 @@ static void rawBlit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h) {
     return;
   }
   if (uiBlit) uiBlit(x, y, px, w, h);
-  else (uiClip.on ? realG : G)->drawRGBBitmap(x, y, px, w, h);  // genérico: pixel a pixel (simulador)
+  else (uiClip.on ? realG : G)->drawRGBBitmap(x, y, px, w, h);  // generic: pixel by pixel (simulator)
 }
 
 void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h) {
@@ -493,7 +493,7 @@ void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h) {
     rawBlit(x, y, px, w, h);
     return;
   }
-  for (int r = 0; r < h; r++) {  // recorta linha a linha
+  for (int r = 0; r < h; r++) {  // clips row by row
     int yy = y + r;
     if (yy < uiClip.y0 || yy >= uiClip.y1) continue;
     int x0 = x > uiClip.x0 ? x : uiClip.x0, x1 = x + w < uiClip.x1 ? x + w : uiClip.x1;
@@ -502,7 +502,7 @@ void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h) {
 }
 
 bool uiOffscreen(int x, int y, int w, int h, void (*draw)(void *), void *ctx) {
-  if (offscreen) {  // já dentro de uma faixa (troca por rolagem): a cena já recorta para ela
+  if (offscreen) {  // already inside a strip (scroll change): the scene already clips to it
     draw(ctx);
     return true;
   }
@@ -511,7 +511,7 @@ bool uiOffscreen(int x, int y, int w, int h, void (*draw)(void *), void *ctx) {
   if (x + w > 240) w = 240 - x;
   if (y + h > 240) h = 240 - y;
   if (w <= 0 || h <= 0) return true;
-  const int BYTES = 4096;  // weatherbox: ~4 KB por faixa (cabe mesmo com a memória fragmentada); só existe durante o desenho
+  const int BYTES = 4096;  // weatherbox: ~4 KB per strip (fits even with fragmented memory); only exists during drawing
   int rows = BYTES / (2 * w);
   if (rows > h) rows = h;
   uint16_t *b = (uint16_t *)malloc(w * rows * 2);
@@ -526,7 +526,7 @@ bool uiOffscreen(int x, int y, int w, int h, void (*draw)(void *), void *ctx) {
     bufGfx.bw = w;
     bufGfx.bh = sh;
     bufGfx.setTextWrap(false);
-    uiClip = {true, (int16_t)x, (int16_t)sy, (int16_t)(x + w), (int16_t)(sy + sh)};  // blit() e imagens recortam aqui
+    uiClip = {true, (int16_t)x, (int16_t)sy, (int16_t)(x + w), (int16_t)(sy + sh)};  // blit() and images clip here
     offscreen = true;
     G = &bufGfx;
     draw(ctx);
@@ -534,7 +534,7 @@ bool uiOffscreen(int x, int y, int w, int h, void (*draw)(void *), void *ctx) {
     offscreen = false;
     uiClip = c0;
     rawBlit(x, sy, b, w, sh);
-    if (uiFrameHook) uiFrameHook();  // cede tempo ao Wi-Fi entre as faixas
+    if (uiFrameHook) uiFrameHook();  // gives time to Wi-Fi between strips
   }
   free(b);
   return true;
@@ -545,10 +545,10 @@ void uiPaint(bool direct, int x, int y, int w, int h, void (*draw)(void *), void
 }
 
 // =====================================================================================
-// Fonte vetorial "Geo": dígitos como traços (linhas e arcos) numa grade 6x10, em décimos.
-// Sem bitmap na flash: serve em qualquer tamanho e espessura (Neon fino, Flip grosso).
+// "Geo" vector font: digits as strokes (lines and arcs) on a 6x10 grid, in tenths.
+// No bitmap in flash: works at any size and thickness (thin Neon, thick Flip).
 // =====================================================================================
-struct Stk { int8_t t; int16_t a, b, c, d, e; };  // t=0 linha (a,b)-(c,d); t=1 arco: centro (a,b), raio c, de d a e graus
+struct Stk { int8_t t; int16_t a, b, c, d, e; };  // t=0 line (a,b)-(c,d); t=1 arc: centre (a,b), radius c, from d to e degrees
 static const Stk GEO0[] PROGMEM = {{1, 30, 30, 30, 180, 360}, {0, 0, 30, 0, 70, 0}, {0, 60, 30, 60, 70, 0}, {1, 30, 70, 30, 0, 180}};
 static const Stk GEO1[] PROGMEM = {{0, 30, 0, 30, 100, 0}, {0, 8, 22, 30, 0, 0}};
 static const Stk GEO2[] PROGMEM = {{1, 30, 30, 30, 180, 380}, {0, 58, 40, 0, 100, 0}, {0, 0, 100, 60, 100, 0}};
@@ -562,7 +562,7 @@ static const Stk GEO9[] PROGMEM = {{1, 30, 30, 30, 0, 360}, {0, 59, 38, 18, 100,
 static const Stk *const GEO[10] PROGMEM = {GEO0, GEO1, GEO2, GEO3, GEO4, GEO5, GEO6, GEO7, GEO8, GEO9};
 static const uint8_t GEO_N[10] PROGMEM = {4, 2, 3, 3, 3, 4, 2, 2, 2, 2};
 
-// s = pixels por unidade da grade (o dígito ocupa 6s x 10s); w = espessura do traço.
+// s = pixels per grid unit (the digit takes 6s x 10s); w = stroke thickness.
 void geoDigit(float x, float y, int d, float s, float w, uint16_t c) {
   if (d < 0 || d > 9) return;
   const float k = s / 10.0f;
@@ -588,14 +588,14 @@ void geoDigit(float x, float y, int d, float s, float w, uint16_t c) {
   }
 }
 
-// Mistura duas cores RGB565 (f=0 -> a, f=1 -> b).
+// Blends two RGB565 colours (f=0 -> a, f=1 -> b).
 uint16_t mix(uint16_t a, uint16_t b, float f) {
   int ar = (a >> 11) & 31, ag = (a >> 5) & 63, ab = a & 31;
   int br = (b >> 11) & 31, bg = (b >> 5) & 63, bb = b & 31;
   return ((int)(ar + (br - ar) * f) << 11) | ((int)(ag + (bg - ag) * f) << 5) | (int)(ab + (bb - ab) * f);
 }
 
-// "23° Poucas nuvens" centralizado (grau desenhado à mão)
+// "23° Partly cloudy" centred (degree sign drawn by hand)
 void tempDesc(int cy, uint8_t sz, uint16_t ct, uint16_t cd, float t, const char *desc) {
   char n[8];
   snprintf(n, sizeof n, "%d", (int)lroundf(t));
@@ -607,7 +607,7 @@ void tempDesc(int cy, uint8_t sz, uint16_t ct, uint16_t cd, float t, const char 
   text(x + textW(n, sz) + degW + 6 * sz, cy, sz, cd, desc);
 }
 
-// Tabela gerada de faces_list.h: o número do tema indexa a função, o nome e a descrição.
+// Table generated from faces_list.h: the theme number indexes the function, name and description.
 typedef void (*FaceFn)(const UiState &, bool);
 static const FaceFn FACE_FN[THEME_COUNT] PROGMEM = {
 #define X(id, fn, name, desc) fn,
@@ -630,23 +630,23 @@ static const char *const FACE_DESC[THEME_COUNT] PROGMEM = {
 PGM_P uiFaceName(uint8_t t) { return t < THEME_COUNT ? (PGM_P)pgm_read_ptr(&FACE_NAME[t]) : PSTR(""); }
 PGM_P uiFaceDesc(uint8_t t) { return t < THEME_COUNT ? (PGM_P)pgm_read_ptr(&FACE_DESC[t]) : PSTR(""); }
 
-// ---------- troca de mostrador por rolagem de hardware ----------
-// Anel de 320 linhas: o mostrador antigo (linhas 0..239) sobe e sai pelo topo, passa o vão preto da
-// margem (80 linhas) e o novo entra por baixo, parando nas linhas 0..239, onde o offset volta a 0. Nada
-// é copiado no fim. O novo é desenhado em faixas de 16 linhas direto nas linhas de RAM que o antigo
-// já deixou, atrás da rolagem: a faixa n só é desenhada depois que o antigo saiu da tela (offset
-// >= 16*(n+1)) e tem que estar pronta antes de entrar (offset <= 80 + 16*n). Cada faixa roda o
-// mostrador inteiro (full) recortado nela: custa ~15 desenhos completos, mas só de CPU de desenho,
-// a rolagem em si é um comando por quadro.
+// ---------- face change by hardware scrolling ----------
+// 320-row ring: the old face (rows 0..239) moves up and out through the top, passes the black gap of the
+// margin (80 rows) and the new one comes in from below, stopping at rows 0..239, where the offset returns to 0. Nothing
+// is copied at the end. The new one is drawn in 16-row strips straight into the RAM rows the old one
+// has already left, behind the scroll: strip n is only drawn after the old one has left the screen (offset
+// >= 16*(n+1)) and must be ready before it comes in (offset <= 80 + 16*n). Each strip runs the
+// whole face (full) clipped to it: costs ~15 full drawings, but only in drawing CPU;
+// the scroll itself is one command per frame.
 struct SlideCtx { const UiState *s; uint8_t t; };
 static void slideStrip(void *p) {
   SlideCtx *c = (SlideCtx *)p;
-  resetCaches();  // cada faixa é um desenho completo do zero
+  resetCaches();  // each strip is a full drawing from scratch
   G->fillScreen(BG);
   ((FaceFn)pgm_read_ptr(&FACE_FN[c->t]))(*c->s, true);
 }
 static uint32_t slideNow() {
-  static uint32_t fake;  // sem relógio (simulador): 20 ms por consulta
+  static uint32_t fake;  // no clock (simulator): 20 ms per query
   return uiMillis ? uiMillis() : (fake += 20);
 }
 static bool slideTo(const UiState &s, uint8_t t) {
@@ -655,26 +655,26 @@ static bool slideTo(const UiState &s, uint8_t t) {
   if (!uiScrollBegin(R)) return false;
   SlideCtx c = {&s, t};
   uint32_t t0 = slideNow();
-  int done = 0;  // faixas desenhadas
+  int done = 0;  // strips drawn
   bool ok = true;
   for (;;) {
     uint32_t e = slideNow() - t0;
-    uint32_t x = (e > MS ? MS : e) * 1024 / MS, sm = x * x * (3072 - 2 * x) >> 20;  // suaviza início e fim
+    uint32_t x = (e > MS ? MS : e) * 1024 / MS, sm = x * x * (3072 - 2 * x) >> 20;  // eases the start and end
     int want = R * sm / 1024, cap = done < N ? GAP + STRIP * done : R;
     int L = want < cap ? want : cap;
-    uiScrollTo(L);  // L == R é offset 0 outra vez, já com o mostrador novo
+    uiScrollTo(L);  // L == R is offset 0 again, now with the new face
     if (L >= R) break;
     if (done < N && L >= STRIP * (done + 1)) {
-      if (!uiOffscreen(0, STRIP * done, 240, STRIP, slideStrip, &c)) { ok = false; break; }  // sem memória
+      if (!uiOffscreen(0, STRIP * done, 240, STRIP, slideStrip, &c)) { ok = false; break; }  // no memory
       done++;
     } else if (uiFrameHook) uiFrameHook();
   }
   uiScrollEnd();
-  return ok;  // false: quem chamou desenha o mostrador novo do jeito normal (tela cheia)
+  return ok;  // false: the caller draws the new face the normal way (full screen)
 }
 
 void uiRenderClock(const UiState &s) {
-  if (s.theme == THEME_PACK) {  // mostrador instalado como pacote (facepack.cpp)
+  if (s.theme == THEME_PACK) {  // face installed as a pack (facepack.cpp)
     slideOn = false;
     bool full = enter(SCR_PACK);
     facePackRender(s, full);
@@ -692,12 +692,12 @@ void uiRenderClock(const UiState &s) {
   ((FaceFn)pgm_read_ptr(&FACE_FN[t]))(s, full);
 }
 
-// ---------- Pomodoro: anel de progresso ----------
+// ---------- Pomodoro: progress ring ----------
 static const TimeLayout TL_POMO = {{44, 79, 132, 167}, 70, 6, 117};
 
 static uint16_t phaseColor(uint8_t p) { return p == PH_WORK ? WORK : p == PH_SHORT ? SHORT : LONG; }
 
-static const int AX = 120, AY = 120;  // centro do anel
+static const int AX = 120, AY = 120;  // ring centre
 
 static void ringDot(int deg, uint16_t c) {
   float a = (deg - 90) * K_PI / 180;
@@ -707,7 +707,7 @@ static void ringDot(int deg, uint16_t c) {
 void uiRenderPomodoro(const UiState &s) {
   bool full = enter(SCR_POMO);
   uint16_t col = phaseColor(s.phase);
-  // anel: trilho apagado + progresso na cor da fase, desenhado só no trecho novo
+  // ring: unlit track + progress in the phase colour, drawn only on the new stretch
   int target = s.totalMs ? (int)((uint64_t)(s.totalMs - s.remainingMs) * 360 / s.totalMs) : 0;
   if (full || target < lastRing) {
     for (int d = 0; d < 360; d += 1) ringDot(d, DIM);
@@ -720,13 +720,13 @@ void uiRenderPomodoro(const UiState &s) {
   uint8_t act = s.activity < ACT_COUNT ? s.activity : ACT_READ;
   const char *label = s.phase == PH_WORK ? activityLabel(act) : phaseLabel(s.phase);
   if (changed(cA, label)) {
-    G->fillRect(50, 44, 140, 18, BG);  // dentro do anel (raio interno 104)
+    G->fillRect(50, 44, 140, 18, BG);  // inside the ring (inner radius 104)
     textC(120, 46, 2, col, label);
   }
 
   uint32_t secs = (s.remainingMs + 999) / 1000;
   int m = secs / 60 > 99 ? 99 : secs / 60, sec = secs % 60;
-  // pausado: os dígitos piscam devagar
+  // paused: the digits blink slowly
   bool show = s.running || (s.timeOk ? s.now.tm_sec % 2 == 0 : true);
   if (show) drawTime4(TL_POMO, m / 10, m % 10, sec / 10, sec % 10, true, col, BG);
   else drawTime4(TL_POMO, -1, -1, -1, -1, false, col, BG);
@@ -744,13 +744,13 @@ void uiRenderPomodoro(const UiState &s) {
     lastGoal = total;
   }
 
-  // tomate + objeto da atividade (foco) ou café (pausa); quando uma fase termina, a animação de fim
-  int8_t key;  // rosto * 8 + objeto (0..ACT_COUNT-1 = atividade, 7 = café); 64+ = quadro da animação
+  // tomato + the activity's object (focus) or coffee (break); when a phase ends, the end animation
+  int8_t key;  // face * 8 + object (0..ACT_COUNT-1 = activity, 7 = coffee); 64+ = animation frame
   if (s.celebrate) key = 64 + uiSpriteFrame(&SPR_TOMATO_DONE, s.ms);
   else key = (!s.running ? FACE_SLEEP : s.phase == PH_WORK ? FACE_FOCUS : FACE_RELAX) * 8 + (s.phase == PH_WORK ? act : 7);
   if (key != lastFace) {
     if ((key >= 64) != (lastFace >= 64)) G->fillRect(84, 136, 72, 44, BG);  // troca de layout
-    if (key >= 64) uiSprite(&SPR_TOMATO_DONE, 104, 138, 2, key - 64, BG);    // bg repinta o quadro anterior
+    if (key >= 64) uiSprite(&SPR_TOMATO_DONE, 104, 138, 2, key - 64, BG);    // bg repaints the previous frame
     else {
       mascot(86, 144, 2, key / 8, BG);
       uiSprite(key % 8 == 7 ? &SPR_COFFEE : (const UiSprite *)pgm_read_ptr(&ACTIVITY_SPRITE[key % 8]), 122, 144, 2, 0, BG);
@@ -771,14 +771,14 @@ void uiRenderPomodoro(const UiState &s) {
   }
 }
 
-// ---------- telas avulsas ----------
-static int8_t bootLast = -1;  // posição desenhada da barra do início (-1: tela nova, desenha a moldura)
+// ---------- one-off screens ----------
+static int8_t bootLast = -1;  // drawn position of the start-up bar (-1: new screen, draw the frame)
 struct MsgJob { const char *title, *l1, *l2, *l3; };
 static void paintMessage(void *p) {
   const MsgJob &m = *(const MsgJob *)p;
   const char *title = m.title, *l1 = m.l1, *l2 = m.l2, *l3 = m.l3;
   G->fillRect(0, 0, 240, 190, BG);
-  // weatherbox: logotipo de sol com nuvem e o título na fonte Outfit, no lugar do tomate
+  // weatherbox: sun-and-cloud logo and the title in the Outfit font, in place of the tomato
   weatherIcon(120, 50, 1.45f, 2, true, BG);
   const int tw = vecWidth(VF_OUTFIT_TXT, title, 28);
   vecText(VF_OUTFIT_TXT, 120 - tw / 2, 88, 28, title, TEXT, BG);
@@ -790,32 +790,32 @@ void uiMessage(const char *title, const char *l1, const char *l2, const char *l3
   uiScrollEnd();
   const bool again = screen == SCR_MSG;
   screen = SCR_MSG;
-  // weatherbox: a tela inteira é montada fora da tela e enviada pronta (sem o clarão preto entre mensagens);
-  // a barra do início, se já estava na tela, é redesenhada por uiBootProgress
+  // weatherbox: the whole screen is built off-screen and sent finished (no black flash between messages);
+  // the start-up bar, if it was already on screen, is redrawn by uiBootProgress
   MsgJob m = {title, l1, l2, l3};
-  if (!again) {  // tela nova: limpa também a faixa da barra
+  if (!again) {  // new screen: also clear the bar's strip
     G->fillRect(0, 190, 240, 50, BG);
     bootLast = -1;
   }
-  uiPaint(false, 0, 0, 240, 190, paintMessage, &m);  // a barra (y >= 192) fica onde está
+  uiPaint(false, 0, 0, 240, 190, paintMessage, &m);  // the bar (y >= 192) stays where it is
 }
 
-// Troca só a linha de destaque da mensagem na tela (ex.: "Iniciando" -> "Conectando Wi-Fi"), sem redesenhar o resto
+// Changes only the highlighted line of the message on screen (e.g. "Starting" -> "Connecting Wi-Fi"), without redrawing the rest
 void uiMessageLine(const char *l1) {
   if (screen != SCR_MSG) return;
   uiTextBox(0, 124, 240, 20, BG, 120, 126, 2, LONG, l1, 'c');
 }
 
-// Tela de início: barra em pixel art (moldura de cantos recortados e 16 blocos de 8x8). Enquanto falta alguma
-// etapa (Wi-Fi, hora), 4 blocos acesos vão e voltam aos saltos, de bloco em bloco (não há como saber quanto
-// falta); done >= 2: todos acendem. Só redesenha quando a posição muda, sem refazer a tela.
+// Start-up screen: a pixel-art bar (frame with cut corners and 16 blocks of 8x8). While a step is still
+// missing (Wi-Fi, time), 4 lit blocks bounce back and forth, block by block (there's no way to know how much
+// is left); done >= 2: they all light up. Only redraws when the position changes, without redoing the screen.
 void uiBootProgress(uint32_t ms, uint8_t done) {
   if (screen != SCR_MSG) return;
   const int N = 16, B = 8, GAP = 2, LIT = 4, w = N * (B + GAP) - GAP + 8, h = B + 8, x0 = 120 - w / 2, y0 = 192;
   int pos = done >= 2 ? N : (int)(ms / 90 % (2 * (N - LIT)));
   if (pos < N && pos > N - LIT) pos = 2 * (N - LIT) - pos;
   if (pos == bootLast) return;
-  if (bootLast < 0) {  // moldura: 2 px, sem os cantos
+  if (bootLast < 0) {  // frame: 2 px, without the corners
     G->fillRect(x0 + 2, y0, w - 4, 2, MUTED);
     G->fillRect(x0 + 2, y0 + h - 2, w - 4, 2, MUTED);
     G->fillRect(x0, y0 + 2, 2, h - 4, MUTED);
@@ -828,10 +828,10 @@ void uiBootProgress(uint32_t ms, uint8_t done) {
   }
 }
 
-// weatherbox: relógio pequeno no canto inferior direito, numa caixa escura (por cima do radar do álbum)
+// weatherbox: small clock in the bottom-right corner, in a dark box (on top of the album's radar)
 void uiCornerClock(const char *hm) {
   const int w = strlen(hm) * 12 - 2, x0 = 240 - w - 8, y0 = 216;
-  // fora da tela, como um retângulo inteiro (os cantos arredondados ficam pretos): troca sem piscar
+  // off-screen, as a whole rectangle (the rounded corners stay black): changes without flicker
   uiPaint(false, x0 - 5, y0 - 4, w + 10, 24, [](void *p) {
     const char *hm = (const char *)p;
     const int w = strlen(hm) * 12 - 2, x0 = 240 - w - 8, y0 = 216;
@@ -840,9 +840,9 @@ void uiCornerClock(const char *hm) {
   }, (void *)hm);
 }
 
-// ---------- weatherbox: primeira instalação ----------
+// ---------- weatherbox: first install ----------
 #include "src/qrcode/qrcode.h"
-// QR code com margem branca de 2 módulos, centrado em cx a partir de y; devolve a altura usada
+// QR code with a 2-module white margin, centred on cx starting at y; returns the height used
 static int drawQr(int cx, int y, const char *data, int maxPx) {
   QRCode qr;
   uint8_t buf[300];
@@ -908,7 +908,7 @@ void uiSetupCity(const char *ip, const char *host) {
   textC(120, y, 1, MUTED, u);
 }
 
-// Enquanto o relógio não tem hora: quatro pontinhos no alto, um aceso que vai e volta, por cima do mostrador
+// While the clock has no time: four little dots at the top, one lit that moves back and forth, over the face
 void uiSyncHint(uint32_t ms) {
   int p = ms / 200 % 6, on = p < 4 ? p : 6 - p;
   for (int i = 0; i < 4; i++) G->fillCircle(108 + i * 8, 5, 2, i == on ? LONG : MUTED);
@@ -928,10 +928,10 @@ void uiColorTest() {
   textC(120, 228, 1, MUTED, tr("fundo preto", "background black", "fondo negro"));
 }
 
-// Teste anti-fantasma: cinza médio alternado com preto pixel a pixel. Com o VCOM (tensão comum do
-// painel) fora do ponto, os pixels "positivos" e "negativos" de cada quadro ficam com brilhos
-// diferentes e a estampa tremula; no ponto certo ela fica parada, e a imagem fantasma é a menor.
-// Quatro estampas porque o painel pode inverter a polaridade por ponto, por linha ou por coluna.
+// Anti-ghosting test: mid grey alternating with black pixel by pixel. With the VCOM (the panel's common
+// voltage) off the sweet spot, the "positive" and "negative" pixels of each frame end up with different
+// brightness and the pattern shimmers; at the right point it stays still, and ghosting is at its lowest.
+// Four patterns because the panel can invert polarity per dot, per row or per column.
 void uiVcomTest(uint8_t vcom, bool full) {
   static const uint16_t GRAY = uiRgb(128, 128, 128);
   if (full) {
@@ -950,7 +950,7 @@ void uiVcomTest(uint8_t vcom, bool full) {
     textC(120, 218, 1, MUTED, tr("mova ate a estampa parar", "move until the pattern stops", "mueve hasta que no tiemble"));
     textC(120, 228, 1, MUTED, tr("de tremer", "flickering", "el patron"));
   }
-  int mv = 100 + 25 * vcom;  // registrador VCOMS do ST7789: 0,100 V + 25 mV por passo
+  int mv = 100 + 25 * vcom;  // ST7789 VCOMS register: 0.100 V + 25 mV per step
   char v[20];
   snprintf(v, sizeof v, "VCOM %d%c%03d V", mv / 1000, uiLang == 1 ? '.' : ',', mv % 1000);
   uiTextBox(0, 18, 240, 18, BG, 120, 20, 2, vcom == UI_VCOM_DEFAULT ? TEXT : SUN, v, 'c');

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Linux/WSL: g++ com multilib. Amostras válidas precisam decodificar; depois, fuzzing com ASan/UBSan
-# em 32 bits (como o ESP8266), cada caso num processo. Corpus e número de casos podem vir nos argumentos.
+# Linux/WSL: g++ with multilib. Valid samples must decode; then fuzzing with ASan/UBSan
+# in 32-bit (like the ESP8266), each case in its own process. Corpus and number of cases can come as arguments.
 set -euo pipefail
 cd "$(dirname "$0")"
 corpus="${1:-jpeg-seeds}"

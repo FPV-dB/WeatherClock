@@ -1,4 +1,4 @@
-# saídas de compilação
+# build outputs
 build/
 *.bin
 *.elf
@@ -8,18 +8,18 @@ sim/out/
 sim/*.exe
 sim/sim
 sim/*.pdb
-# firmware de fábrica da GeekMagic (não é nosso; baixe do repositório oficial)
+# GeekMagic factory firmware (not ours; download it from the official repository)
 fw/
-# carregador próprio ainda não testado no aparelho
+# our own bootloader, not yet tested on the device
 smalltv-loader/
-# configuração local do Claude Code
+# local Claude Code settings
 .claude/
-# painel: dependências do build e dicionário gerado para publicar no site
+# panel: build dependencies and the generated dictionary to publish on the site
 web/node_modules/
 web/out/
 build/testes/
 
-# chaves de assinatura nunca vão ao Git (a privada fica em ~/.weatherclock)
+# signing keys never go into Git (the private one lives in ~/.weatherclock)
 *.key
 *private*.pem
 sim/sim-mac

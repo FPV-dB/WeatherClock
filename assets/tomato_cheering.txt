@@ -1,7 +1,7 @@
-# Tomate comemorando: meta diária de focos batida.
+# Cheering tomato: daily focus goal reached.
 palette tomato
-color Y #ffc428   # confete
-color B #4f8dff   # confete
+color Y #ffc428   # confetti
+color B #4f8dff   # confetti
 
 .Y....gGGg....B.
 ....gGGGGGGg....

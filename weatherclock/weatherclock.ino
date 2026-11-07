@@ -1,1 +1,1 @@
-// O código fica em main.cpp. Este arquivo existe para o Arduino IDE / arduino-cli reconhecer o sketch.
+// The code lives in main.cpp. This file exists so the Arduino IDE / arduino-cli recognises the sketch.

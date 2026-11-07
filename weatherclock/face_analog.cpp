@@ -1,14 +1,14 @@
-// Mostrador Analógico: ponteiros bastão e marcas grossas.
-// Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
+// Analog face: baton hands and bold markers.
+// Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
 
-// ---------- tema 2: ANALÓGICO ----------
+// ---------- theme 2: ANALOG ----------
 static const int AX = 120, AY = 120;
 static float lastHourA = -1, lastMinA = -1;
 
-// Ponteiro "bastão": espessura constante e ponta redonda (a ponta fina some na tela pequena).
-// Apagar = desenhar a mesma geometria com a cor do fundo.
+// "Baton" hand: constant thickness and a round tip (a thin tip disappears on the small screen).
+// Erasing = drawing the same geometry in the background colour.
 static void hand(float a, int len, int width, uint16_t color) {
   float sa = sinf(a), ca = cosf(a);
   thickLine(AX - sa * 14, AY + ca * 14, AX + sa * len, AY - ca * len, width, color);
@@ -17,8 +17,8 @@ static void hand(float a, int len, int width, uint16_t color) {
 static void chip(int cy, int w, int h) { G->fillRoundRect(AX - w / 2, cy - h / 2, w, h, h / 2, CARD); }
 
 static void analogChips(const UiState &s) {
-  G->fillRect(40, 56, 160, 28, BG);   // faixa da data (marcas ficam em x<36 e x>204)
-  G->fillRect(34, 154, 172, 24, BG);  // faixa do clima
+  G->fillRect(40, 56, 160, 28, BG);   // date strip (markers sit at x<36 and x>204)
+  G->fillRect(34, 154, 172, 24, BG);  // weather strip
   char d[24];
   if (s.timeOk) snprintf(d, sizeof d, "%s %02d", WD[s.now.tm_wday], s.now.tm_mday);
   else snprintf(d, sizeof d, "--");
@@ -40,21 +40,21 @@ static void analogChips(const UiState &s) {
 static void dialMarks() {
   for (int i = 0; i < 60; i++) {
       float a = i * K_PI / 30, sa = sinf(a), ca = cosf(a);
-      if (i % 5) {  // minutos: ponto discreto
+      if (i % 5) {  // minutes: subtle dot
         G->fillCircle(AX + sa * 108, AY - ca * 108, 1, MUTED);
         continue;
       }
-      // horas: traço grosso; 12/3/6/9 mais longos e na cor de destaque
+      // hours: thick stroke; 12/3/6/9 longer and in the accent colour
       bool q = i % 15 == 0;
       thickLine(AX + sa * (q ? 92 : 97), AY - ca * (q ? 92 : 97), AX + sa * 108, AY - ca * 108, q ? 6 : 4, q ? WORK : TEXT);
   }
 }
 
-// Cena inteira (marcas, chips e ponteiros). Na troca de minuto é desenhada fora da tela só na
-// área dos ponteiros e dos chips: nada de apagar o ponteiro antigo na tela e desenhar o novo depois.
+// Whole scene (markers, chips and hands). On the minute change it is drawn off-screen, only in the
+// area of the hands and chips: no erasing the old hand on screen and drawing the new one afterwards.
 static void analogScene(void *ctx) {
   const UiState &s = *(const UiState *)ctx;
-  G->fillScreen(BG);  // fora da tela: só a faixa da vez
+  G->fillScreen(BG);  // off-screen: only the current strip
   dialMarks();
   analogChips(s);
   hand(lastHourA, 56, 8, TEXT);

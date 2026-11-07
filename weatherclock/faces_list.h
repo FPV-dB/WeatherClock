@@ -1,9 +1,9 @@
-// faces_list.h — registro dos mostradores (a única lista a editar para criar um novo).
+// faces_list.h — registry of the faces (the only list to edit to add a new one).
 //
-// Cada linha: X(ID, função, "Nome no painel", "Descrição curta").
-// A ordem é o número salvo nas configurações: acrescente sempre no FIM, nunca no meio.
-// A partir desta lista saem: o enum THEME_*, a tabela de desenho em ui.cpp, a galeria do
-// painel (/api/faces), os testes e as prévias do simulador. Guia: docs/MAKING_A_FACE.md
+// Each line: X(ID, function, "Name in the panel", "Short description").
+// The order is the number saved in the settings: always add at the END, never in the middle.
+// This list produces: the THEME_* enum, the drawing table in ui.cpp, the panel's
+// gallery (/api/faces), the tests and the simulator previews. Guide: docs/MAKING_A_FACE.md
 #pragma once
 
 #define UI_FACES(X)                                                                         \

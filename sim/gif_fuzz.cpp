@@ -1,7 +1,7 @@
-// Teste de robustez do leitor de GIF (AnimatedGIF) com AddressSanitizer, no WSL:
-//   bash sim/test-gif.sh [corpus] [casos]  compila e roda no caminho de 32 bits do firmware
-//   ./fuzz run <arquivo.gif>               decodifica um arquivo (para reproduzir)
-//   ./fuzz fuzz <seeds> <casos> <saida>    corrompe as sementes e testa cada caso num processo filho
+// Robustness test of the GIF reader (AnimatedGIF) with AddressSanitizer, on WSL:
+//   bash sim/test-gif.sh [corpus] [cases]  builds and runs on the firmware's 32-bit path
+//   ./fuzz run <file.gif>                  decodes one file (to reproduce)
+//   ./fuzz fuzz <seeds> <cases> <out>      corrupts the seeds and tests each case in a child process
 #ifndef GIF_UPSTREAM
 #include "../weatherclock/src/AnimatedGIF/AnimatedGIF.cpp"
 #else
@@ -16,7 +16,7 @@
 #include <string>
 #include <random>
 
-// mesma lógica do gifDraw do firmware (main.cpp), desenhando num quadro 240x240
+// same logic as the firmware's gifDraw (main.cpp), drawing into a 240x240 frame
 static uint16_t fb[240 * 240];
 static int drawnLines;
 static uint32_t drawHash = 2166136261U;
@@ -79,7 +79,7 @@ static int checkInput(void *ctx, uint8_t *buf, int n) {
 }
 
 static int decode(const uint8_t *d, int n) {
-  static AnimatedGIF gif;  // o firmware também usa um objeto só (new uma vez por arquivo)
+  static AnimatedGIF gif;  // the firmware also uses a single object (new once per file)
   gif.begin(GIF_PALETTE_RGB565_LE);
   bool opened;
   if (getenv("GIF_CALLBACKS")) {
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
   }
   if (argc >= 3 && !strcmp(argv[1], "run")) {
     auto v = load(argv[2]);
-    printf("%s: %d quadros\n", argv[2], decode(v.data(), (int)v.size()));
+    printf("%s: %d frames\n", argv[2], decode(v.data(), (int)v.size()));
     uint32_t hash = 2166136261U;
     for (auto pixel : fb) { hash = (hash ^ pixel) * 16777619U; }
     printf("lines=%d framebuffer=%08x all_rows=%08x\n", drawnLines, hash, drawHash);
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
   const uint8_t INTERESTING[] = {0, 1, 2, 7, 8, 11, 12, 13, 0x7F, 0x80, 0xFE, 0xFF, 0x2C, 0x21, 0xF9, 0x3B};
   for (long c = 0; c < cases; c++) {
     std::vector<uint8_t> v = seeds[rng() % seeds.size()];
-    if (v.size() > 20000) v.resize(13 + rng() % 20000);  // arquivos grandes: só o começo (mais casos por segundo)
+    if (v.size() > 20000) v.resize(13 + rng() % 20000);  // big files: only the start (more cases per second)
     int muts = 1 + rng() % 8;
     for (int m = 0; m < muts && !v.empty(); m++) {
       size_t i = rng() % v.size();
@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
         case 1: v[i] = INTERESTING[rng() % sizeof INTERESTING]; break;
         case 2: v[i] = rng(); break;
         case 3: if (i + 1 < v.size()) { v[i] = rng(); v[i + 1] = rng(); } break;  // tamanhos de 16 bits
-        case 4: v.resize(i + 1); break;                                              // arquivo cortado
+        case 4: v.resize(i + 1); break;                                              // truncated file
         case 5: { size_t l = 1 + rng() % 32; if (i + l <= v.size()) { auto copy = std::vector<uint8_t>(v.begin() + i, v.begin() + i + l); v.insert(v.begin() + i, copy.begin(), copy.end()); } } break;
         case 6: { size_t l = 1 + rng() % 32; if (i + l <= v.size()) v.erase(v.begin() + i, v.begin() + i + l); } break;
       }
@@ -163,13 +163,13 @@ int main(int argc, char **argv) {
       alarm(5);
       decode(v.data(), (int)v.size());
       alarm(0);
-      if (c % 5000 == 0) fprintf(stderr, "%ld casos, 0 falhas\n", c);
+      if (c % 5000 == 0) fprintf(stderr, "%ld cases, 0 failures\n", c);
       continue;
     }
     pid_t pid = fork();
     if (pid < 0) { perror("fork"); return 2; }
     if (!pid) {
-      alarm(5);  // laço infinito também é falha (o relógio travaria)
+      alarm(5);  // an endless loop is a failure too (the clock would hang)
       decode(v.data(), (int)v.size());
       _exit(0);
     }
@@ -184,8 +184,8 @@ int main(int argc, char **argv) {
       fclose(f);
       if (bad >= 50) break;
     }
-    if (c % 5000 == 0) fprintf(stderr, "%ld casos, %d falhas\n", c, bad);
+    if (c % 5000 == 0) fprintf(stderr, "%ld cases, %d failures\n", c, bad);
   }
-  printf("fim: %d falhas\n", bad);
+  printf("end: %d failures\n", bad);
   return bad ? 1 : 0;
 }

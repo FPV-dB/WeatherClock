@@ -1,7 +1,7 @@
-// Gera as prévias dos mostradores para a galeria do painel web, a partir de sim/out/face-N.raw:
-//  - docs/faces/face-N.png (240x240) para o README e para o site (gh-pages img/faces/), de onde o
-//    painel do relógio carrega as prévias dos mostradores embutidos (não ocupam a flash do relógio)
-// Rode depois do simulador (sim/build.sh já chama este script).
+// Builds the face previews for the web panel gallery, from sim/out/face-N.raw:
+//  - docs/faces/face-N.png (240x240) for the README and for the site (gh-pages img/faces/), where the
+//    clock's panel loads the previews of the built-in faces from (they take no flash on the clock)
+// Run after the simulator (sim/build.sh already calls this script).
 const fs = require('fs'), zlib = require('zlib'), path = require('path');
 const root = path.join(__dirname, '..');
 const T = [];
@@ -32,4 +32,4 @@ for (; ; n++) {
   fs.writeFileSync(path.join(root, 'docs', 'faces', `face-${n}.png`), p);
   total += p.length;
 }
-console.log(`${n} prévias, ${(total / 1024).toFixed(1)} KB`);
+console.log(`${n} previews, ${(total / 1024).toFixed(1)} KB`);

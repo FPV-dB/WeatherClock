@@ -1,10 +1,10 @@
-// facepack.cpp — motor dos mostradores instaláveis (pacotes JSON). Formato: docs/FACE_PACKS.md
+// facepack.cpp — engine for installable faces (JSON packs). Format: docs/FACE_PACKS.md
 //
-// Ao carregar, o JSON vira estruturas compactas na RAM (≈40 bytes por camada + sprites em
-// 4 bits por pixel) e é descartado. A cada quadro, cada camada calcula uma "assinatura" do
-// que mostraria (texto resolvido, ângulo, largura da barra...). Só as camadas cuja
-// assinatura mudou marcam áreas sujas; essas áreas são repintadas com recorte (uiClip),
-// redesenhando por cima todas as camadas que as tocam, na ordem — sem piscar a tela toda.
+// On load, the JSON becomes compact structures in RAM (≈40 bytes per layer + sprites at
+// 4 bits per pixel) and is thrown away. Every frame, each layer computes a "signature" of
+// what it would show (resolved text, angle, bar width...). Only the layers whose
+// signature changed mark dirty areas; those areas are repainted with clipping (uiClip),
+// redrawing on top every layer that touches them, in order — without flickering the whole screen.
 
 #include "facepack.h"
 #include "ui_kit.h"
@@ -35,12 +35,12 @@ struct Layer {
   uint8_t type, font, align, when, var, size;
   int16_t x, y, w, h, r, mx;
   int32_t c1, c2;
-  uint16_t str;            // texto/arquivo (posição no pool) ou sprite (posição em spr)
-  int16_t bx, by, bw, bh;  // caixa da última vez que foi desenhada
-  uint32_t sig;            // 0 = invisível
-  uint8_t tr;              // texto com uma versão por idioma (pt, en, es em sequência no pool)
-  uint8_t gl, gs;          // brilho: 1 = tem, e o alcance em px (1-3)
-  uint16_t gc, gb, gp;     // brilho: cor, cor da superfície sob o halo (0xFFFF = fundo do pacote) e período do pulso em ms (0 = fixo)
+  uint16_t str;            // text/file (offset in the pool) or sprite (offset in spr)
+  int16_t bx, by, bw, bh;  // box from the last time it was drawn
+  uint32_t sig;            // 0 = invisible
+  uint8_t tr;              // text with one version per language (pt, en, es in sequence in the pool)
+  uint8_t gl, gs;          // glow: 1 = has one, and its reach in px (1-3)
+  uint16_t gc, gb, gp;     // glow: colour, colour of the surface under the halo (0xFFFF = pack background) and pulse period in ms (0 = steady)
 };
 struct Box { int16_t x, y, w, h; };
 
@@ -72,7 +72,7 @@ void facePackUnload() {
 }
 
 // ---------- leitura ----------
-// `list`: nomes na flash, separados por \0 (ver TYPES, FONTS...)
+// `list`: names in flash, separated by \0 (see TYPES, FONTS...)
 static uint8_t pick(const char *s, PGM_P list, uint8_t n, uint8_t def) {
   if (!s) return def;
   for (uint8_t i = 0; i < n; i++, list += strlen_P(list) + 1)
@@ -103,7 +103,7 @@ static uint16_t addStr(const char *s) {
   return off;
 }
 
-// id seguro: letras minúsculas, números, '-' e '_'
+// safe id: lowercase letters, digits, '-' and '_'
 static void safeId(const char *s, char *out, size_t n) {
   size_t o = 0;
   for (; s && *s && o + 1 < n; s++) {
@@ -115,7 +115,7 @@ static void safeId(const char *s, char *out, size_t n) {
   out[o] = 0;
 }
 
-// Fonte do JSON em memória (o simulador): o mesmo leitor que o ArduinoJson usa com arquivos
+// In-memory JSON source (the simulator): the same reader ArduinoJson uses with files
 struct MemIn {
   const char *p;
   size_t n, i;
@@ -128,10 +128,10 @@ struct MemIn {
   }
 };
 
-// Lê o pacote em passadas com filtro, direto da fonte (arquivo ou memória), em vez de montar a árvore do
-// arquivo inteiro: com ~31 KB de heap livre, um JSON acima de ~10 KB dava "NoMemory". Passada 1: camadas e
-// metadados (mais só o "fps" de cada sprite); depois uma passada por sprite. O pico de memória passa a
-// depender do maior sprite, não do tamanho do pacote. `rewind` volta a fonte ao início.
+// Reads the pack in filtered passes, straight from the source (file or memory), instead of building the tree of the
+// whole file: with ~31 KB of free heap, a JSON over ~10 KB gave "NoMemory". Pass 1: layers and
+// metadata (plus just each sprite's "fps"); then one pass per sprite. Peak memory now
+// depends on the largest sprite, not on the pack size. `rewind` takes the source back to the start.
 template <class In, class Rew>
 static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
   facePackUnload();
@@ -153,14 +153,14 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
   }
   JsonArrayConst layers = doc["layers"];
   if (layers.isNull() || layers.size() == 0 || layers.size() > MAX_LAYERS) {
-    snprintf_P(err, errLen, PSTR("\"layers\" precisa ter de 1 a %d camadas"), MAX_LAYERS);
+    snprintf_P(err, errLen, PSTR("\"layers\" must have 1 to %d layers"), MAX_LAYERS);
     return false;
   }
-  // tamanhos para alocar de uma vez
+  // sizes to allocate in one go
   size_t pcap = 1;
   for (JsonObjectConst l : layers) {
     const char *t = l["text"] | (const char *)nullptr, *f = l["file"] | (const char *)nullptr;
-    pcap += (t ? strlen(t) + 1 : 1) + (f ? strlen(f) + 1 : 1);  // sem o campo, a camada guarda "" (1 byte)
+    pcap += (t ? strlen(t) + 1 : 1) + (f ? strlen(f) + 1 : 1);  // without the field, the layer stores "" (1 byte)
     if (l["text"].is<JsonObjectConst>())  // {"pt": ..., "en": ..., "es": ...}
       for (const char *k : {"pt", "en", "es"}) pcap += strlen(l["text"][k] | (l["text"]["pt"] | "")) + 1;
   }
@@ -183,9 +183,9 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
   }
   poolCap = pcap;
   pool[0] = 0;
-  poolUsed = 1;  // posição 0 = texto vazio
+  poolUsed = 1;  // offset 0 = empty text
 
-  // sprites, um por vez: [w][h][n][paleta n x RGB565][pixels 4 bits; 0 = transparente]
+  // sprites, one at a time: [w][h][n][palette n x RGB565][4-bit pixels; 0 = transparent]
   for (uint8_t si = 0; si < ns; si++) {
     JsonDocument sd;
     {
@@ -253,7 +253,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     p[0] = w;
     p[1] = h;
     p[2] = n;
-    p[3] = fps << 4 | nf;  // fps (1-10) e quadros (1-8), um quadro depois do outro
+    p[3] = fps << 4 | nf;  // fps (1-10) and frames (1-8), one frame after the other
     for (uint8_t i = 0; i < n; i++) {
       p[4 + i * 2] = colors[i] >> 8;
       p[5 + i * 2] = colors[i] & 255;
@@ -277,7 +277,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     sprUsed += 4 + n * 2 + fsz * nf;
   }
 
-  // camadas
+  // layers
   for (JsonObjectConst l : layers) {
     Layer &L = lay[nLay];
     L.type = pick(l["type"] | (const char *)nullptr, TYPES, L_TYPES, 255);
@@ -304,9 +304,9 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     }
     uint8_t defSize = L.type == L_TEXT ? 2 : L.type == L_WEATHER ? 10 : L.type == L_ARC ? 10 : L.type == L_LINE || L.type == L_HAND || L.type == L_TICKS ? 3 : 1;
     L.size = l["size"] | defSize;
-    // Limites de desenho: um raio de 30000 ou 30000 marcas prenderia o relógio num quadro só (watchdog) e
-    // ele cairia na recuperação. Os mostradores da galeria usam no máximo ~480 de coordenada, raio 170,
-    // 60 marcas e traço 26.
+    // Drawing limits: a radius of 30000 or 30000 ticks would trap the clock in a single frame (watchdog) and
+    // it would drop into recovery. The gallery faces use at most ~480 for coordinates, radius 170,
+    // 60 ticks and stroke 26.
     bool stroke = L.type == L_LINE || L.type == L_HAND || L.type == L_TICKS || L.type == L_ARC;
     if (abs(L.x) > 960 || abs(L.y) > 960 || abs(L.w) > 960 || abs(L.h) > 960 || L.r < 0 || L.r > 360 ||
         (L.type == L_TICKS && (L.mx < 1 || L.mx > 120 || abs(L.w) > 240)) || (stroke && L.size > 64)) {
@@ -326,13 +326,13 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
     }
     int32_t defC1 = L.type == L_RECT || L.type == L_CIRCLE ? CARD : L.type == L_BAR || L.type == L_ARC ? WORK : TEXT;
     L.c1 = parseColor(l["color"] | (const char *)nullptr, defC1);
-    const char *c2 = l["color2"] | (const char *)nullptr;  // aceita também os apelidos abaixo
+    const char *c2 = l["color2"] | (const char *)nullptr;  // also accepts the aliases below
     if (!c2) c2 = l["track"] | (const char *)nullptr;
     if (!c2) c2 = l["off"] | (const char *)nullptr;
     if (!c2) c2 = l["stroke"] | (const char *)nullptr;
     if (!c2) c2 = l["bg"] | (const char *)nullptr;
     L.c2 = parseColor(c2, C_NONE);
-    if (L.type == L_TEXT && l["glow"].is<const char *>()) {  // halo que pulsa atrás do texto
+    if (L.type == L_TEXT && l["glow"].is<const char *>()) {  // halo that pulses behind the text
       int gs = l["spread"] | 2, gp = l["pulse"] | 0;
       L.gl = 1;
       L.gs = gs < 1 ? 1 : gs > 3 ? 3 : gs;
@@ -340,7 +340,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
       L.gb = l["base"].is<const char *>() ? parseColor(l["base"], 0) : 0xFFFF;
       L.gp = gp <= 0 ? 0 : gp < 400 ? 400 : gp > 10000 ? 10000 : gp;
     }
-    if (L.type == L_TEXT && l["text"].is<JsonObjectConst>()) {  // um texto por idioma, em sequência no pool
+    if (L.type == L_TEXT && l["text"].is<JsonObjectConst>()) {  // one text per language, in sequence in the pool
       JsonObjectConst tx = l["text"];
       const char *pt = tx["pt"] | "";
       L.str = addStr(pt);
@@ -348,7 +348,7 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
       L.tr = 1;
     } else if (L.type == L_TEXT) L.str = addStr(l["text"] | "");
     else if (L.type == L_IMAGE) L.str = addStr(l["file"] | "");
-    if ((L.type == L_TEXT || L.type == L_IMAGE) && L.str == 0xFFFF) {  // não coube no pool: nunca ler pool + 0xFFFF
+    if ((L.type == L_TEXT || L.type == L_IMAGE) && L.str == 0xFFFF) {  // didn't fit in the pool: never read pool + 0xFFFF
       snprintf_P(err, errLen, PSTR("layer %d: text too long"), nLay + 1);
       facePackUnload();
       return false;
@@ -370,11 +370,11 @@ static bool loadFrom(In &in, Rew rewind, char *err, size_t errLen) {
   snprintf(pkName, sizeof pkName, "%s", doc["name"] | "Untitled");
   snprintf(pkDesc, sizeof pkDesc, "%s", doc["desc"] | "");
   snprintf(pkAuthor, sizeof pkAuthor, "%s", doc["author"] | "");
-  for (char *t : {pkName, pkDesc, pkAuthor})  // uma linha só (vão para o .txt de metadados)
+  for (char *t : {pkName, pkDesc, pkAuthor})  // a single line (they go into the metadata .txt)
     for (; *t; t++)
       if (*t == '\n' || *t == '\r') *t = ' ';
   safeId(doc["id"] | pkName, pkId, sizeof pkId);
-  if (!pkId[0]) strcpy(pkId, "pacote");
+  if (!pkId[0]) strcpy(pkId, "pack");
   return true;
 }
 
@@ -389,7 +389,7 @@ bool facePackLoadFile(File &f, char *err, size_t errLen) {
 }
 #endif
 
-// texto da camada no idioma da tela
+// the layer's text in the screen language
 static const char *layerText(const Layer &L) {
   const char *p = pool + L.str;
   if (L.tr)
@@ -397,7 +397,7 @@ static const char *layerText(const Layer &L) {
   return p;
 }
 
-// ---------- variáveis e condições ----------
+// ---------- variables and conditions ----------
 static void variable(const char *k, const UiState &s, char *v, size_t n) {
   v[0] = 0;
   bool t = s.timeOk, wx = s.weatherOn && s.wx.ok;
@@ -473,7 +473,7 @@ static bool cond(uint8_t w, const UiState &s) {
     case W_STREAK: return s.streak > 0;
     default: break;
   }
-  if (w >= W_SUNNY && w < W_WHENS) {  // código WMO do Open-Meteo
+  if (w >= W_SUNNY && w < W_WHENS) {  // Open-Meteo WMO code
     if (!wx) return false;
     int c = s.wx.code;
     bool day = isDay(s);
@@ -493,12 +493,12 @@ static bool cond(uint8_t w, const UiState &s) {
   return true;
 }
 
-// Humor automático do tomate: dorme à noite, guarda-chuva na chuva, comemora a meta...
+// Automatic tomato mood: sleeps at night, umbrella in the rain, cheers at the goal...
 static uint8_t autoMood(const UiState &s) {
   if (!isDay(s)) return FACE_SLEEP;
   if (isRain(s)) return FACE_UMBRELLA;
   if (s.today >= s.dailyGoal && s.today) return FACE_CHEER;
-  if (s.weatherOn && s.wx.ok && uiTempC(s, s.wx.t) < 15) return FACE_SCARF;  // em °C, qualquer que seja a unidade da tela
+  if (s.weatherOn && s.wx.ok && uiTempC(s, s.wx.t) < 15) return FACE_SCARF;  // in °C, whatever the screen's unit
   if (s.weatherOn && s.wx.ok && uiTempC(s, s.wx.t) > 28) return FACE_SHADES;
   return FACE_HAPPY;
 }
@@ -524,8 +524,8 @@ static float handAngle(const Layer &L, const UiState &s) {
 
 static uint16_t col(int32_t c, const UiState &s) { return c == C_ACCENT ? s.accent : (uint16_t)c; }
 
-// ---------- texto nas 7 fontes ----------
-// Percorre o texto; desenha se draw = true. Devolve a largura.
+// ---------- text in the 7 fonts ----------
+// Walks the text; draws it if draw = true. Returns the width.
 static int runText(const Layer &L, const char *str, int x, int y, bool draw, uint16_t fg, int32_t c2, int grow = 0) {
   const int sz = L.size, x0 = x;
   for (const unsigned char *p = (const unsigned char *)str; *p; p++) {
@@ -536,7 +536,7 @@ static int runText(const Layer &L, const char *str, int x, int y, bool draw, uin
       x += L.font == F_PIXEL ? 4 * sz : sz / 3 + 4;
       continue;
     }
-    if (ch == 0xC3 && p[1]) {  // letras acentuadas: só a letra base (a fonte embutida é ASCII)
+    if (ch == 0xC3 && p[1]) {  // accented letters: only the base letter (the built-in font is ASCII)
       unsigned char c = *++p;
       ch = c <= 0x85 ? 'A' : c == 0x87 ? 'C' : c <= 0x8B ? 'E' : c <= 0x8F ? 'I' : c <= 0x96 ? 'O' : c <= 0x9C ? 'U'
          : c <= 0xA5 ? 'a' : c == 0xA7 ? 'c' : c <= 0xAB ? 'e' : c <= 0xAF ? 'i' : c <= 0xB6 ? 'o' : 'u';
@@ -578,7 +578,7 @@ static int runText(const Layer &L, const char *str, int x, int y, bool draw, uin
       case F_DSEG: {
         const int dw = sz * 618 / 1000, adv = dw + sz / 10;
         if (ch >= '0' && ch <= '9') {
-          if (draw) dsegDigit(x, y, sz, ch - '0', fg, c2 == C_NONE ? fg : (uint16_t)c2);  // off == on: só os acesos
+          if (draw) dsegDigit(x, y, sz, ch - '0', fg, c2 == C_NONE ? fg : (uint16_t)c2);  // off == on: lit segments only
           x += adv;
         } else if (ch == ':') {
           if (draw) {
@@ -612,7 +612,7 @@ static int fontHeight(const Layer &L) {
   }
 }
 
-// ---------- caixa, assinatura e desenho de cada camada ----------
+// ---------- box, signature and drawing of each layer ----------
 static uint32_t fnv(uint32_t h, const void *data, size_t n) {
   const uint8_t *b = (const uint8_t *)data;
   while (n--) h = (h ^ *b++) * 16777619u;
@@ -656,24 +656,24 @@ static Box measure(const Layer &L, const UiState &s, const char *txt) {
   return {0, 0, 0, 0};
 }
 
-// intensidade do brilho (0-7) no instante s.ms: onda suave só com inteiros
+// glow intensity (0-7) at time s.ms: a smooth wave using integers only
 static uint8_t glowLevel(const Layer &L, const UiState &s) {
   if (!L.gp) return 7;
   int t = (uint32_t)s.ms % L.gp * 64 / L.gp, x = t < 32 ? t : 63 - t;
   return x * x * (93 - 2 * x) * 7 / 29791;
 }
 
-// mistura a e b em RGB565 (k de 0 a 256 = quanto de b)
+// blends a and b in RGB565 (k from 0 to 256 = how much of b)
 static uint16_t mix565(uint16_t a, uint16_t b, int k) {
   int r = ((a >> 11) * (256 - k) + (b >> 11) * k) >> 8, g = (((a >> 5) & 63) * (256 - k) + ((b >> 5) & 63) * k) >> 8;
   int bl = ((a & 31) * (256 - k) + (b & 31) * k) >> 8;
   return r << 11 | g << 5 | bl;
 }
 
-// quadro do sprite no instante s.ms (1 quadro = parado)
+// sprite frame at time s.ms (1 frame = still)
 static uint8_t sprFrame(const Layer &L, const UiState &s) {
   uint8_t nf = spr[L.str + 3] & 15;
-  return nf > 1 ? (uint64_t)s.ms * (spr[L.str + 3] >> 4) / 1000 % nf : 0;  // 64 bits: ms x fps estouraria em ~5 dias
+  return nf > 1 ? (uint64_t)s.ms * (spr[L.str + 3] >> 4) / 1000 % nf : 0;  // 64 bits: ms x fps would overflow in ~5 days
 }
 
 static uint32_t signature(const Layer &L, const UiState &s, char *txt, size_t n) {
@@ -683,7 +683,7 @@ static uint32_t signature(const Layer &L, const UiState &s, char *txt, size_t n)
     case L_TEXT: {
       resolve(layerText(L), s, txt, n);
       h = fnv(h, txt, strlen(txt));
-      if (L.gl) { uint8_t g = glowLevel(L, s); h = fnv(h, &g, 1); }  // o pulso redesenha só a área do texto
+      if (L.gl) { uint8_t g = glowLevel(L, s); h = fnv(h, &g, 1); }  // the pulse redraws only the text area
       break;
     }
     case L_MASCOT: { uint8_t m = L.var == 8 ? autoMood(s) : L.var; h = fnv(h, &m, 1); break; }
@@ -692,14 +692,14 @@ static uint32_t signature(const Layer &L, const UiState &s, char *txt, size_t n)
     case L_BAR: { int mx, v = value(L, s, mx); int fw = L.mx > 0 ? (v > L.mx ? L.mx : v) * L.w / L.mx : (v > mx ? mx : v) * L.w / mx; h = fnv(h, &fw, sizeof fw); break; }
     case L_HAND: { int a = (int)(handAngle(L, s) * 1000); h = fnv(h, &a, sizeof a); break; }
     case L_ARC: { int mx, v = value(L, s, mx); if (L.mx > 0) mx = L.mx; int q = (v > mx ? mx : v) * 720 / mx; h = fnv(h, &q, sizeof q); break; }
-    case L_SPRITE: if ((spr[L.str + 3] & 15) > 1) { uint8_t f = sprFrame(L, s); h = fnv(h, &f, 1); } break;  // só animado muda
+    case L_SPRITE: if ((spr[L.str + 3] & 15) > 1) { uint8_t f = sprFrame(L, s); h = fnv(h, &f, 1); } break;  // only animated ones change
   }
-  return h | 1;  // nunca 0 (0 = invisível)
+  return h | 1;  // never 0 (0 = invisible)
 }
 
-// Anel de espessura th e raio externo r, preenchido de 0 a f (fração) a partir do topo, no sentido
-// horário, com pontas redondas; o resto em "track" (C_NONE = não desenha). Linha a linha em trechos
-// (sem atan2 por pixel: o lado do ponto em relação ao raio final decide).
+// Ring of thickness th and outer radius r, filled from 0 to f (fraction) starting at the top,
+// clockwise, with round ends; the rest in "track" (C_NONE = don't draw). Line by line in spans
+// (no atan2 per pixel: the point's side relative to the end radius decides).
 static void arcRing(int cx, int cy, int r, int th, float f, uint16_t c, int32_t track, const UiState &s) {
   if (th > r) th = r;
   int ri = r - th;
@@ -708,7 +708,7 @@ static void arcRing(int cx, int cy, int r, int th, float f, uint16_t c, int32_t 
   auto inArc = [&](int dx, int dy) {
     if (f >= 1) return true;
     if (f <= 0) return false;
-    long cr = (long)ex * dy - (long)ey * dx;  // < 0: antes do raio final
+    long cr = (long)ex * dy - (long)ey * dx;  // < 0: before the end radius
     if (f <= 0.5f) return (dx > 0 || (dx == 0 && dy < 0)) && cr < 0;
     return !(dx < 0 && cr >= 0);
   };
@@ -748,13 +748,13 @@ static void drawLayer(const Layer &L, const UiState &s, const char *txt) {
     case L_TEXT: {
       int w = runText(L, txt, 0, 0, false, 0, C_NONE);
       int x = L.align == A_CENTER ? L.x - w / 2 : L.align == A_RIGHT ? L.x - w : L.x;
-      if (L.gl) {  // anéis de fora para dentro, cada um mais forte que o anterior
+      if (L.gl) {  // rings from the outside in, each stronger than the last
         static const int8_t D[8][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
         int a = 96 + glowLevel(L, s) * 20;
         uint16_t gb = L.gb == 0xFFFF ? bgColor : L.gb;
         for (int r = L.gs; r >= 1; r--) {
           uint16_t gc = mix565(gb, L.gc, a * (L.gs - r + 1) / (L.gs + 1) / 2);
-          if (L.font == F_GEO) runText(L, txt, x, L.y, true, gc, C_NONE, 2 * r);  // traço mais grosso: uma passada por anel
+          if (L.font == F_GEO) runText(L, txt, x, L.y, true, gc, C_NONE, 2 * r);  // thicker stroke: one pass per ring
           else
             for (int k = 0; k < 8; k++) runText(L, txt, x + D[k][0] * r, L.y + D[k][1] * r, true, gc, C_NONE);
         }
@@ -817,7 +817,7 @@ static void drawLayer(const Layer &L, const UiState &s, const char *txt) {
   }
 }
 
-// ---------- áreas sujas ----------
+// ---------- dirty areas ----------
 static bool overlap(const Box &a, const Box &b, int gap = 0) {
   return a.w > 0 && b.w > 0 && a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
 }
@@ -829,7 +829,7 @@ static Box unite(const Box &a, const Box &b) {
 static void addDirty(Box *d, int &n, Box b) {
   if (b.w <= 0 || b.h <= 0) return;
   for (int i = 0; i < n; i++)
-    if (overlap(d[i], b, 4)) {  // junta áreas que se tocam
+    if (overlap(d[i], b, 4)) {  // merges areas that touch
       d[i] = unite(d[i], b);
       return;
     }
@@ -870,8 +870,8 @@ void facePackRender(const UiState &s, bool full) {
       }
     return;
   }
-  // cada área suja é desenhada fora da tela e vai pronta para ela (o ponteiro de segundos não pisca);
-  // sem memória para a faixa, desenha direto com recorte, como antes
+  // each dirty area is drawn off-screen and sent finished (the second hand doesn't flicker);
+  // without memory for the strip, it draws directly with clipping, as before
   struct Area { Box d; const UiState *s; char *txt; } area = {{0, 0, 0, 0}, &s, txt};
   auto paint = [](void *p) {
     Area &a = *(Area *)p;

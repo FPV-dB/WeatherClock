@@ -4,7 +4,7 @@ const source=fs.readFileSync(path.join(__dirname,'../weatherclock/main.cpp'),'ut
 function fn(name){const a=source.indexOf(`void ${name}() {`),b=source.indexOf('\n}',a);if(a<0||b<0)throw Error(name);return source.slice(a,b+2);}
 for(const name of ['handleUpload','handlePackUpload','handlePanelUpload'])
  if(!fn(name).includes('uploadAuthed()'))throw Error(`${name} bypasses upload throttle`);
-{ // /api/crash (Limpar da última queda) é ação: POST com guard(), e a gravação só acontece em reinício anormal
+{ // /api/crash (Clear from the last crash) is an action: POST with guard(), and it is only written on an abnormal restart
  const i=source.indexOf('server.on("/api/crash", HTTP_POST'),blk=source.slice(i,source.indexOf('});',i));
  if(i<0||!blk.includes('if (!guard()) return;'))throw Error('/api/crash must be a guarded POST');
  const cl=fn('crashLoad');
@@ -134,7 +134,7 @@ int main(){
  const char*notOwn[]={"smalltv-1a2c.local","smalltv-1a2b.local.evil.com","evil.smalltv-1a2b.local","smalltv-1a2b.loca","smalltv-1a2b.local:","smalltv-1a2b.local:0","smalltv-1a2b.local:655350","smalltv-1a2b.local:8a","smalltv-1a2b","smalltv-1a2b.localx",""};
  for(auto h:notOwn)assert(!safeOwnHost(h,strlen(h),"smalltv-1a2b"));
  assert(!safeOwnHost("x.local",7,""));
- {// mDNS mínimo: pergunta A/ANY pelo nosso nome; resposta, compressão maliciosa e rótulo com ponto
+ {// minimal mDNS: A/ANY question for our name; answer, malicious compression and a label containing a dot
   auto q=[](std::initializer_list<uint8_t> b){return std::string(b.begin(),b.end());};
   const std::string hdr=q({0x12,0x34,0,0,0,1,0,0,0,0,0,0});
   const std::string nm=q({12})+"SmallTV-1a2b"+q({5})+"local"+q({0});
@@ -142,16 +142,16 @@ int main(){
   bool qu=false;
   assert(ask(hdr+nm+q({0,1,0,1}),&qu)&&!qu);
   assert(ask(hdr+nm+q({0,255,0x80,1}),&qu)&&qu);
-  assert(!ask(hdr+nm+q({0,28,0,1})));                       // AAAA: não respondemos
-  assert(!ask(hdr+nm+q({0,1,0,3})));                        // classe diferente de IN
-  assert(!ask(hdr+nm+q({0,1})));                            // pergunta cortada
-  std::string resp=hdr+nm+q({0,1,0,1});resp[2]=(char)0x84;assert(!ask(resp));  // é resposta, não pergunta
-  assert(!ask(hdr+q({18})+"smalltv-1a2b.local"+q({0,0,1,0,1})));  // um rótulo só, com pontos
+  assert(!ask(hdr+nm+q({0,28,0,1})));                       // AAAA: we don't answer
+  assert(!ask(hdr+nm+q({0,1,0,3})));                        // class other than IN
+  assert(!ask(hdr+nm+q({0,1})));                            // truncated question
+  std::string resp=hdr+nm+q({0,1,0,1});resp[2]=(char)0x84;assert(!ask(resp));  // it's an answer, not a question
+  assert(!ask(hdr+q({18})+"smalltv-1a2b.local"+q({0,0,1,0,1})));  // a single label, with dots
   assert(!ask(hdr+q({12})+"smalltv-1a2c"+q({5})+"local"+q({0,0,1,0,1})));
   std::string two=q({0,0,0,0,0,2,0,0,0,0,0,0})+q({5})+"other"+q({5})+"local"+q({0,0,1,0,1})+q({12})+"smalltv-1a2b"+q({0xC0,18,0,1,0,1});
-  assert(ask(two));                                         // 2ª pergunta com ponteiro para ".local"
-  assert(!ask(hdr+q({0xC0,12,0,1,0,1})));                   // ponteiro para si mesmo: laço limitado
-  assert(!ask(hdr+q({0xC0,200,0,1,0,1})));                  // ponteiro para fora do pacote
+  assert(ask(two));                                         // 2nd question with a pointer to ".local"
+  assert(!ask(hdr+q({0xC0,12,0,1,0,1})));                   // pointer to itself: bounded loop
+  assert(!ask(hdr+q({0xC0,200,0,1,0,1})));                  // pointer outside the packet
   assert(!ask(hdr.substr(0,11)));
   uint8_t o[80],ip[4]={192,168,1,9};
   size_t m=mdnsAnswer(o,sizeof o,"smalltv-1a2b",ip,0x1234,false);
@@ -160,58 +160,58 @@ int main(){
   assert(m==12+20+4+2+10+4&&o[0]==0x12&&o[1]==0x34&&o[5]==1&&o[36]==0xC0&&o[37]==12&&!memcmp(o+m-4,ip,4));
   {size_t j=12;char nb[64];assert(dnsReadName(o,m,j,nb,sizeof nb)&&!strcmp(nb,"smalltv-1a2b.local")&&j==32);}
   assert(!mdnsAnswer(o,40,"smalltv-1a2b",ip,0,false));
-  // sondagem: a pergunta que o relógio manda e a resposta de outro relógio que já usa o nome
+  // probe: the question the clock sends and the answer from another clock that already uses the name
   m=mdnsProbeQuery(o,sizeof o,"smalltv");
   assert(m==12+15+4&&o[5]==1&&o[2]==0&&o[m-4]==0&&o[m-3]==255&&o[m-2]==0x80);
-  assert(mdnsAsksFor(o,m,"smalltv",&qu)&&qu);                              // outro relógio responderia
+  assert(mdnsAsksFor(o,m,"smalltv",&qu)&&qu);                              // another clock would answer
   m=mdnsAnswer(o,sizeof o,"SmallTV",ip,0,false);
   assert(mdnsHasAnswer(o,m,"smalltv")&&!mdnsHasAnswer(o,m,"smalltv-2"));
-  m=mdnsAnswer(o,sizeof o,"smalltv",ip,7,true);assert(mdnsHasAnswer(o,m,"smalltv"));  // com pergunta + ponteiro
-  assert(!mdnsHasAnswer(o,20,"smalltv"));                                   // pacote cortado no meio do nome
-  {uint8_t pq[64];size_t pm=mdnsProbeQuery(pq,sizeof pq,"smalltv");assert(!mdnsHasAnswer(pq,pm,"smalltv"));}  // pergunta não é resposta
+  m=mdnsAnswer(o,sizeof o,"smalltv",ip,7,true);assert(mdnsHasAnswer(o,m,"smalltv"));  // with question + pointer
+  assert(!mdnsHasAnswer(o,20,"smalltv"));                                   // packet cut in the middle of the name
+  {uint8_t pq[64];size_t pm=mdnsProbeQuery(pq,sizeof pq,"smalltv");assert(!mdnsHasAnswer(pq,pm,"smalltv"));}  // a question is not an answer
   {std::string big=q({0,0,0x84,0,0,0,0,1,0,0,0,0})+q({5})+"other"+q({5})+"local"+q({0,0,1,0,1,0,0,0,120,0xFF,0xFF});
-   assert(!mdnsHasAnswer((const uint8_t*)big.data(),big.size(),"smalltv"));}  // tamanho de dados maior que o pacote
+   assert(!mdnsHasAnswer((const uint8_t*)big.data(),big.size(),"smalltv"));}  // data length bigger than the packet
 
  }
- // hora do clima
+ // weather time
  assert(isoToEpoch("1970-01-01T00:00")==0);assert(isoToEpoch("2026-10-23T00:30")==1792715400LL);
  assert(isoToEpoch("2026-13-01T00:00")==-1&&isoToEpoch("2026-10-23")==-1&&isoToEpoch(nullptr)==-1&&isoToEpoch("2026-10-23T0a:30")==-1);
- // cabeçalho Date do HTTP: só para mostrar a hora
+ // HTTP Date header: only for showing the time
  assert(httpDateToEpoch(" Wed, 28 Oct 2026 12:00:00 GMT\\r")==1793188800LL);assert(httpDateToEpoch("Thu, 01 Jan 1970 00:00:00 GMT")==-1);
  assert(httpDateToEpoch("Sat, 01 Jan 2000 00:00:00 GMT")==946684800LL&&httpDateToEpoch("Sun, 06 Nov 1994 08:49:37 GMT")==-1);assert(httpDateToEpoch("28 Oct 2026 12:00:00 GMT")==1793188800LL);
  assert(httpDateToEpoch("Wed, 28 Foo 2026 12:00:00 GMT")==-1&&httpDateToEpoch("Wed, 28 Oct 2026 25:00:00 GMT")==-1&&httpDateToEpoch("")==-1&&httpDateToEpoch(nullptr)==-1);
  assert(httpDateToEpoch("Wed, 28 Oct 2026 12:00 GMT")==-1&&httpDateToEpoch("Wed, 32 Oct 2026 12:00:00 GMT")==-1);
- {const int64_t T=1792715400LL;  // hora na memória RTC entre reinícios: soma o tempo que passou; lixo ou velho demais, não
-  const uint32_t q12=(uint32_t)(5.75*4096);                              // ~5,75 µs por tick
+ {const int64_t T=1792715400LL;  // time kept in RTC memory across restarts: adds the elapsed time; garbage or too old, no
+  const uint32_t q12=(uint32_t)(5.75*4096);                              // ~5.75 µs per tick
   uint32_t tk=1000000;RtcClock c=rtcClockMake((uint32_t)T,tk);
   assert(rtcClockRestore(c,tk,q12)==T);
-  assert(rtcClockRestore(c,tk+(uint32_t)(3100000.0/5.75),q12)==T+3);       // ~3,1 s depois
-  assert(rtcClockRestore(c,tk-5,q12)==-1);                                 // contador voltou (ligou de novo): inválido
-  assert(rtcClockRestore(c,tk+(uint32_t)(601e6/5.75),q12)==-1);            // parado há mais de 10 min
+  assert(rtcClockRestore(c,tk+(uint32_t)(3100000.0/5.75),q12)==T+3);       // ~3.1 s later
+  assert(rtcClockRestore(c,tk-5,q12)==-1);                                 // counter went back (powered on again): invalid
+  assert(rtcClockRestore(c,tk+(uint32_t)(601e6/5.75),q12)==-1);            // stopped for more than 10 min
   RtcClock bad=c;bad.sec++;assert(rtcClockRestore(bad,tk,q12)==-1);       // corrompido
   RtcClock zero={0,0,0,0};assert(rtcClockRestore(zero,0,q12)==-1&&rtcClockRestore(c,tk,0)==-1);
   RtcClock old=rtcClockMake(1000,tk);assert(rtcClockRestore(old,tk,q12)==-1);
  }
- {const int64_t T=1792715400LL;  // TimeGuard: hora confirmada pelo clima; salto do SNTP desfeito até confirmar
+ {const int64_t T=1792715400LL;  // TimeGuard: time confirmed by the weather; an SNTP jump is undone until confirmed
   TimeGuard g;uint32_t ms=1000;
-  assert(g.onSntp(T,ms,false)==T&&!g.ok(T,ms));                       // logo ao ligar: mostra, não grava
-  assert(g.onWeather(T-300,T+5,ms+5000)==T+5&&g.ok(T+5,ms+5000));        // clima confirma
+  assert(g.onSntp(T,ms,false)==T&&!g.ok(T,ms));                       // right after power-on: show it, don't save it
+  assert(g.onWeather(T-300,T+5,ms+5000)==T+5&&g.ok(T+5,ms+5000));        // weather confirms
   ms+=3600000;int64_t now=T+5+3600-5;
-  assert(g.onSntp(now+3,ms,false)==now+3&&g.ok(now+3,ms));             // correção pequena: aceita
-  int64_t fake=now-40*86400;                                           // pacote forjado: 40 dias atrás
+  assert(g.onSntp(now+3,ms,false)==now+3&&g.ok(now+3,ms));             // small correction: accepted
+  int64_t fake=now-40*86400;                                           // forged packet: 40 days ago
   assert(g.onSntp(fake,ms+10,false)==now+3&&g.undone==1&&g.ok(now+3,ms+10));
-  assert(g.onSntp(T+100*86400,ms+20,false)==now+3&&g.undone==2);       // e para o futuro
-  ms+=900000;now+=900;                                                 // clima de novo: a hora real segue confirmada
+  assert(g.onSntp(T+100*86400,ms+20,false)==now+3&&g.undone==2);       // and into the future
+  ms+=900000;now+=900;                                                 // weather again: the real time stays confirmed
   assert(g.onWeather(now-600,now,ms)==now&&g.ok(now,ms));
-  TimeGuard h;assert(h.onSntp(T,1000,false)==T);                       // ligou com hora falsa; o clima traz a real
+  TimeGuard h;assert(h.onSntp(T,1000,false)==T);                       // booted with a fake time; the weather brings the real one
   assert(h.onWeather(T+86400*3-300,T+20,21000)==T+20&&!h.ok(T+20,21000));
   assert(h.onSntp(T+86400*3,60000,false)==T+86400*3&&!h.ok(T+86400*3,60000));
   assert(h.onWeather(T+86400*3-300,T+86400*3+30,90000)==T+86400*3+30&&h.ok(T+86400*3+30,90000));
-  TimeGuard k;assert(k.onSntp(T,1000,true)==T&&!k.ok(T,1000));         // sem clima: duas sincronizações
+  TimeGuard k;assert(k.onSntp(T,1000,true)==T&&!k.ok(T,1000));         // no weather: two syncs
   assert(k.onSntp(T+60,61000,true)==T+60&&k.ok(T+60,61000));
   assert(k.onSntp(T-86400,121000,true)==T+120&&k.undone==1);           // salto: desfeito
-  assert(k.onSntp(T-86400+60,181000,true)==T-86400+60);                // repetido 1 min depois: confirmado (sem clima, é o limite)
-  TimeGuard w;w.confirm(T,4000000000u);assert(w.ok(T+400000,(uint32_t)(4000000000ull+400000000ull)));  // millis() voltando a zero
+  assert(k.onSntp(T-86400+60,181000,true)==T-86400+60);                // repeated 1 min later: confirmed (without weather, that's the limit)
+  TimeGuard w;w.confirm(T,4000000000u);assert(w.ok(T+400000,(uint32_t)(4000000000ull+400000000ull)));  // millis() wrapping to zero
  }
  {AuthThrottle a;assert(!a.blocked(7,1000));a.fail(7,1000);assert(a.blocked(7,1500)&&!a.blocked(8,1500)&&!a.blocked(7,2001));
   for(uint32_t ip=10;ip<20;ip++)a.fail(ip,3000+ip);assert(a.blocked(19,3100)&&!a.blocked(7,3100));}
@@ -227,6 +227,6 @@ int main(){
  assert(throttle.blocked(2,3000,&wait));
  AuthThrottle wrap;assert(wrap.fail(3,0xfffffff0UL)==1000);assert(wrap.blocked(3,20,&wait));
  puts("security: actual upload handlers deny unauthenticated writes; bounds, aborts and URL injection checks passed");
- puts("security: hora protegida contra NTP falso, bloqueio de senha por IP e limite de SSDP ok");
+ puts("security: time protected against fake NTP, per-IP password lockout and SSDP limit ok");
 }
 `);

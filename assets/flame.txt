@@ -1,8 +1,8 @@
-# Chama da sequência de dias com a meta batida.
-color o #a8261e   # contorno
-color R #ff5a2a   # chama
-color Y #ffc83a   # miolo
-color w #fff4c0   # centro
+# Flame for the streak of days with the goal reached.
+color o #a8261e   # outline
+color R #ff5a2a   # flame
+color Y #ffc83a   # core
+color w #fff4c0   # centre
 
 ...o....
 ...oo...

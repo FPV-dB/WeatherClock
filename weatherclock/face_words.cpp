@@ -1,16 +1,16 @@
-// Mostrador Palavras: a hora por extenso.
-// Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
+// Words face: the time spelled out.
+// Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
 
 // ---------- tema 7: PALAVRAS ----------
-// A hora por extenso ("SAO DUAS E MEIA DA TARDE"), arredondada a 5 minutos.
-// Em inglês ("IT'S HALF PAST TWO IN THE AFTERNOON") e espanhol ("SON LAS DOS Y MEDIA DE LA TARDE") conforme uiLang.
-// Acentos: '\x01' = Ê, '\x02' = Ã, '\x03' = É, '\x04' = Ñ (a fonte embutida só tem ASCII; o sinal é desenhado).
-// Os textos ficam na flash (não ocupam RAM): cada Tok aponta para um trecho dela, com o tamanho.
+// The time in words ("SAO DUAS E MEIA DA TARDE"), rounded to 5 minutes.
+// In English ("IT'S HALF PAST TWO IN THE AFTERNOON") and Spanish ("SON LAS DOS Y MEDIA DE LA TARDE") depending on uiLang.
+// Accents: '\x01' = Ê, '\x02' = Ã, '\x03' = É, '\x04' = Ñ (the built-in font is ASCII only; the mark is drawn).
+// The texts live in flash (they take no RAM): each Tok points at a piece of it, with its length.
 struct Tok { PGM_P s; uint8_t len; uint16_t c; };
-// Tabelas: uma string só na flash, as entradas separadas por \0 (nth); cada entrada pode ter várias palavras
-// separadas por espaço (putWords as divide em Toks).
+// Tables: a single string in flash, entries separated by \0 (nth); each entry can hold several words
+// separated by spaces (putWords splits them into Toks).
 static const char HOURW[] PROGMEM = "\0UMA\0DUAS\0TR\x01S\0QUATRO\0CINCO\0SEIS\0SETE\0OITO\0NOVE\0DEZ\0ONZE";
 static const char MIN_E[] PROGMEM = "\0E CINCO\0E DEZ\0E QUINZE\0E VINTE\0E VINTE E CINCO\0E MEIA";
 static const char MIN_PARA[] PROGMEM = "VINTE E CINCO\0VINTE\0QUINZE\0DEZ\0CINCO";
@@ -24,7 +24,7 @@ static PGM_P nth(PGM_P list, int i) {
   return list;
 }
 static void put(Tok *t, int &n, PGM_P s, uint16_t c) { t[n++] = {s, (uint8_t)strlen_P(s), c}; }
-// uma entrada de tabela, palavra a palavra; o "E" do português fica apagado, as outras em destaque
+// one table entry, word by word; the Portuguese "E" is dimmed, the others highlighted
 static void putWords(Tok *t, int &n, PGM_P s) {
   while (pgm_read_byte(s)) {
     uint8_t k = 0;
@@ -109,11 +109,11 @@ static int buildPhrase(const UiState &s, Tok *t, uint16_t hourC) {
   if (r == 60) { r = 0; h = (h + 1) % 24; }
   if (uiLang == 1) return phraseEn(h, r, t, hourC);
   if (uiLang == 2) return phraseEs(h, r, t, hourC);
-  bool para = r >= 35;
-  int hh = para ? (h + 1) % 24 : h;
+  bool toNext = r >= 35;
+  int hh = toNext ? (h + 1) % 24 : h;
   PGM_P hw = hh == 0 ? PSTR("MEIA-NOITE") : hh == 12 ? PSTR("MEIO-DIA") : nth(HOURW, hh % 12);
   bool singular = hh == 0 || hh == 12 || hh % 12 == 1;
-  if (!para) {
+  if (!toNext) {
     put(t, n, singular ? PSTR("\x03") : PSTR("S\x02O"), MUTED);
     put(t, n, hw, hourC);
     if (r == 0) {
@@ -147,7 +147,7 @@ void themeWords(const UiState &s, bool full) {
   }
   if (changed(cA, key)) {
     G->fillRect(0, 24, 240, 184, BG);
-    // quebra em linhas de até 12 caracteres (tamanho 3 = 18 px por caractere)
+    // wraps into lines of up to 12 characters (size 3 = 18 px per character)
     int lineStart[8], lineLen[8], lines = 0, len = 0;
     for (int i = 0; i < n && lines <= 8; i++) {
       int wl = t[i].len;

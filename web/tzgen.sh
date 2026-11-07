@@ -1,7 +1,7 @@
 #!/bin/sh
-# Gera web/tz.json: nome do fuso (IANA, o que o Open-Meteo devolve) -> regra POSIX TZ (o que o relógio usa).
-# A regra é a última linha de cada arquivo da tzdata (formato TZif v2+). Rode no Linux/WSL com o pacote
-# tzdata atualizado; o painel baixa o resultado do site (panel/tz-<código>.json, com SRI) ao escolher a cidade.
+# Builds web/tz.json: time zone name (IANA, what Open-Meteo returns) -> POSIX TZ rule (what the clock uses).
+# The rule is the last line of each tzdata file (TZif v2+ format). Run on Linux/WSL with an up-to-date
+# tzdata package; the panel downloads the result from the site (panel/tz-<code>.json, with SRI) when the city is chosen.
 cd "$(dirname "$0")"
 Z=/usr/share/zoneinfo
 V=$(cat "$Z/tzdata.zi" 2>/dev/null | head -1 | sed 's/^# version //')

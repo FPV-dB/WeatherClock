@@ -1,12 +1,12 @@
-// Mostrador Previsão: hoje e os próximos dias, com ícone, chance de chuva e uma barra de
-// mínima a máxima na mesma escala para todos os dias (dá para comparar de relance).
-// Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
+// Forecast face: today and the next days, with an icon, chance of rain and a bar from
+// low to high on the same scale for every day (so you can compare at a glance).
+// Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
 
-static const int ROW_Y = 46, ROW_H = 38;     // primeira linha e altura de cada dia
+static const int ROW_Y = 46, ROW_H = 38;     // first row and the height of each day
 static const int BAR_X = 156, BAR_W = 44;    // barra de temperatura
 
-// cor da temperatura: azul no frio, verde ameno, amarelo quente, vermelho no calor
+// temperature colour: blue when cold, green mild, yellow warm, red hot
 static uint16_t tempColor(int t) {
   if (t <= 8) return RAIN;
   if (t <= 18) return mix(RAIN, SHORT, (t - 8) / 10.0f);
@@ -42,7 +42,7 @@ static void paintDays(void *c) {
     snprintf(b, sizeof b, "%d", d.tmax);
     textR(BAR_X - 6, cy - 7, 2, MUTED, a);
     text(BAR_X + BAR_W + 6, cy - 7, 2, TEXT, b);
-    // trilho e o trecho do dia, colorido pela temperatura de cada ponto
+    // track and the day's span, coloured by the temperature at each point
     G->fillRoundRect(BAR_X, cy - 2, BAR_W, 5, 2, CARD2);
     int x0 = bx(d.tmin), x1 = bx(d.tmax);
     for (int x = x0; x <= x1; x++) G->drawFastVLine(x, cy - 2, 5, tempColor(lo + (x - BAR_X) * (hi - lo) / (BAR_W - 1)));
@@ -52,7 +52,7 @@ static void paintDays(void *c) {
       G->drawPixel(x1, cy - 2, CARD2);
       G->drawPixel(x1, cy + 2, CARD2);
     }
-    // hoje: um ponto na temperatura de agora
+    // today: a dot at the current temperature
     if (!i) {
       int t = (int)lroundf(s.wx.t);
       t = t < lo ? lo : t > hi ? hi : t;
@@ -62,7 +62,7 @@ static void paintDays(void *c) {
   }
 }
 
-// weatherbox: só a coluna dos ícones é redesenhada (fora da tela) para animar
+// weatherbox: only the icon column is redrawn (off-screen) to animate
 static const int ICON_X = 66, ICON_W = 34;
 static void paintIcons(void *c) {
   const UiState &s = *(const UiState *)c;
@@ -85,7 +85,7 @@ void themeForecast(const UiState &s, bool full) {
   if (changed(cC, hm)) {
     uiTextBox(150, 0, 90, 22, BG, 230, 4, 2, s.accent, hm, 'r');
   }
-  // título: cidade (ou "Previsão") e as colunas
+  // title: city (or "Forecast") and the columns
   char t[28];
   snprintf(t, sizeof t, "%.20s", s.city && s.city[0] ? s.city : tr("Previsao", "Forecast", "Pronostico"));
   if (changed(cB, t)) {
@@ -93,7 +93,7 @@ void themeForecast(const UiState &s, bool full) {
     textR(BAR_X - 6, 28, 1, MUTED, tr("MIN", "LOW", "MIN"));
     text(BAR_X + BAR_W + 6, 28, 1, MUTED, tr("MAX", "HIGH", "MAX"));
   }
-  // dias: só quando o clima muda, o dia vira ou o clima liga/desliga
+  // days: only when the weather changes, the day rolls over or the weather is switched on/off
   char key[24];
   snprintf(key, sizeof key, "%u %d %d %d", (unsigned)s.wx.version, s.weatherOn, s.wx.ok, s.timeOk ? s.now.tm_wday : -1);
   static uint32_t lastAnim = 0;

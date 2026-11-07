@@ -1,7 +1,7 @@
-# Nuvem branca: céu da cena Tomate com poucas nuvens ou nublado.
-color w #ecf0f6   # nuvem
-color W #c0c8d4   # sombra
-color o #8a94a6   # contorno
+# White cloud: sky of the Scene face when partly cloudy or overcast.
+color w #ecf0f6   # cloud
+color W #c0c8d4   # shadow
+color o #8a94a6   # outline
 
 ......oooo......
 ....oowwwwo.....

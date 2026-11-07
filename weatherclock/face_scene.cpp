@@ -1,15 +1,15 @@
-// Mostrador Cena: paisagem em pixel art que muda com a hora e o clima (weatherbox: sem o tomate).
-// Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
+// Scene face: a pixel-art landscape that changes with the time and weather (weatherbox: without the tomato).
+// Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
 
-// ---------- tema 1: TOMATE (cena em pixel art) ----------
-// Céu de 0 a GROUND_Y; chão (grama + terra) de GROUND_Y até o fim. Relógio grande no topo.
+// ---------- theme 1: SCENE (pixel-art landscape) ----------
+// Sky from 0 to GROUND_Y; ground (grass + soil) from GROUND_Y to the bottom. Big clock at the top.
 static const int GROUND_Y = 196;
 struct Rgb { uint8_t r, g, b; };
 static void skyColors(int hour, Rgb &top, Rgb &bot) {
   if (hour >= 6 && hour < 8) { top = {59, 74, 140}; bot = {244, 162, 97}; }        // amanhecer
-  else if (hour >= 8 && hour < 17) { top = {46, 134, 222}; bot = {154, 208, 245}; } // dia
+  else if (hour >= 8 && hour < 17) { top = {46, 134, 222}; bot = {154, 208, 245}; } // day
   else if (hour >= 17 && hour < 19) { top = {91, 58, 140}; bot = {242, 120, 92}; }  // entardecer
   else { top = {7, 11, 31}; bot = {27, 37, 80}; }                                   // noite
 }
@@ -22,7 +22,7 @@ static uint16_t skyAt(int y, int hour) {
   if (f > 1) f = 1;
   return uiRgb(t.r + (b.r - t.r) * f, t.g + (b.g - t.g) * f, t.b + (b.b - t.b) * f);
 }
-// Pinta o céu (faixas de 10 px) num retângulo, com estrelas se for noite.
+// Paints the sky (10 px bands) in a rectangle, with stars at night.
 static void skyRect(int x, int y, int w, int h, int hour) {
   for (int by = y; by < y + h;) {
     int end = (by / 10 + 1) * 10;
@@ -43,15 +43,15 @@ static void skyRect(int x, int y, int w, int h, int hour) {
 static void tomatoScene(const UiState &s) {
   int hour = s.timeOk ? s.now.tm_hour : 12;
   skyRect(0, 0, 240, GROUND_Y, hour);
-  // sol ou lua num arco que acompanha a hora (fica abaixo da área do relógio)
-  float hf = hour + 0.5f;  // meio da hora: a cena só é redesenhada quando a hora muda
+  // sun or moon on an arc that follows the time (stays below the clock area)
+  float hf = hour + 0.5f;  // middle of the hour: the scene is only redrawn when the hour changes
   bool night = isNight(hour);
   float f = night ? fmodf(hf - 19 + 24, 24) / 11.0f : (hf - 6) / 13.0f;
   if (f < 0) f = 0;
   if (f > 1) f = 1;
-  int bx = 24 + f * 192, by = 178 - sinf(f * K_PI) * 66;  // arco abaixo do relógio (topo do astro >= 95)
+  int bx = 24 + f * 192, by = 178 - sinf(f * K_PI) * 66;  // arc below the clock (top of the sun/moon >= 95)
   uiSprite(night ? &SPR_MOON : &SPR_SUN, bx - 16, by - 16, 2);
-  // clima no céu
+  // weather in the sky
   int c = s.wx.code;
   bool show = s.weatherOn && s.wx.ok;
   bool cloudy = show && c >= 2 && c != 45 && c != 48;
@@ -68,17 +68,17 @@ static void tomatoScene(const UiState &s) {
     for (int i = 0; i < 18; i++) G->fillRect((i * 41 + 9) % 228 + 6, 124 + (i * 29) % 64, 3, 3, TEXT);
   if (show && (c == 45 || c == 48))
     for (int i = 0; i < 4; i++) G->fillRect(0, 124 + i * 16, 240, 4, uiRgb(190, 196, 206));
-  // chão: grama + faixa fina de terra com textura de pixels
+  // ground: grass + a thin strip of soil with a pixel texture
   G->fillRect(0, GROUND_Y, 240, 6, uiRgb(76, 175, 80));
   G->fillRect(0, GROUND_Y + 6, 240, 4, uiRgb(46, 125, 50));
   G->fillRect(0, GROUND_Y + 10, 240, 240 - GROUND_Y - 10, uiRgb(92, 60, 42));
   for (int i = 0; i < 12; i++) G->fillRect((i * 53 + 21) % 230, GROUND_Y - 4, 2, 4, uiRgb(76, 175, 80));  // tufos
-  // weatherbox: sem o tomate; a temperatura fica grande no meio da cena, com sombra
+  // weatherbox: no tomato; the temperature is big in the middle of the scene, with a shadow
   if (show) {
     const int ty = GROUND_Y - 58;
     tempText(122, ty + 2, 5, uiRgb(10, 16, 36), s.wx.t);
     tempText(120, ty, 5, TEXT, s.wx.t);
-    if (s.wx.rainIn) {  // aviso com contorno para ler sobre o céu
+    if (s.wx.rainIn) {  // outlined warning so it reads over the sky
       textC(121, ty + 45, 1, uiRgb(20, 30, 50), rainSoonText(s.wx.rainIn));
       textC(120, ty + 44, 1, uiRgb(230, 242, 255), rainSoonText(s.wx.rainIn));
     }
@@ -90,11 +90,11 @@ static void tomatoBottom(const UiState &s) {
   G->fillRect(0, GROUND_Y + 10, 240, 240 - GROUND_Y - 10, soil);
   for (int i = 0; i < 14; i++) G->fillRect((i * 29 + 7) % 236, GROUND_Y + 12 + (i * 7) % 24, 3, 3, uiRgb(74, 47, 33));
   char b[48];
-  if (s.weatherOn && s.wx.ok)  // weatherbox: vento e umidade no lugar dos focos
+  if (s.weatherOn && s.wx.ok)  // weatherbox: wind and humidity in place of the focus count
     snprintf(b, sizeof b, "%s %u km/h  %d%%  %s", windDir(s.wx.wdir), s.wx.wind, s.wx.hum, s.ip ? s.ip : "");
   else
     snprintf(b, sizeof b, "%s", s.ip ? s.ip : "");
-  // texto com contorno escuro para ler por cima da textura da terra
+  // text with a dark outline so it reads over the soil texture
   textC(121, GROUND_Y + 22, 1, uiRgb(50, 30, 20), b);
   textC(120, GROUND_Y + 21, 1, uiRgb(255, 226, 190), b);
 }
@@ -102,7 +102,7 @@ static void tomatoBottom(const UiState &s) {
 static void tomatoClock(const UiState &s) {
   int hour = s.timeOk ? s.now.tm_hour : 12;
   skyRect(10, 2, 222, 92, hour);
-  // dígitos grandes (mesmo tamanho do tema Matriz) com sombra; o céu aparece em volta
+  // big digits (same size as the Matrix theme) with a shadow; the sky shows around them
   const int X[4] = {20, 66, 136, 182}, Y = 8, P = 8;
   const uint16_t shadow = uiRgb(10, 16, 36);
   int v[4] = {-1, -1, -1, -1};
@@ -122,7 +122,7 @@ static void tomatoClock(const UiState &s) {
   textC(120, 72, 2, TEXT, d);
 }
 
-// Partes da cena para uiPaint (desenhadas fora da tela e mandadas prontas: sem piscar).
+// Parts of the scene for uiPaint (drawn off-screen and sent finished: no flicker).
 static void paintAll(void *c) {
   const UiState &s = *(const UiState *)c;
   tomatoScene(s);

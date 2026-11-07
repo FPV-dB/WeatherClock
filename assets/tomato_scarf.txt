@@ -1,8 +1,8 @@
-# Tomate de cachecol: cena Tomate com frio (12 graus ou menos) ou neve.
+# Tomato in a scarf: Scene face when cold (12 degrees or less) or snowing.
 palette tomato
-color S #4f8dff   # cachecol
-color L #9cc0ff   # listras
-color s #2a52b0   # contorno do cachecol
+color S #4f8dff   # scarf
+color L #9cc0ff   # stripes
+color s #2a52b0   # scarf outline
 
 ......gGGg......
 ....gGGGGGGg....

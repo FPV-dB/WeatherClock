@@ -1,5 +1,5 @@
-// Mostrador Matriz: dígitos em pixel art e cartões de clima e vento.
-// Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
+// Matrix face: pixel-art digits and weather and wind cards.
+// Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
 
@@ -24,7 +24,7 @@ static void weatherCard(const UiState &s, int x, int y) {
   }
 }
 
-// weatherbox: no lugar do cartão de focos, vento e umidade
+// weatherbox: wind and humidity in place of the focus card
 static void windCard(const UiState &s, int x, int y) {
   const int w = 108, h = 120, cx = x + w / 2;
   G->fillRoundRect(x, y, w, h, 12, CARD);
@@ -48,7 +48,7 @@ static void windCard(const UiState &s, int x, int y) {
   if (fill > 0) G->fillRoundRect(bx, by, fill < 8 ? 8 : fill, 8, 4, LONG);
 }
 
-static void paintCards(void *c) {  // weatherbox: os dois cartões montados fora da tela
+static void paintCards(void *c) {  // weatherbox: both cards built off-screen
   const UiState &s = *(const UiState *)c;
   G->fillRect(0, 112, 240, 128, BG);
   weatherCard(s, 8, 112);
@@ -62,7 +62,7 @@ void themeMatrix(const UiState &s, bool full) {
   } else {
     int h = displayHour(s);
     drawTime4(TL_CLOCK, h / 10, h % 10, s.now.tm_min / 10, s.now.tm_min % 10, s.now.tm_sec % 2 == 0, s.accent, BG);
-    // barra de segundos: anda um pouco a cada segundo e zera na virada do minuto
+    // seconds bar: moves a little every second and resets at the minute rollover
     int w = (s.now.tm_sec + 1) * 200 / 60;
     if (w < lastSecW || lastSecW < 0) {
       G->fillRect(20, 96, 200, 3, DIM);

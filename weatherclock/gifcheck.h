@@ -1,15 +1,15 @@
-// gifcheck.h — conferência da estrutura de um GIF antes de entregá-lo ao decodificador.
+// gifcheck.h — checks a GIF's structure before handing it to the decoder.
 //
-// A AnimatedGIF tem falhas de estouro de memória com GIFs montados de propósito (CVE-2026-30141,
-// ainda reproduzível na 2.2.3). Este verificador lê só a estrutura, sem decodificar nem alocar, e
-// recusa o que um GIF de verdade não tem: medidas fora do limite, quadro saindo da tela lógica,
-// tamanho de código LZW fora de 2..8 e blocos cortados ou desconhecidos. Roda no relógio (envio
-// e exibição) e no teste de robustez do PC (sim/gifcheck_test), que usa este mesmo arquivo.
+// AnimatedGIF has memory overflow bugs with deliberately crafted GIFs (CVE-2026-30141,
+// still reproducible in 2.2.3). This checker reads only the structure, without decoding or allocating, and
+// refuses what a real GIF doesn't have: sizes out of range, a frame leaving the logical screen,
+// LZW code size outside 2..8 and cut or unknown blocks. Runs on the clock (upload
+// and display) and in the PC robustness test (sim/gifcheck_test), which uses this same file.
 #pragma once
 #include <stdint.h>
 #include <string.h>
 
-// lê até n bytes em sequência para buf; devolve quantos leu
+// reads up to n bytes in sequence into buf; returns how many it read
 typedef int (*GifCheckRead)(void *ctx, uint8_t *buf, int n);
 
 static bool gcRead(GifCheckRead rd, void *c, uint8_t *b, int n) { return rd(c, b, n) == n; }
@@ -24,7 +24,7 @@ static bool gcSkip(GifCheckRead rd, void *c, int n) {
   return true;
 }
 
-// sub-blocos: tamanho (1 byte) + dados, até um tamanho 0
+// sub-blocks: size (1 byte) + data, until a size of 0
 static bool gcSkipSub(GifCheckRead rd, void *c) {
   for (;;) {
     uint8_t n;
@@ -34,7 +34,7 @@ static bool gcSkipSub(GifCheckRead rd, void *c) {
   }
 }
 
-// nullptr = GIF aceito; senão, o motivo da recusa
+// nullptr = GIF accepted; otherwise, the reason for refusing it
 static const char *gifCheck(GifCheckRead rd, void *c, int maxW, int maxH) {
   uint8_t b[13];
   if (!gcRead(rd, c, b, 13) || memcmp(b, "GIF8", 4) || (b[4] != '7' && b[4] != '9') || b[5] != 'a') return "not a GIF";
@@ -47,7 +47,7 @@ static const char *gifCheck(GifCheckRead rd, void *c, int maxW, int maxH) {
     uint8_t t;
     if (!gcRead(rd, c, &t, 1)) return "GIF cortado";
     if (t == 0x3B) return frames ? nullptr : "GIF has no image";
-    if (t == 0x21) {  // extensão: rótulo + sub-blocos
+    if (t == 0x21) {  // extension: label + sub-blocks
       uint8_t label;
       if (!gcRead(rd, c, &label, 1)) return "GIF cortado";
       if (label == 0xf9) {
@@ -58,18 +58,18 @@ static const char *gifCheck(GifCheckRead rd, void *c, int maxW, int maxH) {
         if (label != 0xff && label != 0xfe && label != 1) return "invalid extension";
         if (!gcSkipSub(rd, c)) return "GIF cortado";
       }
-    } else if (t == 0x2C) {  // quadro
+    } else if (t == 0x2C) {  // frame
       uint8_t d[9];
       if (!gcRead(rd, c, d, 9)) return "GIF cortado";
       const int x = d[0] | d[1] << 8, y = d[2] | d[3] << 8, w = d[4] | d[5] << 8, h = d[6] | d[7] << 8;
-      if (!w || !h || x + w > W || y + h > H) return "quadro fora da imagem";
+      if (!w || !h || x + w > W || y + h > H) return "frame outside the image";
       if (!globalPalette && !(d[8] & 0x80)) return "GIF has no palette";
       if ((d[8] & 0x80) && !gcSkip(rd, c, 3 << ((d[8] & 7) + 1))) return "GIF cortado";
       uint8_t lzw;
       if (!gcRead(rd, c, &lzw, 1)) return "GIF cortado";
       if (lzw < 2 || lzw > 8) return "invalid compression";
       if (!gcSkipSub(rd, c)) return "GIF cortado";
-      if (++frames > 2000) return "quadros demais";
+      if (++frames > 2000) return "too many frames";
     } else {
       return "invalid block";
     }

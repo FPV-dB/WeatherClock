@@ -1,21 +1,21 @@
-// Mostrador Previsão em cartões: cidade e hora em cima e quatro cartões (hoje e os próximos 3 dias)
-// com ícone, máxima grande, mínima e chance de chuva. Todo o texto na fonte vetorial Outfit
-// (suavizada) e o tempo nos sprites em pixel art da cena Tomate (sol, nuvem, nuvem de chuva).
-// Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
+// Forecast cards face: city and time on top and four cards (today and the next 3 days)
+// with an icon, a big high, the low and the chance of rain. All text in the Outfit vector font
+// (smoothed) and the weather in the Scene face's pixel-art sprites (sun, cloud, rain cloud).
+// Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
 
 static const int CARD_Y = 34, CARD_W = 54, CARD_H = 200, CARD_GAP = 4;
 static const uint16_t CARD_BG = uiRgb(24, 24, 28), CARD_LINE = uiRgb(48, 48, 54);
 
-// texto Outfit centralizado em cx (h = altura da linha, com as descendentes)
+// Outfit text centred on cx (h = line height, including descenders)
 static void otxC(int cx, int y, int h, uint16_t c, const char *s, uint16_t bg) {
   vecText(VF_OUTFIT_TXT, cx - vecWidth(VF_OUTFIT_TXT, s, h) / 2, y, h, s, c, bg);
 }
 
-// Temperatura centralizada em cx: sinal de menos e grau desenhados (a fonte dos números só tem dígitos)
+// Temperature centred on cx: minus sign and degree drawn by hand (the number font only has digits)
 static void cardTemp(int cx, int y, int h, int v, uint16_t fg) {
-  if (v >= 100) {  // °F em dia quente: três dígitos menores para caber no cartão, na mesma linha de base
+  if (v >= 100) {  // °F on a hot day: three smaller digits to fit the card, on the same baseline
     y += h * 3 / 10;
     h = h * 7 / 10;
   }
@@ -31,27 +31,27 @@ static void cardTemp(int cx, int y, int h, int v, uint16_t fg) {
   if (h > 20) G->drawCircle(dx, dy, r - 1, fg);
 }
 
-// gota de chuva: bico em cima, fundo redondo
+// raindrop: point on top, round bottom
 static void drop(int x, int y, uint16_t c) {
   G->fillCircle(x, y + 4, 3, c);
   G->fillTriangle(x - 3, y + 3, x + 3, y + 3, x, y - 2, c);
 }
 
-// Tempo em pixel art (pixels de 2x2), centrado em (cx, cy), numa área de ~40 x 36
+// Pixel-art weather (2x2 pixels), centred on (cx, cy), in an area of ~40 x 36
 static void pixelWeather(int cx, int cy, int c, uint32_t ms = 0) {
   const bool rain = (c >= 51 && c <= 67) || (c >= 80 && c <= 82), snow = (c >= 71 && c <= 77) || c == 85 || c == 86;
   const bool storm = c >= 95, fog = c == 45 || c == 48;
   auto px = [](int x, int y, uint16_t col) { G->fillRect(x, y, 2, 2, col); };
-  // weatherbox: com ms > 0 anima em passos de pixel art (2 px): sol sobe e desce, nuvem vai e vem,
-  // gotas e flocos caem, neblina desliza e o raio pisca
+  // weatherbox: with ms > 0 it animates in pixel-art steps (2 px): the sun rises and sinks, clouds drift back and forth,
+  // drops and flakes fall, fog slides and lightning flashes
   const int step = ms ? (int)(ms / 250 % 4) : 0;
-  const int bob = ms ? (step == 1 ? -2 : step == 3 ? 2 : 0) : 0;   // ida e volta de 2 px
-  const int fall = ms ? (int)(ms / 180 % 4) * 2 : 0;               // 0, 2, 4, 6 px para baixo
+  const int bob = ms ? (step == 1 ? -2 : step == 3 ? 2 : 0) : 0;   // 2 px back and forth
+  const int fall = ms ? (int)(ms / 180 % 4) * 2 : 0;               // 0, 2, 4, 6 px down
   if (c == 0) {
     uiSprite(&SPR_SUN, cx - 16, cy - 16 + bob, 2);
     return;
   }
-  if (c <= 2) {  // poucas nuvens: sol atrás, nuvem na frente
+  if (c <= 2) {  // partly cloudy: sun behind, cloud in front
     uiSprite(&SPR_SUN, cx - 20, cy - 20, 2);
     uiSprite(&SPR_CLOUD, cx - 10 + bob, cy - 2, 2);
     return;
@@ -59,9 +59,9 @@ static void pixelWeather(int cx, int cy, int c, uint32_t ms = 0) {
   const UiSprite *cloud = rain || storm ? &SPR_RAIN_CLOUD : &SPR_CLOUD;
   const int top = rain || snow || storm || fog ? cy - 16 : cy - 9;
   const int y0 = top + 20;
-  if (rain || storm)  // gotas em diagonal, como na cena Tomate
+  if (rain || storm)  // diagonal drops, like the Scene face
     for (int i = 0; i < 4; i++) {
-      if (storm && i == 2) continue;  // lugar do raio
+      if (storm && i == 2) continue;  // where the lightning goes
       int x = cx - 12 + i * 8, d = ms ? (fall + i * 2) % 8 : 0;
       px(x - d / 2, y0 + d, RAIN);
       px(x - 2 - d / 2, y0 + 4 + d, RAIN);
@@ -73,16 +73,16 @@ static void pixelWeather(int cx, int cy, int c, uint32_t ms = 0) {
       px(cx - 10 + i * 10 + (d & 2 ? 2 : 0), y0 + 1 + d, TEXT);
       px(cx - 5 + i * 10 - (d & 2 ? 2 : 0), y0 + 8 + d, TEXT);
     }
-  uiSprite(cloud, cx - 16 + (fog ? 0 : bob), top, 2);  // a nuvem por cima das gotas
+  uiSprite(cloud, cx - 16 + (fog ? 0 : bob), top, 2);  // the cloud on top of the drops
   if (fog)
     for (int i = 0; i < 2; i++) G->fillRect(cx - 14 + i * 6 + (i ? -bob : bob), y0 + 2 + i * 6, 24, 2, DCLOUD);
-  if (storm && (!ms || step < 2)) {  // raio em degraus de pixel (pisca)
+  if (storm && (!ms || step < 2)) {  // lightning in pixel steps (flashes)
     static const int8_t B[][2] = {{2, 0}, {1, 1}, {0, 2}, {1, 2}, {2, 2}, {1, 3}, {0, 4}};
     for (auto &b : B) G->fillRect(cx + 2 + b[0] * 3, y0 - 2 + b[1] * 3, 3, 3, SUN);
   }
 }
 
-// weatherbox: faixa dos ícones (todas as colunas), redesenhada fora da tela para animar
+// weatherbox: the icon strip (all columns), redrawn off-screen to animate
 static const int ICON_Y = CARD_Y + 28, ICON_H = 56;
 static void paintIcons(void *c) {
   const UiState &s = *(const UiState *)c;
@@ -118,7 +118,7 @@ static void paintCards(void *c) {
   }
 }
 
-// cidade: a maior altura (até 24 px) em que o nome cabe ao lado da hora
+// city: the largest size (up to 24 px) at which the name fits beside the time
 static void paintCity(void *c) {
   const char *t = (const char *)c;
   G->fillRect(0, 2, 160, 30, BG);
@@ -139,7 +139,7 @@ void themeForecastCards(const UiState &s, bool full) {
   char hm[8] = "--:--";
   if (s.timeOk) snprintf(hm, sizeof hm, "%d:%02d", displayHour(s), s.now.tm_min);
   if (changed(cC, hm)) uiPaint(full, 160, 2, 80, 30, paintTime, hm);
-  // cartões: só quando o clima muda, o dia vira ou o clima liga/desliga
+  // cards: only when the weather changes, the day rolls over or the weather is switched on/off
   char key[24];
   snprintf(key, sizeof key, "%u %d %d %d", (unsigned)s.wx.version, s.weatherOn, s.wx.ok, s.timeOk ? s.now.tm_wday : -1);
   static uint32_t lastAnim = 0;

@@ -1,4 +1,4 @@
-# O mascote padrão: tomate sorrindo.
+# The default mascot: a smiling tomato.
 palette tomato
 
 ......gGGg......

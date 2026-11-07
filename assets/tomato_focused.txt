@@ -1,4 +1,4 @@
-# Focado (sobrancelhas franzidas): durante o foco.
+# Focused (frowning eyebrows): during focus.
 palette tomato
 
 ......gGGg......

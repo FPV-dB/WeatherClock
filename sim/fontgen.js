@@ -1,8 +1,8 @@
-// Gera as tabelas de contorno de weatherclock/fonts.cpp a partir de um TTF (dígitos 0-9 e ':').
-// uso: npm i opentype.js@1.3.4 && node fontgen.js <ttf> <NOME> [tolerância=10]
-//      com PREVIEW=arquivo.png desenha "14:37" para conferir o preenchimento (regra não-zero)
-//      com TEXTO=1 gera texto (A-Z, a-z, 0-9, espaço, ':', '-' e '%'): a célula de 720 vai do topo das
-//      maiúsculas ao fim das descendentes (g, p, y), os avanços são os da fonte e sai também NOME_CHARS
+// Builds the outline tables in weatherclock/fonts.cpp from a TTF (digits 0-9 and ':').
+// usage: npm i opentype.js@1.3.4 && node fontgen.js <ttf> <NAME> [tolerance=10]
+//      with PREVIEW=file.png draws "14:37" to check the fill (non-zero rule)
+//      with TEXTO=1 builds text (A-Z, a-z, 0-9, space, ':', '-' and '%'): the 720 cell runs from the top of the
+//      capitals to the bottom of the descenders (g, p, y), advances are the font's own, and NAME_CHARS is written too
 const opentype = require('opentype.js'), fs = require('fs'), zlib = require('zlib');
 const [, , file, NAME, tolArg] = process.argv;
 const font = opentype.loadSync(file), CH = 720, tol = +(tolArg || 10);
@@ -40,10 +40,10 @@ for (const ch of chars) {
   adv.push(X(g.advanceWidth));
 }
 first.push(cend.length);
-// dígitos tabulares (o relógio não balança): célula = maior avanço de 2-9, glifo centralizado
+// tabular digits (the clock doesn't wobble): cell = widest advance of 2-9, glyph centred
 const tab = Math.max(...adv.slice(2, 10));
 if (!TEXT) for (let d = 0; d < 10; d++) { const dx = Math.round((tab - adv[d]) / 2); for (let c = first[d]; c < first[d + 1]; c++) for (let i = c ? cend[c - 1] : 0; i < cend[c]; i++) pts[i][0] += dx; adv[d] = tab; }
-// getPath já usa y para baixo com escala unitsPerEm/unitsPerEm = 1: desfeito acima (-y) para voltar ao sistema da fonte
+// getPath already uses y-down with scale unitsPerEm/unitsPerEm = 1: undone above (-y) to get back to the font's system
 
 const out = [];
 out.push(`static const int16_t ${NAME}_PT[${pts.length}][2] PROGMEM = {`);
@@ -54,9 +54,9 @@ out.push(`static const uint8_t ${NAME}_GLYPH[${first.length}] PROGMEM = {${first
 out.push(`static const uint16_t ${NAME}_ADV[${adv.length}] PROGMEM = {${adv.join(', ')}};`);
 if (TEXT) out.push(`static const char ${NAME}_CHARS[] PROGMEM = "${chars}";`);
 console.log(out.join('\n'));
-console.error(`${NAME}: ${pts.length} pontos, ${cend.length} contornos, ${pts.length * 4 + cend.length * 2 + 34} bytes`);
+console.error(`${NAME}: ${pts.length} points, ${cend.length} contours, ${pts.length * 4 + cend.length * 2 + 34} bytes`);
 
-if (process.env.PREVIEW) {  // "14:37" com 96 px de altura, preenchimento par-ímpar
+if (process.env.PREVIEW) {  // "14:37" at 96 px tall, even-odd fill
   const H = 96, s = '14:37', W = 240, img = Buffer.alloc(W * 120);
   let ox = 4;
   for (const ch of s) {

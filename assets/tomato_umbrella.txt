@@ -1,8 +1,8 @@
-# Tomate de guarda-chuva: cena Tomate com chuva, garoa ou tempestade.
+# Tomato with an umbrella: Scene face with rain, drizzle or a storm.
 palette tomato
-color Y #ffc428   # guarda-chuva
-color y #c8780c   # contorno do guarda-chuva
-color c #5a3a2a   # cabo
+color Y #ffc428   # umbrella
+color y #c8780c   # umbrella outline
+color c #5a3a2a   # handle
 
 .....yyyyyy.....
 ...yyYYYYYYyy...

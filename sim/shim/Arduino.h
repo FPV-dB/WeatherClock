@@ -1,4 +1,4 @@
-// Shim mínimo de Arduino para compilar ui.cpp + Adafruit_GFX no PC (simulador).
+// Minimal Arduino shim to build ui.cpp + Adafruit_GFX on the PC (simulator).
 #pragma once
 #include <stdint.h>
 #include <stdlib.h>
@@ -16,7 +16,7 @@ typedef uint8_t byte;
 #ifdef _WIN32
 static inline struct tm *localtime_r(const time_t *t, struct tm *r) { return localtime_s(r, t) ? nullptr : r; }
 #endif
-// O Adafruit_GFX só usa String/__FlashStringHelper em getTextBounds; basta o mínimo.
+// Adafruit_GFX only uses String/__FlashStringHelper in getTextBounds; the bare minimum is enough.
 class __FlashStringHelper;
 class String {
   const char *s;
@@ -26,7 +26,7 @@ class String {
   unsigned length() const { return strlen(s); }
 };
 #define radians(d) ((d) * 0.017453292519943295)
-// PROGMEM no PC: memória comum
+// PROGMEM on the PC: ordinary memory
 #ifndef PROGMEM
 #define PROGMEM
 #endif

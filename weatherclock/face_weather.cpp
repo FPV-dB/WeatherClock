@@ -1,10 +1,10 @@
-// Mostrador Clima: temperatura grande e mini cartões.
-// Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
+// Weather face: big temperature and mini cards.
+// Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
 
-// ---------- tema 3: CLIMA ----------
-// weatherbox: números na Outfit e rótulos em pixel, como no Weather Half. Os dígitos negativos levam um traço.
+// ---------- theme 3: WEATHER ----------
+// weatherbox: numbers in Outfit and labels in pixel font, like Weather Half. Negative numbers get a dash.
 static void outfitNum(int cx, int y, int h, const char *v, uint16_t c, uint16_t bg, char unit) {
   const bool neg = v[0] == '-';
   const char *d = neg ? v + 1 : v;
@@ -31,7 +31,7 @@ static void miniCard(int x, const char *label, const char *value, bool deg) {
   outfitNum(cx, y + 32, 28, value, TEXT, CARD, deg ? 'o' : '%');
 }
 
-// Bloco do clima (abaixo da barra de cima), desenhado fora da tela e mandado pronto: sem piscar.
+// Weather block (below the top bar), drawn off-screen and sent finished: no flicker.
 static void paintWeather(void *c) {
   const UiState &s = *(const UiState *)c;
   G->fillRect(0, 24, 240, 216, BG);
@@ -61,7 +61,7 @@ static void paintWeather(void *c) {
   miniCard(162, tr("UMIDADE", "HUMIDITY", "HUMEDAD"), h, false);
 }
 
-// weatherbox: só o ícone grande é redesenhado (fora da tela) para animar
+// weatherbox: only the big icon is redrawn (off-screen) to animate
 static const int IC_X = 12, IC_Y = 36, IC_W = 106, IC_H = 86;
 static void paintIcon(void *c) {
   const UiState &s = *(const UiState *)c;
@@ -79,7 +79,7 @@ void themeWeather(const UiState &s, bool full) {
   }
   if (changed(cC, hm)) {
     struct T { const char *hm; uint16_t c; } t = {hm, s.accent};
-    uiPaint(full, 150, 0, 90, 22, [](void *p) {  // fora da tela: a hora troca sem piscar
+    uiPaint(full, 150, 0, 90, 22, [](void *p) {  // off-screen: the time changes without flicker
       const T &t = *(const T *)p;
       G->fillRect(150, 0, 90, 22, BG);
       vecText(VF_OUTFIT, 230 - vecWidth(VF_OUTFIT, t.hm, 18), 3, 18, t.hm, t.c, BG);

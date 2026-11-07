@@ -1,4 +1,4 @@
-# Tomate de óculos escuros: cena Tomate com calor (30 graus ou mais).
+# Tomato in sunglasses: Scene face when hot (30 degrees or more).
 palette tomato
 
 ......gGGg......

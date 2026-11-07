@@ -1,7 +1,7 @@
-# Nuvem de chuva (cinza): céu da cena Tomate com chuva ou tempestade.
-color w #9aa0b0   # nuvem
-color W #7a8090   # sombra
-color o #4a5060   # contorno
+# Rain cloud (grey): sky of the Scene face with rain or a storm.
+color w #9aa0b0   # cloud
+color W #7a8090   # shadow
+color o #4a5060   # outline
 
 ......oooo......
 ....oowwwwo.....

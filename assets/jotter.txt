@@ -1,13 +1,13 @@
-# Caderno com lápis: atividade "Estudar" no foco do Pomodoro.
-color o #2a2238   # contorno
-color e #8a8f9a   # espiral
-color p #f4efe2   # página
-color l #9ab8e0   # pauta
-color P #ff9fb0   # borracha
-color Y #ffc428   # lápis
-color y #c8780c   # sombra do lápis
-color w #f0c890   # madeira
-color t #3a2a20   # grafite
+# Notebook with a pencil: the "Study" activity during focus.
+color o #2a2238   # outline
+color e #8a8f9a   # spiral
+color p #f4efe2   # page
+color l #9ab8e0   # ruled lines
+color P #ff9fb0   # eraser
+color Y #ffc428   # pencil
+color y #c8780c   # pencil shadow
+color w #f0c890   # wood
+color t #3a2a20   # pencil lead
 
 .............oo.
 ..e.e.e.e...oPPo

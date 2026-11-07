@@ -1,4 +1,4 @@
-# Relaxando (olhos fechados, sorriso): durante a pausa.
+# Relaxing (eyes closed, smiling): during a break.
 palette tomato
 
 ......gGGg......

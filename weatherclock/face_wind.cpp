@@ -1,5 +1,5 @@
-// Mostrador Vento (weatherbox): bússola com o rumo, velocidade, rajadas e força na escala Beaufort.
-// Registrado em faces_list.h; usa o kit de desenho de ui_kit.h.
+// Wind face (weatherbox): compass with the direction, speed, gusts and strength on the Beaufort scale.
+// Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
 #include "assets.h"
 
@@ -41,7 +41,7 @@ static void dial() {
   }
 }
 
-// Seta na borda, do lado de onde o vento vem, apontando para o centro (como um cata-vento)
+// Arrow on the rim, on the side the wind comes from, pointing at the centre (like a wind vane)
 static void vane(float deg, uint16_t c) {
   int tx, ty, lx, ly, rx, ry;
   polar(deg, RING - 14, tx, ty);
@@ -58,25 +58,25 @@ static void card(int x, const char *label, const char *value, const char *sub, u
   if (sub) textC(cx, y + 34, 1, MUTED, sub);
 }
 
-// Faixas de vento: traços que atravessam a bússola no sentido em que o vento sopra. Posições vêm só do
-// relógio (ms), sem estado: cada traço tem uma faixa lateral e uma fase próprias.
+// Wind streaks: strokes crossing the compass in the direction the wind blows. Positions come only from the
+// clock (ms), with no state: each stroke has its own lane and phase.
 static void streaks(const UiState &s) {
-  const float to = (s.wx.wdir + 180) * K_PI / 180, dx = sinf(to), dy = -cosf(to);  // para onde sopra
-  const float speed = 14 + s.wx.wind * 1.6f;                                        // px por segundo
+  const float to = (s.wx.wdir + 180) * K_PI / 180, dx = sinf(to), dy = -cosf(to);  // where it blows to
+  const float speed = 14 + s.wx.wind * 1.6f;                                        // px per second
   const int len = (4 + s.wx.wind / 4) > 16 ? 16 : 4 + s.wx.wind / 4;
   const int n = s.wx.wind < 5 ? 8 : 16;
   const float span = 2.0f * (RING - 6);
   for (int i = 0; i < n; i++) {
     const float lane = ((i * 37) % 23 - 11) * 5.6f;                       // afastamento lateral
-    const float phase = (i * 0.61803f - (int)(i * 0.61803f)) * span;       // espalha no comprimento
+    const float phase = (i * 0.61803f - (int)(i * 0.61803f)) * span;       // spread along the length
     const float along = fmodf(phase + s.ms / 1000.0f * speed * (0.75f + (i % 4) * 0.12f), span) - span / 2;
     const float x0 = CX - dy * lane + dx * along, y0 = CY + dx * lane + dy * along;
     const float r2 = (x0 - CX) * (x0 - CX) + (y0 - CY) * (y0 - CY);
     if (r2 > (RING - 8) * (RING - 8)) continue;
-    const float edge = 1 - fabsf(along) / (span / 2);                      // some nas bordas
+    const float edge = 1 - fabsf(along) / (span / 2);                      // fades out at the edges
     const uint16_t col = mix(BG, LONG, 0.35f + 0.6f * edge);
     G->drawLine(x0, y0, x0 - dx * len, y0 - dy * len, col);
-    G->drawLine(x0 + dy, y0 - dx, x0 + dy - dx * len, y0 - dx - dy * len, col);  // 2 px de largura
+    G->drawLine(x0 + dy, y0 - dx, x0 + dy - dx * len, y0 - dx - dy * len, col);  // 2 px wide
   }
 }
 
@@ -92,7 +92,7 @@ static void paintDial(void *c) {
   }
   const uint8_t f = beaufort(s.wx.wind);
   if (s.wx.wind) {
-    // balança mais quando as rajadas passam bem da média
+    // sways more when the gusts are well above the average
     float amp = (s.wx.gust > s.wx.wind ? (s.wx.gust - s.wx.wind) * 0.6f : 0) + 2;
     if (amp > 16) amp = 16;
     const float wob = sinf(s.ms / 1000.0f * 2.3f) * amp + sinf(s.ms / 1000.0f * 5.1f) * amp * 0.3f;
@@ -100,7 +100,7 @@ static void paintDial(void *c) {
   }
   char t[24];
   snprintf(t, sizeof t, "%u", s.wx.wind);
-  const int vw = vecWidth(VF_OUTFIT, t, 44);  // a mesma fonte do relógio e da temperatura do Weather Half
+  const int vw = vecWidth(VF_OUTFIT, t, 44);  // the same font as the clock and temperature on Weather Half
   vecText(VF_OUTFIT, CX - vw / 2, CY - 33, 44, t, TEXT, BG);
   textC(CX, CY + 16, 1, MUTED, "km/h");
   snprintf(t, sizeof t, "%u kn", (unsigned)lroundf(s.wx.wind * 0.54f));
@@ -149,7 +149,7 @@ void themeWind(const UiState &s, bool full) {
     uiPaint(full, 0, 24, 240, 216, paintWind, (void *)&s);
     return;
   }
-  // só a bússola anda: ~8 quadros por segundo, desenhada fora da tela (sem piscar)
+  // only the compass moves: ~8 frames per second, drawn off-screen (no flicker)
   if (s.weatherOn && s.wx.ok && s.wx.wind && s.ms - lastAnim >= 120) {
     lastAnim = s.ms;
     uiPaint(false, CX - 80, 30, 160, 160, paintDial, (void *)&s);

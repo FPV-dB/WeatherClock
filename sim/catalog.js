@@ -1,6 +1,6 @@
-// Gera o catálogo de mostradores instaláveis a partir de faces/*.json (rode depois do simulador):
-//  - faces/<id>.png: prévia 240x240 renderizada pelo simulador (out/pack-<id>.raw)
-//  - faces/catalog.json: lista lida pelo site (galeria) e pelo painel do relógio (instalar)
+// Builds the catalogue of installable faces from faces/*.json (run after the simulator):
+//  - faces/<id>.png: 240x240 preview rendered by the simulator (out/pack-<id>.raw)
+//  - faces/catalog.json: list read by the site (gallery) and by the clock's panel (install)
 const fs = require('fs'), zlib = require('zlib'), path = require('path');
 const root = path.join(__dirname, '..'), dir = path.join(root, 'faces');
 if (!fs.existsSync(dir)) process.exit(0);
@@ -23,7 +23,7 @@ function png(raw565) {
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ih),
     chunk('IDAT', zlib.deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]);
 }
-// mesmo id que o firmware calcula (facepack.cpp: safeId)
+// same id the firmware computes (facepack.cpp: safeId)
 const safeId = s => {
   let o = '';
   for (let c of String(s || '')) {
@@ -31,7 +31,7 @@ const safeId = s => {
     if (/[a-z0-9_-]/.test(c)) o += c; else if (c === ' ' && o && !o.endsWith('-')) o += '-';
     if (o.length >= 23) break;
   }
-  return o || 'pacote';
+  return o || 'pack';
 };
 
 const list = [];
@@ -44,4 +44,4 @@ for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.json') && f !== 'ca
     size: fs.statSync(path.join(dir, f)).size });
 }
 fs.writeFileSync(path.join(dir, 'catalog.json'), JSON.stringify({ format: 1, faces: list }, null, 2) + '\n');
-console.log(`catálogo: ${list.length} pacote(s)`);
+console.log(`catalogue: ${list.length} pack(s)`);

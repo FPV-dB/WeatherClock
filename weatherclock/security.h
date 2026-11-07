@@ -102,8 +102,8 @@ static bool safeIpv4Host(const char *s, size_t n) {
   return port > 0;
 }
 
-// O nome do próprio relógio na rede local ("smalltv-1a2b.local", porta opcional), sem diferenciar
-// maiúsculas. Só esse nome exato: um nome qualquer reabriria o DNS rebinding que o IPv4 fecha.
+// The clock's own name on the local network ("weatherclock-1a2b.local", optional port), case-
+// insensitive. Only that exact name: any other name would reopen the DNS rebinding that the IPv4 check closes.
 static bool safeOwnHost(const char *s, size_t n, const char *name) {
   size_t k = strlen(name);
   if (!k || n < k + 6) return false;
@@ -123,10 +123,10 @@ static bool safeOwnHost(const char *s, size_t n, const char *name) {
   return port > 0 && port <= 65535;
 }
 
-// ---------- mDNS mínimo (RFC 6762): só responde "qual o IPv4 de <nome>.local?" ----------
-// O ESP8266mDNS do núcleo custa ~21 KB; para abrir o painel pelo nome basta o registro A.
-// Lê um nome DNS em p[i..n) (ponteiros de compressão: no máximo 8 saltos), em minúsculas e com pontos.
-// Rótulo com '.' ou byte nulo é recusado ("smalltv-1a2b.local" num rótulo só não vira o nosso nome).
+// ---------- minimal mDNS (RFC 6762): only answers "what is <name>.local's IPv4?" ----------
+// The core's ESP8266mDNS costs ~21 KB; to open the panel by name the A record is enough.
+// Reads a DNS name at p[i..n) (compression pointers: at most 8 jumps), lowercased and with dots.
+// A label containing '.' or a null byte is refused ("weatherclock-1a2b.local" in a single label doesn't become our name).
 static bool dnsReadName(const uint8_t *p, size_t n, size_t &i, char *out, size_t cap) {
   size_t pos = i, len = 0;
   bool jumped = false;
@@ -162,10 +162,10 @@ static bool dnsReadName(const uint8_t *p, size_t n, size_t &i, char *out, size_t
   return true;
 }
 
-// É uma pergunta (não resposta) pelo registro A ou ANY, classe IN, de "<name>.local"? *qu = pediu
-// resposta direta (bit QU). Nome comparado sem diferenciar maiúsculas.
+// Is it a question (not an answer) for the A or ANY record, class IN, of "<name>.local"? *qu = asked for a
+// direct answer (QU bit). Name compared case-insensitively.
 static bool mdnsAsksFor(const uint8_t *p, size_t n, const char *name, bool *qu) {
-  if (n < 12 || (p[2] & 0xF8)) return false;  // QR=1 (resposta) ou opcode diferente de consulta
+  if (n < 12 || (p[2] & 0xF8)) return false;  // QR=1 (answer) or an opcode other than query
   unsigned qd = (unsigned)p[4] << 8 | p[5];
   if (qd > 16) return false;
   char want[40], got[64];
@@ -184,9 +184,9 @@ static bool mdnsAsksFor(const uint8_t *p, size_t n, const char *name, bool *qu) 
   return false;
 }
 
-// Outro aparelho já responde por "<name>.local"? (resposta mDNS com um registro desse nome)
+// Is another device already answering for "<name>.local"? (mDNS answer with a record of that name)
 static bool mdnsHasAnswer(const uint8_t *p, size_t n, const char *name) {
-  if (n < 12 || !(p[2] & 0x80)) return false;  // só respostas
+  if (n < 12 || !(p[2] & 0x80)) return false;  // answers only
   unsigned qd = (unsigned)p[4] << 8 | p[5], rr = ((unsigned)p[6] << 8 | p[7]) + ((unsigned)p[8] << 8 | p[9]) + ((unsigned)p[10] << 8 | p[11]);
   if (qd > 16 || rr > 64) return false;
   char want[40], got[64];
@@ -207,7 +207,7 @@ static bool mdnsHasAnswer(const uint8_t *p, size_t n, const char *name) {
   return false;
 }
 
-// Pergunta de sondagem (RFC 6762, 8.1): "alguém já usa <name>.local?", tipo ANY, pedindo resposta direta.
+// Probe question (RFC 6762, 8.1): "is anyone already using <name>.local?", type ANY, asking for a direct answer.
 static size_t mdnsProbeQuery(uint8_t *o, size_t cap, const char *name) {
   size_t k = strlen(name);
   if (!k || k > 63 || cap < 12 + k + 8 + 4) return 0;
@@ -228,8 +228,8 @@ static size_t mdnsProbeQuery(uint8_t *o, size_t cap, const char *name) {
   return i;
 }
 
-// Monta a resposta com o registro A. legacy: quem perguntou não usa a porta 5353 (resolvedor comum):
-// devolve o mesmo id, repete a pergunta e usa TTL curto, como pede a RFC 6762 (6.7). 0 se não couber.
+// Builds the answer with the A record. legacy: the asker doesn't use port 5353 (ordinary resolver):
+// returns the same id, repeats the question and uses a short TTL, as RFC 6762 (6.7) asks. 0 if it doesn't fit.
 static size_t mdnsAnswer(uint8_t *o, size_t cap, const char *name, const uint8_t ip[4], uint16_t id, bool legacy) {
   size_t k = strlen(name), need = 12 + (legacy ? k + 8 + 4 + 2 : k + 8) + 10 + 4;
   if (!k || k > 63 || cap < need) return 0;
@@ -245,7 +245,7 @@ static size_t mdnsAnswer(uint8_t *o, size_t cap, const char *name, const uint8_t
     o[i++] = 0;
   };
   u16(legacy ? id : 0);
-  u16(0x8400);  // resposta com autoridade
+  u16(0x8400);  // authoritative answer
   u16(legacy ? 1 : 0);
   u16(1);
   u16(0);
@@ -254,7 +254,7 @@ static size_t mdnsAnswer(uint8_t *o, size_t cap, const char *name, const uint8_t
     qname();
     u16(1);
     u16(1);
-    u16(0xC00C);  // aponta para o nome da pergunta
+    u16(0xC00C);  // points to the question's name
   } else {
     qname();
   }
@@ -268,14 +268,14 @@ static size_t mdnsAnswer(uint8_t *o, size_t cap, const char *name, const uint8_t
   return i;
 }
 
-// dias desde 1970 de uma data do calendário (y/m/d, m = 1..12)
+// days since 1970 of a calendar date (y/m/d, m = 1..12)
 static int64_t civilDays(int y, int m, int d) {
   y -= m <= 2;  // "days from civil"
   int era = y / 400, yoe = y - era * 400, doy = (153 * (m + (m > 2 ? -3 : 9)) + 2) / 5 + d - 1;
   return (int64_t)era * 146097 + yoe * 365 + yoe / 4 - yoe / 100 + doy - 719468;
 }
 
-// "2026-10-23T00:30" -> segundos desde 1970 (como se fosse UTC; quem chama tira o fuso). -1 se inválido.
+// "2026-10-23T00:30" -> seconds since 1970 (as if it were UTC; the caller removes the time zone). -1 if invalid.
 static int64_t isoToEpoch(const char *s) {
   if (!s || strlen(s) < 16 || s[4] != '-' || s[7] != '-' || s[10] != 'T' || s[13] != ':') return -1;
   int v[5], at[5] = {0, 5, 8, 11, 14}, len[5] = {4, 2, 2, 2, 2};
@@ -292,14 +292,14 @@ static int64_t isoToEpoch(const char *s) {
   return civilDays(y, m, d) * 86400 + v[3] * 3600 + v[4] * 60;
 }
 
-// Cabeçalho "Date: Tue, 28 Oct 2026 12:00:00 GMT" (o que vem depois de "Date:") -> segundos desde 1970 (UTC).
-// -1 se inválido. Só serve para MOSTRAR a hora até o SNTP chegar: vem por HTTP puro e nunca confirma nada.
+// Header "Date: Tue, 28 Oct 2026 12:00:00 GMT" (what comes after "Date:") -> seconds since 1970 (UTC).
+// -1 if invalid. Only good for SHOWING the time until SNTP arrives: it comes over plain HTTP and never confirms anything.
 static int64_t httpDateToEpoch(const char *s) {
   static const char MON[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
   if (!s) return -1;
   while (*s == ' ') s++;
   const char *c = strchr(s, ',');
-  if (c && c - s <= 3) s = c + 1;  // dia da semana
+  if (c && c - s <= 3) s = c + 1;  // day of the week
   while (*s == ' ') s++;
   int d = 0, y = 0, hh, mm, ss, i = 0;
   for (; i < 2 && s[i] >= '0' && s[i] <= '9'; i++) d = d * 10 + (s[i] - '0');
@@ -324,9 +324,9 @@ static int64_t httpDateToEpoch(const char *s) {
   return civilDays(y, m, d) * 86400 + hh * 3600 + mm * 60 + ss;
 }
 
-// Hora guardada na memória RTC para sobreviver a um reinício por software (atualização, ajuste, queda): sec é a
-// hora no instante em que ticks (system_get_rtc_time) foi lido. A RTC conta sozinha durante o reinício; cal é o
-// período do tick em µs (system_rtc_clock_cali_proc, formato Q12). Na volta, a hora é sec + o tempo que passou.
+// Time stored in RTC memory to survive a software restart (update, settings, crash): sec is the
+// time at the moment ticks (system_get_rtc_time) was read. The RTC keeps counting during the restart; cal is the
+// tick period in µs (system_rtc_clock_cali_proc, Q12 format). On the way back, the time is sec + the elapsed time.
 struct RtcClock { uint32_t magic, sec, ticks, chk; };
 static const uint32_t RTC_CLOCK_MAGIC = 0x434C4B31;  // "CLK1"
 static uint32_t rtcClockChk(const RtcClock &r) { return r.magic ^ (r.sec * 2654435761u) ^ (r.ticks * 40503u) ^ 0x5A5AC3C3u; }
@@ -335,7 +335,7 @@ static RtcClock rtcClockMake(uint32_t sec, uint32_t ticks) {
   r.chk = rtcClockChk(r);
   return r;
 }
-// A hora agora, ou -1 se o registro não vale (memória de uma ligação anterior, corrompida, ou parado há mais de 10 min)
+// The time now, or -1 if the record isn't valid (memory from an earlier power-up, corrupt, or stopped for more than 10 min)
 static int64_t rtcClockRestore(const RtcClock &r, uint32_t nowTicks, uint32_t cal) {
   if (r.magic != RTC_CLOCK_MAGIC || r.chk != rtcClockChk(r) || r.sec < 1700000000u || !cal) return -1;
   uint64_t us = ((uint64_t)(uint32_t)(nowTicks - r.ticks) * cal) >> 12;
@@ -343,47 +343,47 @@ static int64_t rtcClockRestore(const RtcClock &r, uint32_t nowTicks, uint32_t ca
   return (int64_t)r.sec + (int64_t)(us / 1000000ull);
 }
 
-// Hora protegida. O SNTP do núcleo aceita qualquer resposta (SNTP_CHECK_RESPONSE 0 no lwIP pré-compilado):
-// um pacote UDP injetado (FragAttacks, ou alguém no caminho) muda a hora. A hora só fica "confirmada"
-// quando bate com uma segunda fonte: a hora local que o Open-Meteo manda por TCP (bem mais difícil de
-// forjar às cegas) ou, sem clima, duas sincronizações seguidas que concordam. Com a hora confirmada,
-// um salto do SNTP é desfeito até ser confirmado. O histórico de focos só é gravado com ok() == true.
+// Protected time. The core's SNTP accepts any reply (SNTP_CHECK_RESPONSE 0 in the precompiled lwIP):
+// an injected UDP packet (FragAttacks, or someone on the path) changes the time. The time is only "confirmed"
+// when it matches a second source: the local time Open-Meteo sends over TCP (much harder to
+// forge blind) or, without weather, two consecutive syncs that agree. With the time confirmed,
+// an SNTP jump is undone until it's confirmed. The focus history is only written with ok() == true.
 struct TimeGuard {
-  int64_t ref = 0;              // última hora confirmada (s desde 1970)
+  int64_t ref = 0;              // last confirmed time (s since 1970)
   uint32_t refMs = 0;           // millis() nesse momento
-  int64_t cand = 0;             // hora do SNTP que ainda não foi confirmada
+  int64_t cand = 0;             // SNTP time not yet confirmed
   uint32_t candMs = 0;
   bool confirmed = false;
-  uint16_t undone = 0;          // saltos desfeitos desde que ligou
+  uint16_t undone = 0;          // jumps undone since power-on
   static bool near(int64_t a, int64_t b, int64_t tol) { return a - b <= tol && b - a <= tol; }
   int64_t expected(uint32_t ms) const { return ref + (int64_t)((uint32_t)(ms - refMs) / 1000); }
   int64_t candNow(uint32_t ms) const { return cand + (int64_t)((uint32_t)(ms - candMs) / 1000); }
   void confirm(int64_t t, uint32_t ms) { ref = t; refMs = ms; cand = 0; confirmed = true; }
-  // O SNTP acabou de pôr a hora t. Devolve a hora que deve valer: t, ou a esperada se o salto foi desfeito.
-  // twoSyncs: sem a segunda fonte (clima desligado), duas sincronizações que concordam confirmam.
+  // SNTP just set the time to t. Returns the time that should apply: t, or the expected one if the jump was undone.
+  // twoSyncs: without the second source (weather off), two syncs that agree confirm it.
   int64_t onSntp(int64_t t, uint32_t ms, bool twoSyncs) {
-    if (confirmed && near(t, expected(ms), 120)) { ref = t; refMs = ms; return t; }  // só a correção de sempre
+    if (confirmed && near(t, expected(ms), 120)) { ref = t; refMs = ms; return t; }  // just the usual correction
     if (twoSyncs && cand && near(t, candNow(ms), 120)) { confirm(t, ms); return t; }
     cand = t;
     candMs = ms;
-    if (!confirmed) return t;  // logo depois de ligar: vale na tela, sem gravar histórico até confirmar
+    if (!confirmed) return t;  // right after power-on: valid on screen, without writing history until confirmed
     undone++;
     return expected(ms);
   }
-  // Hora UTC do clima (o começo do quarto de hora atual: até ~15 min atrás). Devolve a hora que deve valer.
+  // UTC time from the weather (the start of the current quarter-hour: up to ~15 min ago). Returns the time that should apply.
   int64_t onWeather(int64_t utc, int64_t now, uint32_t ms) {
     const int64_t tol = 1200;
     if (near(now, utc + 450, tol)) { confirm(now, ms); return now; }
     if (cand && near(candNow(ms), utc + 450, tol)) { int64_t c = candNow(ms); confirm(c, ms); return c; }
-    confirmed = false;  // nenhuma bate: segue mostrando, mas não grava histórico
+    confirmed = false;  // none matches: keep showing it, but don't write history
     return now;
   }
   bool ok(int64_t now, uint32_t ms) const { return confirmed && near(now, expected(ms), 120); }
-  // de hora em hora: acompanha o millis() (que volta a zero a cada 49 dias) sem perder a referência
+  // every hour: follows millis() (which wraps to zero every 49 days) without losing the reference
   void tick(int64_t now, uint32_t ms) { if (ok(now, ms) && (uint32_t)(ms - refMs) > 3600000) { ref = now; refMs = ms; } }
 };
 
-// No máximo n vezes por segundo (respostas SSDP: um pedido pequeno vira uma resposta ~3x maior).
+// At most n times per second (SSDP answers: a small request becomes an answer ~3x bigger).
 struct RateLimit {
   uint32_t at = 0;
   uint8_t used = 0;

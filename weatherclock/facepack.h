@@ -1,16 +1,16 @@
-// facepack.h — mostradores instaláveis: um arquivo JSON descreve o mostrador em camadas e
-// este motor desenha, sem precisar regravar o firmware. Formato: docs/FACE_PACKS.md
+// facepack.h — installable faces: a JSON file describes the face in layers and
+// this engine draws it, with no need to reflash the firmware. Format: docs/FACE_PACKS.md
 #pragma once
 #include "ui.h"
 
-static const uint8_t THEME_PACK = 200;  // cfg.theme quando o mostrador ativo é um pacote
+static const uint8_t THEME_PACK = 200;  // cfg.theme when the active face is a pack
 
-// Carrega um pacote a partir do JSON em memória (o buffer pode ser alterado durante a leitura).
-// Em caso de erro devolve false e uma mensagem em err.
+// Loads a pack from JSON in memory (the buffer may be modified while reading).
+// On error returns false and a message in err.
 bool facePackLoad(char *json, size_t len, char *err, size_t errLen);
 #ifdef ESP8266
 #include <FS.h>
-// Idem, lendo o arquivo em passadas (sem carregá-lo inteiro na memória). A posição do arquivo é redefinida.
+// Same, reading the file in passes (without loading it all into memory). The file position is reset.
 bool facePackLoadFile(File &f, char *err, size_t errLen);
 #endif
 void facePackUnload();
@@ -20,9 +20,9 @@ const char *facePackName();
 const char *facePackDesc();
 const char *facePackAuthor();
 
-// Desenha o pacote carregado (chamado por uiRenderClock quando s.theme == THEME_PACK).
+// Draws the loaded pack (called by uiRenderClock when s.theme == THEME_PACK).
 void facePackRender(const UiState &s, bool full);
 
-// O firmware fornece o desenho de imagens JPEG do LittleFS (respeitando uiClip).
-// Sem isso (simulador), a camada "image" vira um retângulo cinza.
+// The firmware provides the drawing of JPEG images from LittleFS (honouring uiClip).
+// Without this (simulator), the "image" layer becomes a grey rectangle.
 extern bool (*uiDrawImage)(const char *path, int x, int y);

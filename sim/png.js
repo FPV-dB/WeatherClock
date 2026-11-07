@@ -1,4 +1,4 @@
-// Converte out/*.raw (RGB565, 240x240) em PNG ampliado 2x e monta uma folha com todas as telas.
+// Converts out/*.raw (RGB565, 240x240) to PNG enlarged 2x and builds a sheet with every screen.
 const fs = require('fs'), zlib = require('zlib'), path = require('path');
 const S = 2, W = 240;
 function crcTable() { const t = []; for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; }
@@ -23,7 +23,7 @@ function toRgb(raw, scale) {
 const dir = path.join(__dirname, 'out');
 const files = fs.readdirSync(dir).filter(f => f.endsWith('.raw') && !f.startsWith('inc_') && !f.startsWith('fresh_')).sort();
 for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.raw'))) fs.writeFileSync(path.join(dir, f.replace('.raw', '.png')), png(W * S, W * S, toRgb(fs.readFileSync(path.join(dir, f)), S)));
-// folha: 4 colunas, telas em 1x com 12 px de moldura escura (como o vidro do aparelho)
+// sheet: 4 columns, screens at 1x with a 12 px dark frame (like the device's glass)
 const cols = 4, pad = 12, cell = W + pad * 2, rows = Math.ceil(files.length / cols);
 const sw = cols * cell, sh = rows * cell, sheet = Buffer.alloc(sw * sh * 3, 40);
 files.forEach((f, k) => {
@@ -32,7 +32,7 @@ files.forEach((f, k) => {
 });
 fs.writeFileSync(path.join(dir, 'folha.png'), png(sw, sh, sheet));
 console.log(files.map((f, i) => `${i + 1}. ${f.replace('.raw', '')}`).join('\n'));
-// Uso extra: node png.js <saida.png> <tela1> <tela2> ...  -> folha só com essas telas
+// Extra use: node png.js <out.png> <screen1> <screen2> ...  -> sheet with just those screens
 if (process.argv.length > 3) {
   const [out, ...names] = process.argv.slice(2);
   const cols = Math.min(4, names.length), rows2 = Math.ceil(names.length / cols);
@@ -43,7 +43,7 @@ if (process.argv.length > 3) {
   });
   fs.writeFileSync(path.join(dir, out), png(w2, h2, sh2));
 }
-// Folha de prévia dos assets (tamanho livre: cabeçalho com largura e altura)
+// Asset preview sheet (any size: header with width and height)
 const ab = path.join(dir, 'assets.bin');
 if (fs.existsSync(ab)) {
   const b = fs.readFileSync(ab), w = b.readUInt16LE(0), h = b.readUInt16LE(2), rgb = Buffer.alloc(w * h * 3);

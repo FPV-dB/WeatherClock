@@ -1,10 +1,10 @@
-# Paleta do mascote tomate (as mesmas cores do desenho original).
-color R #e8402f   # corpo
-color r #a8261e   # contorno e sombra do corpo
-color h #ff9178   # brilho
-color G #60c454   # folhas
-color g #2e8034   # contorno das folhas
-color k #280e0c   # olhos e boca
-color p #ffa0a0   # bochechas
-color w #ffffff   # brilho nos olhos/óculos
-color m #7a1010   # dentro da boca aberta
+# Palette of the tomato mascot (the same colours as the original drawing).
+color R #e8402f   # body
+color r #a8261e   # body outline and shadow
+color h #ff9178   # shine
+color G #60c454   # leaves
+color g #2e8034   # leaf outline
+color k #280e0c   # eyes and mouth
+color p #ffa0a0   # cheeks
+color w #ffffff   # shine on the eyes/glasses
+color m #7a1010   # inside the open mouth

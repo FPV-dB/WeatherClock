@@ -1,4 +1,4 @@
-# Animação de fim de Pomodoro: o tomate pula e solta confete.
+# End-of-Pomodoro animation: the tomato jumps and throws confetti.
 palette tomato
 color Y #ffc428
 color B #4f8dff

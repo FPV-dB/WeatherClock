@@ -1,6 +1,6 @@
-# Tomate monocromático para o mostrador LCD retrô (o fundo do LCD aparece no ".").
+# Monochrome tomato for the Retro LCD face (the LCD background shows through the ".").
 color K #121810
-background #a6b48c   # o fundo do LCD (só na folha de prévia)
+background #a6b48c   # the LCD background (preview sheet only)
 
 ......KKKK......
 ....KKKKKKKK....

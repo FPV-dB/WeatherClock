@@ -1,8 +1,8 @@
-# Lua crescente com uma estrelinha: céu da cena Tomate à noite.
-color m #f4ecc8   # lua
-color M #c8bf98   # crateras
-color o #8a8060   # contorno
-color w #ffffff   # estrela
+# Crescent moon with a little star: sky of the Scene face at night.
+color m #f4ecc8   # moon
+color M #c8bf98   # craters
+color o #8a8060   # outline
+color w #ffffff   # star
 
 ................
 .....oooooo.....

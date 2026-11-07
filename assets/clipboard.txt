@@ -1,11 +1,11 @@
-# Prancheta com lista: atividade "Tarefas" no foco do Pomodoro.
-color o #2a2238   # contorno
-color c #8a909c   # prendedor
-color b #a86a3c   # prancheta
-color p #f4efe2   # papel
-color l #9aa0b0   # texto
-color G #3ecf7a   # feito
-color q #c8c0b4   # por fazer
+# Clipboard with a list: the "Tasks" activity during focus.
+color o #2a2238   # outline
+color c #8a909c   # clip
+color b #a86a3c   # clipboard
+color p #f4efe2   # paper
+color l #9aa0b0   # text
+color G #3ecf7a   # done
+color q #c8c0b4   # to do
 
 .....oooooo.....
 ..oooccccccooo..

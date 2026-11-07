@@ -1,4 +1,4 @@
-# Dormindo: Pomodoro pausado e cena Tomate à noite.
+# Sleeping: Pomodoro paused, and the Scene face at night.
 palette tomato
 
 ......gGGg......

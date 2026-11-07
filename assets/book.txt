@@ -1,10 +1,10 @@
-# Livro aberto: aparece ao lado do tomate durante o foco do Pomodoro.
-color o #2a2238   # contorno
-color p #f4efe2   # página
-color P #d6cfbc   # sombra da página
-color l #9aa0b0   # linhas de texto
-color c #4f8dff   # capa
-color R #e8402f   # marcador
+# Open book: shown next to the tomato during a Pomodoro focus session.
+color o #2a2238   # outline
+color p #f4efe2   # page
+color P #d6cfbc   # page shadow
+color l #9aa0b0   # lines of text
+color c #4f8dff   # cover
+color R #e8402f   # marker
 
 ................
 ................
