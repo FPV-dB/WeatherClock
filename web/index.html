@@ -20,6 +20,7 @@ button:active{transform:scale(.97)}
 .btn{width:100%;padding:13px;border-radius:12px;background:var(--card2);border:1px solid var(--line)}.btn.p{background:var(--ac);border-color:transparent;color:#fff;font-weight:600}
 .row{display:flex;gap:8px}.row>*{flex:1}
 small{color:var(--mut)}
+.abt{display:flex;align-items:center;gap:14px;margin-bottom:12px}.abt img{width:48px;height:48px;image-rendering:pixelated}.abt b{font-size:18px;display:block}.cred p{margin:8px 0;font-size:14px;line-height:1.45}.cred a{color:var(--ac)}
 /* galeria */
 .hero{display:flex;gap:16px;align-items:center}
 .scr{position:relative;border-radius:16px;overflow:hidden;background:#000;border:6px solid #2b2b30;box-shadow:0 10px 30px -12px #000}
@@ -326,6 +327,17 @@ nav button[hidden],[hidden]{display:none!important}
   <small>If the clock restarts by itself, the reason shows up here. Weak Wi-Fi (below −75 dBm) usually explains weather and updates failing.</small>
  </div>
  </div>
+ <div class="grp">
+ <h2>About</h2>
+ <div class="card cred">
+  <div class="abt"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23ff9f1c' d='M0 0h1v1h-1zM10 0h1v1h-1zM1 1h1v1h-1zM9 1h1v1h-1zM5 2h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM7 3h1v1h-1zM3 4h1v1h-1zM7 4h1v1h-1zM2 5h1v1h-1zM8 5h1v1h-1zM3 6h1v1h-1zM7 6h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM5 8h1v1h-1zM1 9h1v1h-1zM0 10h1v1h-1z'/%3E%3Cpath fill='%23ffd23f' d='M5 3h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM3 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM6 5h1v1h-1zM7 5h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM5 7h1v1h-1z'/%3E%3Cpath fill='%23f2f4f8' d='M8 8h1v1h-1zM9 8h1v1h-1zM10 8h1v1h-1zM6 9h1v1h-1zM7 9h1v1h-1zM8 9h1v1h-1zM9 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM14 10h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM14 11h1v1h-1zM15 11h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM13 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1z'/%3E%3Cpath fill='%23b8c2cf' d='M5 13h1v1h-1zM6 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1z'/%3E%3C/svg%3E" alt=""><div><b>Weather Clock</b><small id="aver"></small></div></div>
+  <p>Weather Clock firmware and panel by <a href="https://github.com/FPV-dB" target="_blank" rel="noopener">FPV-dB</a>.</p>
+  <p>Based on <a href="https://github.com/davicorrea0/smalltv-pomodoro" target="_blank" rel="noopener">SmallTV Pomodoro</a> by <a href="https://github.com/davicorrea0" target="_blank" rel="noopener">davicorrea0</a>, originally written in Portuguese.</p>
+  <small>Much of the code comes from that project: the clock faces, the web panel, face packs, signed updates, recovery mode and the security work. Thank you!</small>
+  <p>Free software under the GNU GPL v3. <a href="https://github.com/FPV-dB/WeatherClock" target="_blank" rel="noopener">Source code</a></p>
+  <small>Weather: Open-Meteo. Rain radar: Australian Bureau of Meteorology. Fonts: Bebas Neue, Outfit, Righteous and DSEG7 (SIL Open Font License). Libraries: AnimatedGIF and JPEGDEC (BitBank), uzlib, QRCode (Richard Moore), Adafruit GFX and ArduinoJson. Panel colour order and loader: giovi321/smalltv-mod.</small>
+ </div>
+ </div>
 </section>
 </main>
 
@@ -623,7 +635,7 @@ function vcomSet(now){const v=$('vcom').value;$('vcomv').textContent=vcomTxt(v);
 function vcomEnd(save){clearTimeout(vcT);$('vcombox').style.display='none';$('vcomgo').style.display='';
  post('/api/vcom',new URLSearchParams(save?{v:$('vcom').value,save:1}:{stop:1})).then(r=>r.json()).then(j=>{if(st)st.cfg.vcom=j.vcom;toast(t(save?'Adjustment saved':'Adjustment canceled'))})}
 function cmd(c){try{actx=actx||new AudioContext()}catch(e){}post('/api/cmd',new URLSearchParams({c})).then(r=>r.json()).then(load)}
-function load(s){if(s.cfg.lang!=null&&s.cfg.lang!=LG)setLang(s.cfg.lang);if(lastPhase&&s.phase!=lastPhase&&s.phase!='idle'&&lastPhase!='idle')beep();lastPhase=s.phase;
+function load(s){if($('aver'))$('aver').textContent=t('Version {0}',s.ver);if(s.cfg.lang!=null&&s.cfg.lang!=LG)setLang(s.cfg.lang);if(lastPhase&&s.phase!=lastPhase&&s.phase!='idle'&&lastPhase!='idle')beep();lastPhase=s.phase;
  // a phase that just started: the clock draws the ring and only then shows the numbers. The panel draws its
  // ring and waits for the clock to say the numbers are on screen (pshown == pseq), asking every 100 ms:
  // that way the browser never starts counting before the device
