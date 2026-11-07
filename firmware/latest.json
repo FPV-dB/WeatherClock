@@ -1,32 +1,35 @@
 {
-  "version": "2.0.2",
+  "version": "2.0.3",
   "date": "2026-11-08",
   "file": "weatherclock.bin",
-  "size": 575712,
+  "size": 576208,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 415965,
-  "sig": "aHawS9MQuZtu5x/NdT4G/offryW9NoPcL1ZhjfNUC00Vpn/dMgb63CdJRaVVcy6uvY1aYdu8o60ycXuWDS9J6h4C26wWr08hIXubNuuHnYljKU+VY+cl5hxbVXB7cXxOKbw2LrlHBcwshThV9Rg5W2FqADcfqeL7gFHBdkOBNZwiHQLYkvsMHsc+9phxt5lfrf/6Uy8ScVuHBsVn1gjE+YIZx6/jIVjUy/M97fRn+UBHxABsVMG0++uiCJhB74qFZTxTf2Z75f4yCSkMPCk+99lXXHEtBj/AcGRZX49+/wFrWhdGFOHPuZAYTyMw5DyMdcd5F+FGxpVZl5SuoB2PRg==",
-  "gzsig": "ni7C5Ho5dPJKQ9ZrRudlxW6CpuJz/LTbJCbJYt5L6JaQFjTDahuRUIpM/z0DfdzkCABKY/V79zxzlZuw0ZpoLNwhMSWPyGdngFiqGT9HjT/0tB04uAjVhaFU8dvQ9OIQ65kfaHnC76rB8bMO7X5PGk3jtETAzDB/4PC0s2q+UbB6O9bDt5zxtfrHMVq/VPxAOtUWptgfj6+pXz/zv07zGp5Bzv3tUyS+87Zx2/sG2jMrFKTLva+YmWjEng6P1ftipeHYkmEOPo+NAoqcI6zzsryyBfmt/rFLLfoew0S+IlfSMos/cxrtFd0qUTtyM8zKVi1GmqDqi/RvOaSW5YspaA==",
-  "panel": "panel-9145b3d90b225f30ad09e3e4.html.gz",
-  "psri": "sha256-kUWz2QsiXzCtCePkP9YqHUt+WlzauyCA4F3tcHFfMmY=",
+  "gzsize": 416287,
+  "sig": "kUqaQlQdmIHODZOxKzTp0r02YD6yC9DL8Eu72i4cuAHSTaDsei8RAUhYtzYUuTXBuZl6A54Z77XS4tJl436DvFtQfmW57OuZciuga+5DRx2JTcExTG+GAlrciZ9i9V6wGNaRSSXWDfu8LEYpD6fGdVMexHUgodRJU3hMWXrHicmlpj21qmnUk97IKnjlc0pn9k5nuuTLZR9p2+xPFLQQcfL1eRTajtRqjrAtAdsGGEo3IGiyO5sArgN51TVEjWv+TTkcW5BUkFF+ncQpMzMQvSBVdngc6O/hcc1m1BIDjXBSG1GDx+1wou5K0kcbqHvmD/kXL1axmhHA3mv2YiHUEg==",
+  "gzsig": "bVhTaMVgWZnx+8Gp2EhkeetQaQeDsHoHC8zeKWvaPASmfmEE78Aut9PlWN2T3G4D6PTJnt9eOxgtLsKM4bC79D4FVO5zmYVhG9tIZvG/9eFnutXks4qUtrjI3d3ox1fEM/gduxpueGnvMmrurhWDiTZTNYsqYgbRcSF+Jt8PhuBLuEsK6axOXfa1Rnhy+xInHcLm33viq8WjRKwhchf+d5xQfcDLN3+n7UJljCJATfpJg7zoHDVtD4PnO/M/zaB4Dod/GAH5mJ1Yf3ylR4XSC94UwiPbcmjQJjRSUXifpfpEgU+sSdMI2ts53sfcECKXZ6vAa0A6bXfqX2EsfVlv7w==",
+  "panel": "panel-adadfeffb5724cfd8a3650cc.html.gz",
+  "psri": "sha256-ra3+/7VyTP2KNlDM8zLdazD92NvAmANnY+e86WE7/Uw=",
   "notes": {
     "en": [
-      "No more flicker: boot screens and every time/date update are drawn off-screen and swapped in whole",
-      "Rain radar and plane cards use a new low-memory format: no more 'No memory for GIF'",
-      "Choose which Bureau of Meteorology radar to watch (Album & radar page)",
-      "Smoother radar loop, steadier memory (face stays loaded)"
+      "Everything in English: clock messages, web page, face names and face packs",
+      "Updates no longer fail with 'not enough memory to check the signature'",
+      "Animated previews in the web page, and the radar card plays the radar loop",
+      "Animated Weather face icon",
+      "Face pack names and previews in English"
     ],
     "pt": [
-      "No more flicker: boot screens and every time/date update are drawn off-screen and swapped in whole",
-      "Rain radar and plane cards use a new low-memory format: no more 'No memory for GIF'",
-      "Choose which Bureau of Meteorology radar to watch (Album & radar page)",
-      "Smoother radar loop, steadier memory (face stays loaded)"
+      "Everything in English: clock messages, web page, face names and face packs",
+      "Updates no longer fail with 'not enough memory to check the signature'",
+      "Animated previews in the web page, and the radar card plays the radar loop",
+      "Animated Weather face icon",
+      "Face pack names and previews in English"
     ],
     "es": [
-      "No more flicker: boot screens and every time/date update are drawn off-screen and swapped in whole",
-      "Rain radar and plane cards use a new low-memory format: no more 'No memory for GIF'",
-      "Choose which Bureau of Meteorology radar to watch (Album & radar page)",
-      "Smoother radar loop, steadier memory (face stays loaded)"
+      "Everything in English: clock messages, web page, face names and face packs",
+      "Updates no longer fail with 'not enough memory to check the signature'",
+      "Animated previews in the web page, and the radar card plays the radar loop",
+      "Animated Weather face icon",
+      "Face pack names and previews in English"
     ]
   }
 }

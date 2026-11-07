@@ -3,9 +3,9 @@
   "author": "davicorrea0",
   "id": "bauhaus",
   "name": "Bauhaus",
-  "desc": "Formas e cores primárias da escola Bauhaus",
-  "name_en": "Bauhaus",
-  "desc_en": "Primary shapes and colors from the Bauhaus school",
+  "desc": "Primary shapes and colors from the Bauhaus school",
+  "name_pt": "Bauhaus",
+  "desc_pt": "Formas e cores primárias da escola Bauhaus",
   "bg": "#f1ece2",
   "layers": [
     {
@@ -86,7 +86,7 @@
       "y": 212,
       "w": 108,
       "h": 8,
-      "value": "focos",
+      "value": "focus",
       "color": "#d62828",
       "track": "#d9d0bd"
     }

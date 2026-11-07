@@ -1,11 +1,11 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "gradiente",
-  "name": "Gradiente",
-  "desc": "Degradê radial suave com ponteiros brancos",
-  "name_en": "Gradient",
-  "desc_en": "Soft radial gradient with white hands",
+  "id": "gradient",
+  "name": "Gradient",
+  "desc": "Soft radial gradient with white hands",
+  "name_pt": "Gradiente",
+  "desc_pt": "Degradê radial suave com ponteiros brancos",
   "bg": "#240848",
   "layers": [
     {

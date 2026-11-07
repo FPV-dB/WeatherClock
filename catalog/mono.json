@@ -3,9 +3,9 @@
   "author": "davicorrea0",
   "id": "mono",
   "name": "Mono",
-  "desc": "Preto e branco em blocos, com os segmentos apagados à mostra e um ponto vermelho",
-  "name_en": "Mono",
-  "desc_en": "Black and white blocks with unlit segments showing and one red dot",
+  "desc": "Black and white blocks with unlit segments showing and one red dot",
+  "name_pt": "Mono",
+  "desc_pt": "Preto e branco em blocos, com os segmentos apagados à mostra e um ponto vermelho",
   "bg": "#000000",
   "layers": [
     {
@@ -77,7 +77,7 @@
       "font": "dm",
       "size": 4,
       "color": "#ff1f1f",
-      "text": "{FOCOS}",
+      "text": "{FOCUS}",
       "align": "right",
       "off": "#1c1c1c"
     },

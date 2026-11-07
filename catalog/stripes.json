@@ -1,11 +1,11 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "listras",
-  "name": "Listras",
-  "desc": "Faixas diagonais coloridas com a hora num cartão preto",
-  "name_en": "Stripes",
-  "desc_en": "Colorful diagonal stripes with the time on a black card",
+  "id": "stripes",
+  "name": "Stripes",
+  "desc": "Colorful diagonal stripes with the time on a black card",
+  "name_pt": "Listras",
+  "desc_pt": "Faixas diagonais coloridas com a hora num cartão preto",
   "bg": "#111111",
   "layers": [
     {

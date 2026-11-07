@@ -1,14 +1,14 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "8bit-verde",
-  "name": "8-bit Verde",
-  "desc": "Os quatro tons de verde dos portáteis antigos, com o tomate repintado",
-  "name_en": "8-bit Green",
-  "desc_en": "The four greens of classic handhelds, with a repainted tomato",
+  "id": "8bit-green",
+  "name": "8-bit Green",
+  "desc": "The four greens of classic handhelds, with a repainted tomato",
+  "name_pt": "8-bit Verde",
+  "desc_pt": "Os quatro tons de verde dos portáteis antigos, com o tomate repintado",
   "bg": "#9bbc0f",
   "sprites": {
-    "tomate": {
+    "tomato": {
       "pal": {
         "g": "#0f380f",
         "G": "#306230",
@@ -182,7 +182,7 @@
         ]
       ]
     },
-    "dorme": {
+    "sleep": {
       "pal": {
         "g": "#0f380f",
         "G": "#306230",
@@ -210,7 +210,7 @@
         "................"
       ]
     },
-    "nuvem": {
+    "cloud": {
       "pal": {
         "o": "#306230",
         "w": "#9bbc0f",
@@ -228,7 +228,7 @@
         "..oooooooooooo.."
       ]
     },
-    "lua": {
+    "moon": {
       "pal": {
         "o": "#306230",
         "m": "#9bbc0f",
@@ -290,7 +290,7 @@
       "x": 24,
       "y": 92,
       "size": 2,
-      "sprite": "nuvem",
+      "sprite": "cloud",
       "when": "day"
     },
     {
@@ -298,7 +298,7 @@
       "x": 176,
       "y": 84,
       "size": 2,
-      "sprite": "lua",
+      "sprite": "moon",
       "when": "night"
     },
     {
@@ -306,7 +306,7 @@
       "x": 72,
       "y": 104,
       "size": 4,
-      "sprite": "tomate",
+      "sprite": "tomato",
       "when": "day"
     },
     {
@@ -314,7 +314,7 @@
       "x": 72,
       "y": 112,
       "size": 4,
-      "sprite": "dorme",
+      "sprite": "sleep",
       "when": "night"
     },
     {
@@ -350,7 +350,7 @@
       "font": "pixel",
       "size": 2,
       "color": "#0f380f",
-      "text": "{FOCOS}/{META}",
+      "text": "{FOCUS}/{GOAL}",
       "align": "right"
     },
     {
@@ -359,7 +359,7 @@
       "y": 216,
       "w": 200,
       "h": 6,
-      "value": "focos",
+      "value": "focus",
       "color": "#0f380f",
       "track": "#9bbc0f"
     }

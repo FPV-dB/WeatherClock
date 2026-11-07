@@ -1,11 +1,11 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "orbita",
-  "name": "Órbita",
-  "desc": "Ponteiros como órbitas em volta do sol, num céu estrelado",
-  "name_en": "Orbit",
-  "desc_en": "Hands as orbits around the sun, under a starry sky",
+  "id": "orbit",
+  "name": "Orbit",
+  "desc": "Hands as orbits around the sun, under a starry sky",
+  "name_pt": "Órbita",
+  "desc_pt": "Ponteiros como órbitas em volta do sol, num céu estrelado",
   "bg": "#05060f",
   "layers": [
     {

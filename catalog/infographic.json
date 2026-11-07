@@ -1,11 +1,11 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "infografico",
-  "name": "Infográfico",
-  "desc": "Analógico com mostradores menores e dados nos quatro cantos",
-  "name_en": "Infograph",
-  "desc_en": "Analog dial with subdials and stats in all four corners",
+  "id": "infographic",
+  "name": "Infograph",
+  "desc": "Analog dial with subdials and stats in all four corners",
+  "name_pt": "Infográfico",
+  "desc_pt": "Analógico com mostradores menores e dados nos quatro cantos",
   "bg": "#000000",
   "layers": [
     {
@@ -61,7 +61,7 @@
       "y": 124,
       "r": 24,
       "size": 5,
-      "value": "focos",
+      "value": "focus",
       "color": "#30d158",
       "track": "#0f3a1a"
     },
@@ -69,7 +69,7 @@
       "type": "text",
       "x": 170,
       "y": 120,
-      "text": "{FOCOS}",
+      "text": "{FOCUS}",
       "font": "pixel",
       "size": 1,
       "align": "center",

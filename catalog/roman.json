@@ -1,11 +1,11 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "romano",
-  "name": "Romano",
-  "desc": "Mostrador creme clássico com algarismos romanos",
-  "name_en": "Roman",
-  "desc_en": "Classic cream dial with Roman numerals",
+  "id": "roman",
+  "name": "Roman",
+  "desc": "Classic cream dial with Roman numerals",
+  "name_pt": "Romano",
+  "desc_pt": "Mostrador creme clássico com algarismos romanos",
   "bg": "#f3ead8",
   "layers": [
     {

@@ -1,11 +1,11 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "pilula",
-  "name": "Pílula",
-  "desc": "Tela em cápsula de pulseira, hora empilhada e dados nas laterais",
-  "name_en": "Pill",
-  "desc_en": "Band-style capsule screen, stacked time and stats on the sides",
+  "id": "pill",
+  "name": "Pill",
+  "desc": "Band-style capsule screen, stacked time and stats on the sides",
+  "name_pt": "Pílula",
+  "desc_pt": "Tela em cápsula de pulseira, hora empilhada e dados nas laterais",
   "bg": "#000000",
   "layers": [
     {
@@ -106,7 +106,7 @@
       "type": "text",
       "x": 209,
       "y": 54,
-      "text": "{FOCOS}",
+      "text": "{FOCUS}",
       "font": "pixel",
       "size": 3,
       "align": "center",

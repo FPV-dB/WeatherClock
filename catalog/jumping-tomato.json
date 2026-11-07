@@ -1,12 +1,12 @@
 {
   "format": 1,
-  "id": "tomate-pulando",
-  "name": "Tomate Pulando",
   "author": "davicorrea0",
+  "id": "jumping-tomato",
+  "name": "Tomate Pulando",
   "desc": "Um tomate em pixel art que pula e pisca ao lado da hora (sprite animado de 6 quadros)",
   "bg": "#1f2a1c",
   "sprites": {
-    "tomate": {
+    "tomato": {
       "fps": 6,
       "pal": {
         "r": "#e63946",
@@ -171,7 +171,7 @@
       "x": 72,
       "y": 82,
       "size": 6,
-      "sprite": "tomate"
+      "sprite": "tomato"
     },
     {
       "type": "text",
@@ -182,9 +182,9 @@
       "align": "center",
       "color": "#fefae0",
       "text": {
-        "pt": "{FOCOS}/{META} focos",
-        "en": "{FOCOS}/{META} done",
-        "es": "{FOCOS}/{META} focos"
+        "pt": "{FOCUS}/{GOAL} focos",
+        "en": "{FOCUS}/{GOAL} done",
+        "es": "{FOCUS}/{GOAL} focos"
       }
     }
   ]

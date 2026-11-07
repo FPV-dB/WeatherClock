@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "id": "bebas-gigante",
-  "name": "Bebas Gigante",
   "author": "davicorrea0",
+  "id": "giant-bebas",
+  "name": "Bebas Gigante",
   "desc": "A hora enorme em Bebas Neue, com clima e barra de focos",
   "bg": "#000000",
   "layers": [
@@ -93,7 +93,7 @@
       "w": 200,
       "h": 5,
       "r": 2,
-      "value": "focos",
+      "value": "focus",
       "color": "work",
       "track": "card2"
     }

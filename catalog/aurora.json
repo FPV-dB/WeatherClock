@@ -3,9 +3,9 @@
   "author": "davicorrea0",
   "id": "aurora",
   "name": "Aurora",
-  "desc": "Faixas da aurora boreal sobre montanhas, com a hora em Geo",
-  "name_en": "Aurora",
-  "desc_en": "Northern lights bands over mountains, with the time in Geo",
+  "desc": "Northern lights bands over mountains, with the time in Geo",
+  "name_pt": "Aurora",
+  "desc_pt": "Faixas da aurora boreal sobre montanhas, com a hora em Geo",
   "bg": "#060b1a",
   "layers": [
     {
@@ -203,7 +203,7 @@
       "font": "pixel",
       "size": 2,
       "color": "#bfe9ff",
-      "text": "{FOCOS}/{META}",
+      "text": "{FOCUS}/{GOAL}",
       "align": "right"
     }
   ]

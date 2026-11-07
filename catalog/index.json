@@ -2,645 +2,645 @@
   "format": 1,
   "faces": [
     {
-      "id": "tomate-pulando",
+      "id": "jumping-tomato",
       "name": "Tomate Pulando",
       "author": "davicorrea0",
-      "desc": "Um tomate em pixel art que pula e pisca ao lado da hora.",
-      "name_en": "Jumping Tomato",
-      "desc_en": "A pixel-art tomato that jumps and blinks next to the time.",
-      "file": "tomate-pulando.json",
-      "preview": "tomate-pulando.png",
-      "anim": "tomate-pulando.gif",
-      "size": 4713,
-      "fw": "1.21.0",
+      "desc": "Um tomate em pixel art que pula e pisca ao lado da hora (sprite animado de 6 quadros)",
+      "file": "jumping-tomato.json",
+      "preview": "jumping-tomato.png",
+      "anim": "jumping-tomato.gif",
+      "size": 4522,
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Tomate Pulando",
+      "desc_pt": "Um tomate em pixel art que pula e pisca ao lado da hora."
     },
     {
       "id": "nixie",
       "name": "Nixie",
       "author": "davicorrea0",
-      "desc": "Vidro, filamentos âmbar e segundos discretos.",
-      "name_en": "Nixie",
-      "desc_en": "Glass capsules, amber filaments and discreet seconds.",
+      "desc": "Glass capsules, amber filaments and discreet seconds.",
       "file": "nixie.json",
       "preview": "nixie.png",
       "size": 3640,
-      "fw": "1.10.0",
+      "fw": "2.0.3",
       "tags": [
         "digital",
         "retro"
       ],
-      "anim": "nixie.gif"
+      "anim": "nixie.gif",
+      "name_pt": "Nixie",
+      "desc_pt": "Vidro, filamentos âmbar e segundos discretos."
     },
     {
       "id": "koi",
       "name": "Koi",
       "author": "davicorrea0",
-      "desc": "Um lago visto de cima; a flor aparece na meta.",
-      "name_en": "Koi",
-      "desc_en": "A pond from above; a lotus blooms at your goal.",
+      "desc": "A pond from above; a lotus blooms at your goal.",
       "file": "koi.json",
       "preview": "koi.png",
       "anim": "koi.gif",
       "size": 14868,
-      "fw": "1.21.0",
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Koi",
+      "desc_pt": "Um lago visto de cima; a flor aparece na meta."
     },
     {
-      "id": "janela",
-      "name": "Janela",
+      "id": "window",
+      "name": "Window",
       "author": "davicorrea0",
-      "desc": "Cidade na janela, com chuva conforme o clima real.",
-      "name_en": "Window",
-      "desc_en": "A city window with rain following actual weather.",
-      "file": "janela.json",
-      "preview": "janela.png",
-      "anim": "janela.gif",
-      "size": 12111,
-      "fw": "1.21.0",
+      "desc": "A city window with rain following actual weather.",
+      "file": "window.json",
+      "preview": "window.png",
+      "anim": "window.gif",
+      "size": 12101,
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Janela",
+      "desc_pt": "Cidade na janela, com chuva conforme o clima real."
     },
     {
       "id": "metro",
-      "name": "Metrô",
+      "name": "Metro",
       "author": "davicorrea0",
-      "desc": "Painel de trânsito com a rota preenchida pelos focos.",
-      "name_en": "Metro",
-      "desc_en": "A transit board whose route fills with focus sessions.",
+      "desc": "A transit board whose route fills with focus sessions.",
       "file": "metro.json",
       "preview": "metro.png",
-      "size": 1957,
-      "fw": "1.10.0",
+      "size": 1956,
+      "fw": "2.0.3",
       "tags": [
         "digital",
         "retro"
-      ]
+      ],
+      "name_pt": "Metrô",
+      "desc_pt": "Painel de trânsito com a rota preenchida pelos focos."
     },
     {
       "id": "memphis",
       "name": "Memphis",
       "author": "davicorrea0",
-      "desc": "Geometria dos anos 80 em coral, azul e amarelo.",
-      "name_en": "Memphis",
-      "desc_en": "Playful 80s geometry in coral, blue and yellow.",
+      "desc": "Playful 80s geometry in coral, blue and yellow.",
       "file": "memphis.json",
       "preview": "memphis.png",
-      "size": 1626,
-      "fw": "1.10.0",
+      "size": 1625,
+      "fw": "2.0.3",
       "tags": [
         "digital",
         "retro"
-      ]
+      ],
+      "name_pt": "Memphis",
+      "desc_pt": "Geometria dos anos 80 em coral, azul e amarelo."
     },
     {
-      "id": "compasso",
-      "name": "Compasso",
+      "id": "compass",
+      "name": "Compass",
       "author": "davicorrea0",
-      "desc": "Analógico sereno, com ponteiros sem atualização por segundo.",
-      "name_en": "Compass",
-      "desc_en": "A calm analog dial without per-second hand updates.",
-      "file": "compasso.json",
-      "preview": "compasso.png",
-      "size": 1736,
-      "fw": "1.10.0",
+      "desc": "A calm analog dial without per-second hand updates.",
+      "file": "compass.json",
+      "preview": "compass.png",
+      "size": 1734,
+      "fw": "2.0.3",
       "tags": [
-        "analogico"
-      ]
+        "analog"
+      ],
+      "name_pt": "Compasso",
+      "desc_pt": "Analógico sereno, com ponteiros sem atualização por segundo."
     },
     {
-      "id": "mare",
-      "name": "Maré",
+      "id": "tide",
+      "name": "Tide",
       "author": "davicorrea0",
-      "desc": "Farol em pixel art, mar em faixas e focos na areia.",
-      "name_en": "Tide",
-      "desc_en": "Pixel lighthouse, ocean bands and focus on the sand.",
-      "file": "mare.json",
-      "preview": "mare.png",
-      "size": 2662,
-      "fw": "1.10.0",
-      "tags": [
-        "digital",
-        "pixel"
-      ]
-    },
-    {
-      "id": "jardim",
-      "name": "Jardim",
-      "author": "davicorrea0",
-      "desc": "Uma pequena estufa; a planta cresce com sua sequência.",
-      "name_en": "Greenhouse",
-      "desc_en": "A little greenhouse; the plant grows with your streak.",
-      "file": "jardim.json",
-      "preview": "jardim.png",
-      "size": 2092,
-      "fw": "1.10.0",
+      "desc": "Pixel lighthouse, ocean bands and focus on the sand.",
+      "file": "tide.json",
+      "preview": "tide.png",
+      "size": 2671,
+      "fw": "2.0.3",
       "tags": [
         "digital",
         "pixel"
-      ]
+      ],
+      "name_pt": "Maré",
+      "desc_pt": "Farol em pixel art, mar em faixas e focos na areia."
     },
     {
-      "id": "vinil",
-      "name": "Vinil",
+      "id": "greenhouse",
+      "name": "Greenhouse",
       "author": "davicorrea0",
-      "desc": "Sulcos de vinil e um anel que acompanha os segundos.",
-      "name_en": "Vinyl",
-      "desc_en": "Vinyl grooves with a rim that tracks the seconds.",
-      "file": "vinil.json",
-      "preview": "vinil.png",
-      "size": 2281,
-      "fw": "1.10.0",
+      "desc": "A little greenhouse; the plant grows with your streak.",
+      "file": "greenhouse.json",
+      "preview": "greenhouse.png",
+      "size": 2095,
+      "fw": "2.0.3",
+      "tags": [
+        "digital",
+        "pixel"
+      ],
+      "name_pt": "Jardim",
+      "desc_pt": "Uma pequena estufa; a planta cresce com sua sequência."
+    },
+    {
+      "id": "vinyl",
+      "name": "Vinyl",
+      "author": "davicorrea0",
+      "desc": "Vinyl grooves with a rim that tracks the seconds.",
+      "file": "vinyl.json",
+      "preview": "vinyl.png",
+      "size": 2280,
+      "fw": "2.0.3",
       "tags": [
         "digital",
         "retro"
-      ]
+      ],
+      "name_pt": "Vinil",
+      "desc_pt": "Sulcos de vinil e um anel que acompanha os segundos."
     },
     {
-      "id": "duna",
-      "name": "Duna",
+      "id": "dune",
+      "name": "Dune",
       "author": "davicorrea0",
-      "desc": "Sol e lua sobre dunas em tons de terracota.",
-      "name_en": "Dune",
-      "desc_en": "Sun and moon above terracotta pixel dunes.",
-      "file": "duna.json",
-      "preview": "duna.png",
-      "size": 2167,
-      "fw": "1.10.0",
+      "desc": "Sun and moon above terracotta pixel dunes.",
+      "file": "dune.json",
+      "preview": "dune.png",
+      "size": 2166,
+      "fw": "2.0.3",
       "tags": [
         "digital",
         "pixel"
-      ]
+      ],
+      "name_pt": "Duna",
+      "desc_pt": "Sol e lua sobre dunas em tons de terracota."
     },
     {
-      "id": "papel",
-      "name": "Papel",
+      "id": "paper",
+      "name": "Paper",
       "author": "davicorrea0",
-      "desc": "Tipografia editorial, papel creme e um círculo vermelho.",
-      "name_en": "Paper",
-      "desc_en": "Editorial typography, cream paper and a red circle.",
-      "file": "papel.json",
-      "preview": "papel.png",
-      "size": 1610,
-      "fw": "1.10.0",
+      "desc": "Editorial typography, cream paper and a red circle.",
+      "file": "paper.json",
+      "preview": "paper.png",
+      "size": 1609,
+      "fw": "2.0.3",
       "tags": [
         "digital"
-      ]
+      ],
+      "name_pt": "Papel",
+      "desc_pt": "Tipografia editorial, papel creme e um círculo vermelho."
     },
     {
       "id": "arcade",
       "name": "Arcade",
       "author": "davicorrea0",
-      "desc": "Uma fase em pixel art; a bandeira acende na meta diária.",
-      "name_en": "Arcade",
-      "desc_en": "A pixel platform level; the flag lights at your daily goal.",
+      "desc": "A pixel platform level; the flag lights at your daily goal.",
       "file": "arcade.json",
       "preview": "arcade.png",
       "anim": "arcade.gif",
-      "size": 5354,
-      "fw": "1.21.0",
+      "size": 5359,
+      "fw": "2.0.3",
       "tags": [
         "pixel",
         "retro"
-      ]
+      ],
+      "name_pt": "Arcade",
+      "desc_pt": "Uma fase em pixel art; a bandeira acende na meta diária."
     },
     {
       "id": "bento",
       "name": "Bento",
       "author": "davicorrea0",
-      "desc": "Cartões em grade, como widgets: hora, clima e focos",
-      "name_en": "Bento",
-      "desc_en": "Widget-style grid of cards: time, weather and focus",
+      "desc": "Widget-style grid of cards: time, weather and focus",
       "file": "bento.json",
       "preview": "bento.png",
-      "size": 2368,
-      "fw": "1.10.0",
+      "size": 2243,
+      "fw": "2.0.3",
       "tags": [
         "digital"
-      ]
+      ],
+      "name_pt": "Bento",
+      "desc_pt": "Cartões em grade, como widgets: hora, clima e focos"
     },
     {
       "id": "synthwave",
       "name": "Synthwave",
       "author": "davicorrea0",
-      "desc": "Pôr do sol retrô dos anos 80, com grade neon em perspectiva",
-      "name_en": "Synthwave",
-      "desc_en": "80s retro sunset with a neon perspective grid",
+      "desc": "80s retro sunset with a neon perspective grid",
       "file": "synthwave.json",
       "preview": "synthwave.png",
-      "size": 4019,
-      "fw": "1.6.0",
+      "size": 3793,
+      "fw": "2.0.3",
       "tags": [
         "digital",
         "retro"
-      ]
+      ],
+      "name_pt": "Synthwave",
+      "desc_pt": "Pôr do sol retrô dos anos 80, com grade neon em perspectiva"
     },
     {
-      "id": "aquario",
-      "name": "Aquário",
+      "id": "aquarium",
+      "name": "Aquarium",
       "author": "davicorrea0",
-      "desc": "Um aquário em pixel art; bata a meta do dia e aparece o peixe dourado",
-      "name_en": "Aquarium",
-      "desc_en": "A pixel art aquarium; hit your daily goal and the golden fish shows up",
-      "file": "aquario.json",
-      "preview": "aquario.png",
-      "anim": "aquario.gif",
-      "size": 12352,
-      "fw": "1.21.0",
+      "desc": "A pixel art aquarium; hit your daily goal and the golden fish shows up",
+      "file": "aquarium.json",
+      "preview": "aquarium.png",
+      "anim": "aquarium.gif",
+      "size": 12370,
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Aquário",
+      "desc_pt": "Um aquário em pixel art; bata a meta do dia e aparece o peixe dourado"
     },
     {
       "id": "terminal",
       "name": "Terminal",
       "author": "davicorrea0",
-      "desc": "O relógio como uma sessão de terminal, em verde fósforo",
-      "name_en": "Terminal",
-      "desc_en": "The clock as a shell session, in phosphor green",
+      "desc": "The clock as a shell session, in phosphor green",
       "file": "terminal.json",
       "preview": "terminal.png",
-      "size": 2913,
-      "fw": "1.10.0",
+      "size": 2767,
+      "fw": "2.0.3",
       "tags": [
         "digital",
         "retro"
-      ]
+      ],
+      "name_pt": "Terminal",
+      "desc_pt": "O relógio como uma sessão de terminal, em verde fósforo"
     },
     {
       "id": "brutal",
       "name": "Brutal",
       "author": "davicorrea0",
-      "desc": "Neo-brutalismo: cores chapadas, bordas pretas e sombras duras",
-      "name_en": "Brutal",
-      "desc_en": "Neo-brutalism: flat colors, black borders and hard shadows",
+      "desc": "Neo-brutalism: flat colors, black borders and hard shadows",
       "file": "brutal.json",
       "preview": "brutal.png",
-      "size": 2723,
+      "size": 2575,
       "fw": "1.6.0",
       "tags": [
         "digital"
-      ]
+      ],
+      "name_pt": "Brutal",
+      "desc_pt": "Neo-brutalismo: cores chapadas, bordas pretas e sombras duras"
     },
     {
-      "id": "estacao",
-      "name": "Estação",
+      "id": "station",
+      "name": "Station",
       "author": "davicorrea0",
-      "desc": "Relógio de estação de trem: barras pretas e segundos em vermelho",
-      "name_en": "Station",
-      "desc_en": "Railway station clock: bold black bars and a red seconds hand",
-      "file": "estacao.json",
-      "preview": "estacao.png",
-      "size": 3169,
+      "desc": "Railway station clock: bold black bars and a red seconds hand",
+      "file": "station.json",
+      "preview": "station.png",
+      "size": 2989,
       "fw": "1.6.0",
       "tags": [
-        "analogico"
-      ]
+        "analog"
+      ],
+      "name_pt": "Estação",
+      "desc_pt": "Relógio de estação de trem: barras pretas e segundos em vermelho"
     },
     {
-      "id": "8bit-verde",
-      "name": "8-bit Verde",
+      "id": "8bit-green",
+      "name": "8-bit Green",
       "author": "davicorrea0",
-      "desc": "Os quatro tons de verde dos portáteis antigos, com o tomate repintado",
-      "name_en": "8-bit Green",
-      "desc_en": "The four greens of classic handhelds, with a repainted tomato",
-      "file": "8bit-verde.json",
-      "preview": "8bit-verde.png",
-      "anim": "8bit-verde.gif",
-      "size": 8548,
-      "fw": "1.21.0",
+      "desc": "The four greens of classic handhelds, with a repainted tomato",
+      "file": "8bit-green.json",
+      "preview": "8bit-green.png",
+      "anim": "8bit-green.gif",
+      "size": 8550,
+      "fw": "2.0.3",
       "tags": [
         "pixel",
         "retro"
-      ]
+      ],
+      "name_pt": "8-bit Verde",
+      "desc_pt": "Os quatro tons de verde dos portáteis antigos, com o tomate repintado"
     },
     {
       "id": "aurora",
       "name": "Aurora",
       "author": "davicorrea0",
-      "desc": "Faixas da aurora boreal sobre montanhas, com a hora em Geo",
-      "name_en": "Aurora",
-      "desc_en": "Northern lights bands over mountains, with the time in Geo",
+      "desc": "Northern lights bands over mountains, with the time in Geo",
       "file": "aurora.json",
       "preview": "aurora.png",
-      "size": 3629,
-      "fw": "1.6.0",
+      "size": 3419,
+      "fw": "2.0.3",
       "tags": [
         "digital"
-      ]
+      ],
+      "name_pt": "Aurora",
+      "desc_pt": "Faixas da aurora boreal sobre montanhas, com a hora em Geo"
     },
     {
-      "id": "orbita",
-      "name": "Órbita",
+      "id": "orbit",
+      "name": "Orbit",
       "author": "davicorrea0",
-      "desc": "Ponteiros como órbitas em volta do sol, num céu estrelado",
-      "name_en": "Orbit",
-      "desc_en": "Hands as orbits around the sun, under a starry sky",
-      "file": "orbita.json",
-      "preview": "orbita.png",
-      "size": 2849,
+      "desc": "Hands as orbits around the sun, under a starry sky",
+      "file": "orbit.json",
+      "preview": "orbit.png",
+      "size": 2687,
       "fw": "1.6.0",
       "tags": [
-        "analogico"
-      ]
+        "analog"
+      ],
+      "name_pt": "Órbita",
+      "desc_pt": "Ponteiros como órbitas em volta do sol, num céu estrelado"
     },
     {
       "id": "bauhaus",
       "name": "Bauhaus",
       "author": "davicorrea0",
-      "desc": "Formas e cores primárias da escola Bauhaus",
-      "name_en": "Bauhaus",
-      "desc_en": "Primary shapes and colors from the Bauhaus school",
+      "desc": "Primary shapes and colors from the Bauhaus school",
       "file": "bauhaus.json",
       "preview": "bauhaus.png",
-      "size": 1763,
-      "fw": "1.6.5",
+      "size": 1669,
+      "fw": "2.0.3",
       "tags": [
         "digital"
-      ]
+      ],
+      "name_pt": "Bauhaus",
+      "desc_pt": "Formas e cores primárias da escola Bauhaus"
     },
     {
       "id": "mono",
       "name": "Mono",
       "author": "davicorrea0",
-      "desc": "Preto e branco em blocos, com os segmentos apagados à mostra e um ponto vermelho",
-      "name_en": "Mono",
-      "desc_en": "Black and white blocks with unlit segments showing and one red dot",
+      "desc": "Black and white blocks with unlit segments showing and one red dot",
       "file": "mono.json",
       "preview": "mono.png",
-      "size": 1961,
-      "fw": "1.10.0",
+      "size": 1862,
+      "fw": "2.0.3",
       "tags": [
         "digital"
-      ]
+      ],
+      "name_pt": "Mono",
+      "desc_pt": "Preto e branco em blocos, com os segmentos apagados à mostra e um ponto vermelho"
     },
     {
-      "id": "bebas-gigante",
+      "id": "giant-bebas",
       "name": "Bebas Gigante",
       "author": "davicorrea0",
       "desc": "A hora enorme em Bebas Neue, com clima e barra de focos",
-      "name_en": "Giant Bebas",
-      "desc_en": "The time huge in Bebas Neue, with weather and a focus bar",
-      "file": "bebas-gigante.json",
-      "preview": "bebas-gigante.png",
-      "size": 1968,
-      "fw": "1.10.0",
+      "file": "giant-bebas.json",
+      "preview": "giant-bebas.png",
+      "size": 1865,
+      "fw": "2.0.3",
       "tags": [
         "digital"
-      ]
+      ],
+      "name_pt": "Bebas Gigante",
+      "desc_pt": "A hora enorme em Bebas Neue, com clima e barra de focos"
     },
     {
-      "id": "cafe-pixel",
+      "id": "pixel-cafe",
       "name": "Café Pixel",
       "author": "davicorrea0",
       "desc": "Uma mesa de café em pixel art: janela que muda com o dia e o tomate com humor do clima",
-      "name_en": "Pixel Café",
-      "desc_en": "A pixel art café table: a window that follows the day and a tomato that reacts to the weather",
-      "file": "cafe-pixel.json",
-      "preview": "cafe-pixel.png",
-      "size": 2838,
-      "fw": "1.10.0",
+      "file": "pixel-cafe.json",
+      "preview": "pixel-cafe.png",
+      "size": 2688,
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Café Pixel",
+      "desc_pt": "Uma mesa de café em pixel art: janela que muda com o dia e o tomate com humor do clima"
     },
     {
-      "id": "radar-analogico",
+      "id": "analog-radar",
       "name": "Radar",
       "author": "davicorrea0",
       "desc": "Analógico azul-noite com ponteiro de segundos",
-      "name_en": "Radar",
-      "desc_en": "Night-blue analog with a seconds hand",
-      "file": "radar-analogico.json",
-      "preview": "radar-analogico.png",
-      "size": 3338,
+      "file": "analog-radar.json",
+      "preview": "analog-radar.png",
+      "size": 3143,
       "fw": "1.6.0",
       "tags": [
-        "analogico"
-      ]
+        "analog"
+      ],
+      "name_pt": "Radar",
+      "desc_pt": "Analógico azul-noite com ponteiro de segundos"
     },
     {
-      "id": "aneis",
-      "name": "Anéis",
+      "id": "rings",
+      "name": "Rings",
       "author": "davicorrea0",
-      "desc": "Três anéis de progresso: focos do dia, minutos da hora e horas do dia",
-      "name_en": "Rings",
-      "desc_en": "Three progress rings: daily focus, minutes of the hour and hours of the day",
-      "file": "aneis.json",
-      "preview": "aneis.png",
-      "size": 1809,
-      "fw": "1.6.6",
+      "desc": "Three progress rings: daily focus, minutes of the hour and hours of the day",
+      "file": "rings.json",
+      "preview": "rings.png",
+      "size": 1718,
+      "fw": "2.0.3",
       "tags": [
-        "esportivo"
-      ]
+        "sporty"
+      ],
+      "name_pt": "Anéis",
+      "desc_pt": "Três anéis de progresso: focos do dia, minutos da hora e horas do dia"
     },
     {
       "id": "modular",
       "name": "Modular",
       "author": "davicorrea0",
-      "desc": "Grade de complicações: hora, clima grande e três dados embaixo",
-      "name_en": "Modular",
-      "desc_en": "Complication grid: time, large weather and three stats below",
+      "desc": "Complication grid: time, large weather and three stats below",
       "file": "modular.json",
       "preview": "modular.png",
-      "size": 3961,
-      "fw": "1.10.0",
+      "size": 3753,
+      "fw": "2.0.3",
       "tags": [
         "digital",
-        "esportivo"
-      ]
+        "sporty"
+      ],
+      "name_pt": "Modular",
+      "desc_pt": "Grade de complicações: hora, clima grande e três dados embaixo"
     },
     {
-      "id": "infografico",
-      "name": "Infográfico",
+      "id": "infographic",
+      "name": "Infograph",
       "author": "davicorrea0",
-      "desc": "Analógico com mostradores menores e dados nos quatro cantos",
-      "name_en": "Infograph",
-      "desc_en": "Analog dial with subdials and stats in all four corners",
-      "file": "infografico.json",
-      "preview": "infografico.png",
-      "size": 3257,
-      "fw": "1.6.6",
+      "desc": "Analog dial with subdials and stats in all four corners",
+      "file": "infographic.json",
+      "preview": "infographic.png",
+      "size": 3083,
+      "fw": "2.0.3",
       "tags": [
-        "analogico",
-        "esportivo"
-      ]
+        "analog",
+        "sporty"
+      ],
+      "name_pt": "Infográfico",
+      "desc_pt": "Analógico com mostradores menores e dados nos quatro cantos"
     },
     {
-      "id": "romano",
-      "name": "Romano",
+      "id": "roman",
+      "name": "Roman",
       "author": "davicorrea0",
-      "desc": "Mostrador creme clássico com algarismos romanos",
-      "name_en": "Roman",
-      "desc_en": "Classic cream dial with Roman numerals",
-      "file": "romano.json",
-      "preview": "romano.png",
-      "size": 3804,
+      "desc": "Classic cream dial with Roman numerals",
+      "file": "roman.json",
+      "preview": "roman.png",
+      "size": 3597,
       "fw": "1.6.6",
       "tags": [
-        "analogico"
-      ]
+        "analog"
+      ],
+      "name_pt": "Romano",
+      "desc_pt": "Mostrador creme clássico com algarismos romanos"
     },
     {
       "id": "duo",
       "name": "Duo",
       "author": "davicorrea0",
-      "desc": "Hora e minutos gigantes, um em cima do outro",
-      "name_en": "Duo",
-      "desc_en": "Giant hours stacked over minutes",
+      "desc": "Giant hours stacked over minutes",
       "file": "duo.json",
       "preview": "duo.png",
-      "size": 1018,
+      "size": 966,
       "fw": "1.6.6",
       "tags": [
         "digital"
-      ]
+      ],
+      "name_pt": "Duo",
+      "desc_pt": "Hora e minutos gigantes, um em cima do outro"
     },
     {
-      "id": "gradiente",
-      "name": "Gradiente",
+      "id": "gradient",
+      "name": "Gradient",
       "author": "davicorrea0",
-      "desc": "Degradê radial suave com ponteiros brancos",
-      "name_en": "Gradient",
-      "desc_en": "Soft radial gradient with white hands",
-      "file": "gradiente.json",
-      "preview": "gradiente.png",
-      "size": 2498,
+      "desc": "Soft radial gradient with white hands",
+      "file": "gradient.json",
+      "preview": "gradient.png",
+      "size": 2354,
       "fw": "1.6.6",
       "tags": [
-        "analogico"
-      ]
+        "analog"
+      ],
+      "name_pt": "Gradiente",
+      "desc_pt": "Degradê radial suave com ponteiros brancos"
     },
     {
       "id": "fitness",
       "name": "Fitness",
       "author": "davicorrea0",
-      "desc": "Estilo pulseira esportiva: hora grande e barras coloridas de progresso",
-      "name_en": "Fitness",
-      "desc_en": "Fitness band style: big time and colorful progress bars",
+      "desc": "Fitness band style: big time and colorful progress bars",
       "file": "fitness.json",
       "preview": "fitness.png",
-      "size": 2599,
-      "fw": "1.10.0",
+      "size": 2464,
+      "fw": "2.0.3",
       "tags": [
-        "esportivo",
+        "sporty",
         "digital"
-      ]
+      ],
+      "name_pt": "Fitness",
+      "desc_pt": "Estilo pulseira esportiva: hora grande e barras coloridas de progresso"
     },
     {
-      "id": "astronauta",
-      "name": "Astronauta",
+      "id": "astronaut",
+      "name": "Astronaut",
       "author": "davicorrea0",
-      "desc": "Astronauta em pixel art flutuando perto de um planeta",
-      "name_en": "Astronaut",
-      "desc_en": "Pixel art astronaut floating near a planet",
-      "file": "astronauta.json",
-      "preview": "astronauta.png",
-      "size": 3725,
-      "fw": "1.10.0",
+      "desc": "Pixel art astronaut floating near a planet",
+      "file": "astronaut.json",
+      "preview": "astronaut.png",
+      "size": 3523,
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Astronauta",
+      "desc_pt": "Astronauta em pixel art flutuando perto de um planeta"
     },
     {
-      "id": "listras",
-      "name": "Listras",
+      "id": "stripes",
+      "name": "Stripes",
       "author": "davicorrea0",
-      "desc": "Faixas diagonais coloridas com a hora num cartão preto",
-      "name_en": "Stripes",
-      "desc_en": "Colorful diagonal stripes with the time on a black card",
-      "file": "listras.json",
-      "preview": "listras.png",
-      "size": 2239,
+      "desc": "Colorful diagonal stripes with the time on a black card",
+      "file": "stripes.json",
+      "preview": "stripes.png",
+      "size": 2116,
       "fw": "1.6.6",
       "tags": [
         "digital"
-      ]
+      ],
+      "name_pt": "Listras",
+      "desc_pt": "Faixas diagonais coloridas com a hora num cartão preto"
     },
     {
-      "id": "pilula",
-      "name": "Pílula",
+      "id": "pill",
+      "name": "Pill",
       "author": "davicorrea0",
-      "desc": "Tela em cápsula de pulseira, hora empilhada e dados nas laterais",
-      "name_en": "Pill",
-      "desc_en": "Band-style capsule screen, stacked time and stats on the sides",
-      "file": "pilula.json",
-      "preview": "pilula.png",
-      "size": 2616,
-      "fw": "1.10.0",
+      "desc": "Band-style capsule screen, stacked time and stats on the sides",
+      "file": "pill.json",
+      "preview": "pill.png",
+      "size": 2477,
+      "fw": "2.0.3",
       "tags": [
-        "esportivo",
+        "sporty",
         "digital"
-      ]
+      ],
+      "name_pt": "Pílula",
+      "desc_pt": "Tela em cápsula de pulseira, hora empilhada e dados nas laterais"
     },
     {
-      "id": "gato-soneca",
-      "name": "Soneca",
+      "id": "catnap",
+      "name": "Catnap",
       "author": "davicorrea0",
-      "desc": "Um gato laranja dormindo na almofada, respirando devagar, com os Zzz subindo",
-      "name_en": "Catnap",
-      "desc_en": "An orange cat asleep on a cushion, breathing slowly while the Zzz float up",
-      "file": "gato-soneca.json",
-      "preview": "gato-soneca.png",
-      "anim": "gato-soneca.gif",
-      "size": 13817,
-      "fw": "1.21.0",
+      "desc": "An orange cat asleep on a cushion, breathing slowly while the Zzz float up",
+      "file": "catnap.json",
+      "preview": "catnap.png",
+      "anim": "catnap.gif",
+      "size": 15186,
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Soneca",
+      "desc_pt": "Um gato laranja dormindo na almofada, respirando devagar, com os Zzz subindo"
     },
     {
-      "id": "fogueira",
-      "name": "Fogueira",
+      "id": "campfire",
+      "name": "Campfire",
       "author": "davicorrea0",
-      "desc": "Uma fogueira acesa sob o céu estrelado, com fagulhas subindo",
-      "name_en": "Campfire",
-      "desc_en": "A crackling campfire under a starry sky, with sparks drifting up",
-      "file": "fogueira.json",
-      "preview": "fogueira.png",
-      "anim": "fogueira.gif",
-      "size": 8747,
-      "fw": "1.21.0",
+      "desc": "A crackling campfire under a starry sky, with sparks drifting up",
+      "file": "campfire.json",
+      "preview": "campfire.png",
+      "anim": "campfire.gif",
+      "size": 10404,
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Fogueira",
+      "desc_pt": "Uma fogueira acesa sob o céu estrelado, com fagulhas subindo"
     },
     {
-      "id": "inverno",
-      "name": "Inverno",
+      "id": "winter",
+      "name": "Winter",
       "author": "davicorrea0",
-      "desc": "Neve caindo sobre uma cabana com a lareira acesa, entre pinheiros",
-      "name_en": "Winter",
-      "desc_en": "Snow falling on a cabin with the fire lit, among pine trees",
-      "file": "inverno.json",
-      "preview": "inverno.png",
-      "anim": "inverno.gif",
-      "size": 9941,
-      "fw": "1.21.0",
+      "desc": "Snow falling on a cabin with the fire lit, among pine trees",
+      "file": "winter.json",
+      "preview": "winter.png",
+      "anim": "winter.gif",
+      "size": 11760,
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Inverno",
+      "desc_pt": "Neve caindo sobre uma cabana com a lareira acesa, entre pinheiros"
     },
     {
-      "id": "pausa-cafe",
-      "name": "Pausa pro Café",
+      "id": "coffee-break",
+      "name": "Coffee Break",
       "author": "davicorrea0",
-      "desc": "O tomate relaxando ao lado de uma xícara fumegante",
-      "name_en": "Coffee Break",
-      "desc_en": "The tomato unwinding next to a steaming cup of coffee",
-      "file": "pausa-cafe.json",
-      "preview": "pausa-cafe.png",
-      "anim": "pausa-cafe.gif",
-      "size": 4614,
-      "fw": "1.21.0",
+      "desc": "The tomato unwinding next to a steaming cup of coffee",
+      "file": "coffee-break.json",
+      "preview": "coffee-break.png",
+      "anim": "coffee-break.gif",
+      "size": 5445,
+      "fw": "2.0.3",
       "tags": [
         "pixel"
-      ]
+      ],
+      "name_pt": "Pausa pro Café",
+      "desc_pt": "O tomate relaxando ao lado de uma xícara fumegante"
     }
   ]
 }

@@ -1,11 +1,11 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "aneis",
-  "name": "Anéis",
-  "desc": "Três anéis de progresso: focos do dia, minutos da hora e horas do dia",
-  "name_en": "Rings",
-  "desc_en": "Three progress rings: daily focus, minutes of the hour and hours of the day",
+  "id": "rings",
+  "name": "Rings",
+  "desc": "Three progress rings: daily focus, minutes of the hour and hours of the day",
+  "name_pt": "Anéis",
+  "desc_pt": "Três anéis de progresso: focos do dia, minutos da hora e horas do dia",
   "bg": "#000000",
   "layers": [
     {
@@ -24,7 +24,7 @@
       "y": 148,
       "r": 88,
       "size": 18,
-      "value": "focos",
+      "value": "focus",
       "color": "#fa114f",
       "track": "#3b0a1a"
     },
@@ -52,7 +52,7 @@
       "type": "text",
       "x": 120,
       "y": 141,
-      "text": "{FOCOS}/{META}",
+      "text": "{FOCUS}/{GOAL}",
       "font": "pixel",
       "size": 1,
       "align": "center",

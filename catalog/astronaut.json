@@ -1,11 +1,11 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "astronauta",
-  "name": "Astronauta",
-  "desc": "Astronauta em pixel art flutuando perto de um planeta",
-  "name_en": "Astronaut",
-  "desc_en": "Pixel art astronaut floating near a planet",
+  "id": "astronaut",
+  "name": "Astronaut",
+  "desc": "Pixel art astronaut floating near a planet",
+  "name_pt": "Astronauta",
+  "desc_pt": "Astronauta em pixel art flutuando perto de um planeta",
   "bg": "#0b1026",
   "sprites": {
     "astro": {
@@ -189,9 +189,9 @@
       "x": 112,
       "y": 156,
       "text": {
-        "pt": "{FOCOS} focos",
-        "en": "{FOCOS} sessions",
-        "es": "{FOCOS} focos"
+        "pt": "{FOCUS} focos",
+        "en": "{FOCUS} sessions",
+        "es": "{FOCUS} focos"
       },
       "font": "pixel",
       "size": 1,

@@ -1,8 +1,8 @@
 {
   "format": 1,
-  "id": "radar-analogico",
-  "name": "Radar",
   "author": "davicorrea0",
+  "id": "analog-radar",
+  "name": "Radar",
   "desc": "Analógico azul-noite com ponteiro de segundos",
   "bg": "#0b1020",
   "layers": [

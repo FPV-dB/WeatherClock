@@ -3,9 +3,9 @@
   "author": "davicorrea0",
   "id": "modular",
   "name": "Modular",
-  "desc": "Grade de complicações: hora, clima grande e três dados embaixo",
-  "name_en": "Modular",
-  "desc_en": "Complication grid: time, large weather and three stats below",
+  "desc": "Complication grid: time, large weather and three stats below",
+  "name_pt": "Modular",
+  "desc_pt": "Grade de complicações: hora, clima grande e três dados embaixo",
   "bg": "#000000",
   "layers": [
     {
@@ -153,7 +153,7 @@
       "align": "center",
       "color": "#ffffff",
       "bg": "#1c1c1e",
-      "text": "{FOCOS}"
+      "text": "{FOCUS}"
     },
     {
       "type": "text",

@@ -3,9 +3,9 @@
   "author": "davicorrea0",
   "id": "fitness",
   "name": "Fitness",
-  "desc": "Estilo pulseira esportiva: hora grande e barras coloridas de progresso",
-  "name_en": "Fitness",
-  "desc_en": "Fitness band style: big time and colorful progress bars",
+  "desc": "Fitness band style: big time and colorful progress bars",
+  "name_pt": "Fitness",
+  "desc_pt": "Estilo pulseira esportiva: hora grande e barras coloridas de progresso",
   "bg": "#000000",
   "layers": [
     {
@@ -45,7 +45,7 @@
       "type": "text",
       "x": 224,
       "y": 136,
-      "text": "{FOCOS}/{META}",
+      "text": "{FOCUS}/{GOAL}",
       "font": "pixel",
       "size": 1,
       "align": "right",
@@ -58,7 +58,7 @@
       "w": 208,
       "h": 10,
       "r": 5,
-      "value": "focos",
+      "value": "focus",
       "color": "#ff375f",
       "track": "#3a0d18"
     },

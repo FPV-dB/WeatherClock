@@ -3,9 +3,9 @@
   "author": "davicorrea0",
   "id": "synthwave",
   "name": "Synthwave",
-  "desc": "Pôr do sol retrô dos anos 80, com grade neon em perspectiva",
-  "name_en": "Synthwave",
-  "desc_en": "80s retro sunset with a neon perspective grid",
+  "desc": "80s retro sunset with a neon perspective grid",
+  "name_pt": "Synthwave",
+  "desc_pt": "Pôr do sol retrô dos anos 80, com grade neon em perspectiva",
   "bg": "#1a0b2e",
   "layers": [
     {
@@ -207,7 +207,7 @@
       "font": "pixel",
       "size": 2,
       "color": "#00f0ff",
-      "text": "{TEMP}° {FOCOS}/{META}",
+      "text": "{TEMP}° {FOCUS}/{GOAL}",
       "align": "center",
       "when": "weather"
     },
@@ -218,7 +218,7 @@
       "font": "pixel",
       "size": 2,
       "color": "#00f0ff",
-      "text": "{FOCOS}/{META}",
+      "text": "{FOCUS}/{GOAL}",
       "align": "center",
       "when": "noweather"
     }

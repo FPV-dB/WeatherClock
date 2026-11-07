@@ -3,9 +3,9 @@
   "author": "davicorrea0",
   "id": "bento",
   "name": "Bento",
-  "desc": "Cartões em grade, como widgets: hora, clima e focos",
-  "name_en": "Bento",
-  "desc_en": "Widget-style grid of cards: time, weather and focus",
+  "desc": "Widget-style grid of cards: time, weather and focus",
+  "name_pt": "Bento",
+  "desc_pt": "Cartões em grade, como widgets: hora, clima e focos",
   "bg": "#0e0e12",
   "layers": [
     {
@@ -106,7 +106,7 @@
       "font": "outfit",
       "size": 44,
       "color": "#ffffff",
-      "text": "{FOCOS}",
+      "text": "{FOCUS}",
       "align": "center",
       "bg": "#ff5a47"
     },
@@ -117,7 +117,7 @@
       "w": 80,
       "h": 8,
       "r": 4,
-      "value": "focos",
+      "value": "focus",
       "color": "#ffffff",
       "track": "#c23a2c"
     }

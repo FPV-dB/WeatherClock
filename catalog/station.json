@@ -1,11 +1,11 @@
 {
   "format": 1,
   "author": "davicorrea0",
-  "id": "estacao",
-  "name": "Estação",
-  "desc": "Relógio de estação de trem: barras pretas e segundos em vermelho",
-  "name_en": "Station",
-  "desc_en": "Railway station clock: bold black bars and a red seconds hand",
+  "id": "station",
+  "name": "Station",
+  "desc": "Railway station clock: bold black bars and a red seconds hand",
+  "name_pt": "Estação",
+  "desc_pt": "Relógio de estação de trem: barras pretas e segundos em vermelho",
   "bg": "#202124",
   "layers": [
     {

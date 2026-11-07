@@ -1,12 +1,12 @@
 {
   "format": 1,
-  "id": "cafe-pixel",
-  "name": "Café Pixel",
   "author": "davicorrea0",
+  "id": "pixel-cafe",
+  "name": "Café Pixel",
   "desc": "Uma mesa de café em pixel art: janela que muda com o dia e o tomate com humor do clima",
   "bg": "#2b1d16",
   "sprites": {
-    "xicara": {
+    "cup": {
       "pal": {
         "o": "#3a2a20",
         "w": "#f5f5f5",
@@ -106,7 +106,7 @@
       "x": 30,
       "y": 118,
       "size": 3,
-      "sprite": "xicara"
+      "sprite": "cup"
     },
     {
       "type": "mascot",
@@ -124,9 +124,9 @@
       "align": "center",
       "color": "#fefae0",
       "text": {
-        "pt": "{FOCOS}/{META} focos",
-        "en": "{FOCOS}/{META} done",
-        "es": "{FOCOS}/{META} focos"
+        "pt": "{FOCUS}/{GOAL} focos",
+        "en": "{FOCUS}/{GOAL} done",
+        "es": "{FOCUS}/{GOAL} focos"
       }
     },
     {
