@@ -100,7 +100,8 @@ static void paintDial(void *c) {
   }
   char t[24];
   snprintf(t, sizeof t, "%u", s.wx.wind);
-  textC(CX, CY - 28, 5, TEXT, t);
+  const int vw = vecWidth(VF_OUTFIT, t, 44);  // a mesma fonte do relógio e da temperatura do Weather Half
+  vecText(VF_OUTFIT, CX - vw / 2, CY - 33, 44, t, TEXT, BG);
   textC(CX, CY + 16, 1, MUTED, "km/h");
   snprintf(t, sizeof t, "%u kn", (unsigned)lroundf(s.wx.wind * 0.54f));
   textC(CX, CY + 28, 1, MUTED, t);
