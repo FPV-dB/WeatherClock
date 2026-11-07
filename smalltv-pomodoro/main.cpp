@@ -1657,6 +1657,10 @@ void stopAlbum() {
   uiInvalidate();  // o relógio redesenha tudo ao voltar
 }
 
+// weatherbox: a memória se fragmenta com as horas (o pacote do mostrador entra e sai a cada troca) e o GIF
+// deixa de achar ~24 KB contíguos. Nesse caso o relógio reinicia sozinho, no máximo uma vez por hora de uso.
+uint32_t memRestartAt = 0;
+
 bool showAlbumItem(const String &f) {
   stopAlbum();
   if (!LittleFS.exists(f)) return false;
@@ -1673,6 +1677,7 @@ bool showAlbumItem(const String &f) {
     gif = new (std::nothrow) AnimatedGIF();  // ~24 KB contíguos de RAM
     if (!gif) {
       uiError(tr("Sem memoria p/ GIF", "No memory for GIF", "Sin memoria p/ GIF"));
+      if (millis() > 3600000UL && !memRestartAt) memRestartAt = millis() | 1;
       return true;  // mantém a tela de aviso até o próximo item
     }
     gif->begin(GIF_PALETTE_RGB565_LE);
@@ -3538,6 +3543,7 @@ uint32_t lastRender = 0, lastBriCheck = 0;
 void loop() {
   diagLoop();
   if (bootCount && millis() > 30000) setBootCount(0);  // ficou ligado: não foi uma inicialização curta
+  if (memRestartAt && millis() - memRestartAt > 2000) safeRestart();  // dá tempo de responder a quem pediu
   if (recoveryMode) {
     server.handleClient();
     return;
