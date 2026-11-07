@@ -387,7 +387,10 @@ uint16_t briDuty(int b) {
 int16_t sunRise = -1, sunSet = -1;  // minutos do dia (hora local), da última busca do clima
 
 // Chamada a cada volta do loop: anda da posição atual até o alvo em BL_FADE_MS e só mexe no PWM quando muda
+bool fadeHold = false;  // weatherbox: tela apagada no meio de uma troca (ver fadeOutNow)
+
 void briFade() {
+  if (fadeHold) return;
   uint32_t el = millis() - blT0;
   uint16_t lvl = el >= BL_FADE_MS ? blTo : blFrom + (int32_t)(blTo - blFrom) * (int32_t)el / (int32_t)BL_FADE_MS;
   if (lvl == blNow) return;
@@ -418,6 +421,34 @@ void updateBrightness(bool force = false) {
     return;
   }
   briFade();
+}
+
+// weatherbox: troca de tela por esmaecimento. Não há memória para misturar duas telas, então o brilho cai
+// a zero, a tela nova é desenhada no escuro e o brilho volta (briFade faz a subida em BL_FADE_MS).
+bool fadeInPending = false;
+void fadeOutNow() {
+  if (fadeHold) return;
+  const uint16_t from = blNow;
+  const uint32_t t0 = millis(), D = 220;
+  for (;;) {
+    const uint32_t e = millis() - t0;
+    const uint16_t l = e >= D ? 0 : from - (uint32_t)from * e / D;
+    analogWrite(PIN_BL, BL_RANGE - l);
+    if (e >= D) break;
+    delay(8);
+  }
+  blNow = 0;
+  fadeHold = true;
+  fadeInPending = true;
+}
+void fadeInStart() {
+  if (!fadeHold) return;
+  fadeHold = false;
+  fadeInPending = false;
+  blFrom = 0;
+  blNow = 0;
+  blT0 = millis();
+  blTo = briDuty(curBri);
 }
 
 // ---------- Pomodoro ----------
@@ -1722,8 +1753,12 @@ void scheduleView() {
   if (wantAlbum) {
     const String &next = album[albumIdx++ % album.size()];
     // com um item só, não redesenha a mesma foto (evita piscar e reiniciar o GIF)
-    if (!(inAlbum && next == curFile)) showAlbumItem(next);
+    if (!(inAlbum && next == curFile)) {
+      fadeOutNow();
+      showAlbumItem(next);
+    }
   } else if (inAlbum) {
+    fadeOutNow();
     stopAlbum();
     // weatherbox: alternando com o álbum, o rodízio anda aqui, na volta para o relógio, e não pelo próprio
     // timer: cada mostrador e cada item do álbum ficam exatamente "Segundos por item" na tela
@@ -3219,6 +3254,7 @@ void rotLoop() {
   if ((int32_t)(millis() - rotNext) < 0) return;
   if (cfg.mode == 2 && !album.empty() && !rotStepNow) return;  // alternando com o álbum, quem anda é scheduleView
   rotNext = millis() + cfg.rotMin * 60000UL;
+  fadeOutNow();  // nada faz se scheduleView já apagou
   // o item depois do mostrador atual (ou o primeiro, se o atual não está na lista)
   String cur = cfg.theme == THEME_PACK ? String("p:") + cfg.facePkg : String("t:") + cfg.theme, l = rotList + ",";
   int at = ("," + l).indexOf("," + cur + ","), start = at >= 0 ? at + cur.length() + 1 : 0;
@@ -3236,7 +3272,7 @@ void rotLoop() {
       cfg.theme = THEME_PACK;
       strlcpy(cfg.facePkg, it.substring(2).c_str(), sizeof cfg.facePkg);
     } else continue;
-    uiInvalidateSlide();  // mostrador novo entra rolando (ui.cpp)
+    uiInvalidate();  // weatherbox: troca por esmaecimento em vez da rolagem
     return;
   }
 }
@@ -3673,4 +3709,5 @@ void loop() {
     pomoShown = false;  // na próxima entrada a tela do Pomodoro é desenhada inteira de novo
     if (!inAlbum) renderClock();
   }
+  if (fadeInPending) fadeInStart();  // a tela nova (mostrador ou 1o quadro do álbum) já está desenhada
 }
