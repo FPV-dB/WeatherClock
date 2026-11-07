@@ -1,23 +1,32 @@
 {
-  "version": "2.0.1",
+  "version": "2.0.2",
   "date": "2026-11-08",
   "file": "weatherclock.bin",
-  "size": 572016,
+  "size": 575712,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 413286,
-  "sig": "CZpdDJ93/rWxGtpsZ9Y6/vkoWnIC/+BYoBxW05KYvkhpnwCVK/tRnQmLLCIK5sV+xt/J0hHtzOVecgZXMKgjF+1Gz8EIIs4/4EYwGl9d0LcjKRpIl1RdcLM9JWTWf/nF/EY46HI3STXHkI4wAG7PHzj9BS9vHzvVEVoayN7KJtiwp+QSfadTL7K0hjfO0DnlGIx7+L9UUH1e17sXkGKcw4f1TIRgwj2RJ92sroRteeuqRM9GnzgDg+M70qHDYyguiKGUR4Yxsct1V12jwypfCvkP5+HrZ0yPlqiJZw85sSthKL1/FOsFfhCXCLUvRmzyR9Xa0EgDtx/ZTZ2fGF0bQQ==",
-  "gzsig": "ivgHvjiUAO9mOFEkkLz+DSZIO7RkWMRA585u3MeFN0dLwA3ACi9j5IcVx6ollneQyAgRJGZ8+PpHAlG5Z9QlOqH0OCbZHIIEdL7GlhLYvoyyzv9nQ8p34DnpH+gOoJ6mAPqfv1nfNXXRYBQtVwTlXoOVTtn5EweP416GdMr5GObhypvsmjqEuL0VfWXX2yzaVvHvIBjA8xyYx5nqVDSXMKOa0vV+PUvsbw/itNEiha62nE8MHi/Ot4RuS+w6g8wRguxliyH7QaeEl/AxA+HN/C6rTYsYPBJjrkqm0wKXqcnTTbW7QpiINyqG9ps0hY0r3UaZaV+5Rb1IUW2owBWeww==",
-  "panel": "panel-1e126bcad3d75f25968818c4.html.gz",
-  "psri": "sha256-HhJrytPXXyWWiBjED5r/iyR0r9tW75EiyslU36jVQAE=",
+  "gzsize": 415965,
+  "sig": "aHawS9MQuZtu5x/NdT4G/offryW9NoPcL1ZhjfNUC00Vpn/dMgb63CdJRaVVcy6uvY1aYdu8o60ycXuWDS9J6h4C26wWr08hIXubNuuHnYljKU+VY+cl5hxbVXB7cXxOKbw2LrlHBcwshThV9Rg5W2FqADcfqeL7gFHBdkOBNZwiHQLYkvsMHsc+9phxt5lfrf/6Uy8ScVuHBsVn1gjE+YIZx6/jIVjUy/M97fRn+UBHxABsVMG0++uiCJhB74qFZTxTf2Z75f4yCSkMPCk+99lXXHEtBj/AcGRZX49+/wFrWhdGFOHPuZAYTyMw5DyMdcd5F+FGxpVZl5SuoB2PRg==",
+  "gzsig": "ni7C5Ho5dPJKQ9ZrRudlxW6CpuJz/LTbJCbJYt5L6JaQFjTDahuRUIpM/z0DfdzkCABKY/V79zxzlZuw0ZpoLNwhMSWPyGdngFiqGT9HjT/0tB04uAjVhaFU8dvQ9OIQ65kfaHnC76rB8bMO7X5PGk3jtETAzDB/4PC0s2q+UbB6O9bDt5zxtfrHMVq/VPxAOtUWptgfj6+pXz/zv07zGp5Bzv3tUyS+87Zx2/sG2jMrFKTLva+YmWjEng6P1ftipeHYkmEOPo+NAoqcI6zzsryyBfmt/rFLLfoew0S+IlfSMos/cxrtFd0qUTtyM8zKVi1GmqDqi/RvOaSW5YspaA==",
+  "panel": "panel-9145b3d90b225f30ad09e3e4.html.gz",
+  "psri": "sha256-kUWz2QsiXzCtCePkP9YqHUt+WlzauyCA4F3tcHFfMmY=",
   "notes": {
     "en": [
-      "New page icon: a sun and cloud instead of the tomato"
+      "No more flicker: boot screens and every time/date update are drawn off-screen and swapped in whole",
+      "Rain radar and plane cards use a new low-memory format: no more 'No memory for GIF'",
+      "Choose which Bureau of Meteorology radar to watch (Album & radar page)",
+      "Smoother radar loop, steadier memory (face stays loaded)"
     ],
     "pt": [
-      "New page icon: a sun and cloud instead of the tomato"
+      "No more flicker: boot screens and every time/date update are drawn off-screen and swapped in whole",
+      "Rain radar and plane cards use a new low-memory format: no more 'No memory for GIF'",
+      "Choose which Bureau of Meteorology radar to watch (Album & radar page)",
+      "Smoother radar loop, steadier memory (face stays loaded)"
     ],
     "es": [
-      "New page icon: a sun and cloud instead of the tomato"
+      "No more flicker: boot screens and every time/date update are drawn off-screen and swapped in whole",
+      "Rain radar and plane cards use a new low-memory format: no more 'No memory for GIF'",
+      "Choose which Bureau of Meteorology radar to watch (Album & radar page)",
+      "Smoother radar loop, steadier memory (face stays loaded)"
     ]
   }
 }
