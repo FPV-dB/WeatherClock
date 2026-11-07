@@ -42,7 +42,7 @@ static void dial() {
 }
 
 // Seta na borda, do lado de onde o vento vem, apontando para o centro (como um cata-vento)
-static void vane(int deg, uint16_t c) {
+static void vane(float deg, uint16_t c) {
   int tx, ty, lx, ly, rx, ry;
   polar(deg, RING - 14, tx, ty);
   polar(deg - 7, RING + 2, lx, ly);
@@ -58,31 +58,75 @@ static void card(int x, const char *label, const char *value, const char *sub, u
   if (sub) textC(cx, y + 34, 1, MUTED, sub);
 }
 
-static void paintWind(void *c) {
+// Faixas de vento: traços que atravessam a bússola no sentido em que o vento sopra. Posições vêm só do
+// relógio (ms), sem estado: cada traço tem uma faixa lateral e uma fase próprias.
+static void streaks(const UiState &s) {
+  const float to = (s.wx.wdir + 180) * K_PI / 180, dx = sinf(to), dy = -cosf(to);  // para onde sopra
+  const float speed = 14 + s.wx.wind * 1.6f;                                        // px por segundo
+  const int len = (4 + s.wx.wind / 4) > 16 ? 16 : 4 + s.wx.wind / 4;
+  const int n = s.wx.wind < 5 ? 8 : 16;
+  const float span = 2.0f * (RING - 6);
+  for (int i = 0; i < n; i++) {
+    const float lane = ((i * 37) % 23 - 11) * 5.6f;                       // afastamento lateral
+    const float phase = (i * 0.61803f - (int)(i * 0.61803f)) * span;       // espalha no comprimento
+    const float along = fmodf(phase + s.ms / 1000.0f * speed * (0.75f + (i % 4) * 0.12f), span) - span / 2;
+    const float x0 = CX - dy * lane + dx * along, y0 = CY + dx * lane + dy * along;
+    const float r2 = (x0 - CX) * (x0 - CX) + (y0 - CY) * (y0 - CY);
+    if (r2 > (RING - 8) * (RING - 8)) continue;
+    const float edge = 1 - fabsf(along) / (span / 2);                      // some nas bordas
+    const uint16_t col = mix(BG, LONG, 0.35f + 0.6f * edge);
+    G->drawLine(x0, y0, x0 - dx * len, y0 - dy * len, col);
+    G->drawLine(x0 + dy, y0 - dx, x0 + dy - dx * len, y0 - dx - dy * len, col);  // 2 px de largura
+  }
+}
+
+static void paintDial(void *c) {
   const UiState &s = *(const UiState *)c;
-  G->fillRect(0, 24, 240, 216, BG);
+  G->fillRect(CX - 80, 30, 160, 160, BG);
+  const bool ok = s.weatherOn && s.wx.ok;
+  if (ok && s.wx.wind) streaks(s);
   dial();
-  if (!(s.weatherOn && s.wx.ok)) {
+  if (!ok) {
     textC(CX, CY - 4, 2, MUTED, "--");
-    textC(CX, 212, 1, MUTED, tr("defina a cidade no painel", "set the city in the panel", "elige la ciudad en el panel"));
     return;
   }
   const uint8_t f = beaufort(s.wx.wind);
-  if (s.wx.wind) vane(s.wx.wdir, s.accent == TEXT ? LONG : s.accent);
+  if (s.wx.wind) {
+    // balança mais quando as rajadas passam bem da média
+    float amp = (s.wx.gust > s.wx.wind ? (s.wx.gust - s.wx.wind) * 0.6f : 0) + 2;
+    if (amp > 16) amp = 16;
+    const float wob = sinf(s.ms / 1000.0f * 2.3f) * amp + sinf(s.ms / 1000.0f * 5.1f) * amp * 0.3f;
+    vane(s.wx.wdir + wob, s.accent == TEXT ? LONG : s.accent);
+  }
   char t[24];
   snprintf(t, sizeof t, "%u", s.wx.wind);
   textC(CX, CY - 28, 5, TEXT, t);
   textC(CX, CY + 16, 1, MUTED, "km/h");
   snprintf(t, sizeof t, "%u kn", (unsigned)lroundf(s.wx.wind * 0.54f));
   textC(CX, CY + 28, 1, MUTED, t);
+  textC(CX, CY - 42, 1, TEXT, beaufortName(f));
+}
+
+static void paintCards(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(0, 190, 240, 50, BG);
+  if (!(s.weatherOn && s.wx.ok)) {
+    textC(CX, 212, 1, MUTED, tr("defina a cidade no painel", "set the city in the panel", "elige la ciudad en el panel"));
+    return;
+  }
   char v[16], sub[16];
   snprintf(v, sizeof v, "%s", windDir(s.wx.wdir));
   snprintf(sub, sizeof sub, "%u deg", s.wx.wdir);
   card(8, "FROM", v, sub, TEXT);
   snprintf(v, sizeof v, "%u km/h", s.wx.gust);
-  snprintf(sub, sizeof sub, "Force %u", f);
+  snprintf(sub, sizeof sub, "Force %u", beaufort(s.wx.wind));
   card(122, "GUSTS", v, sub, s.wx.gust >= 60 ? WORK : TEXT);
-  textC(CX, CY - 42, 1, TEXT, beaufortName(f));
+}
+
+static void paintWind(void *c) {
+  G->fillRect(0, 24, 240, 216, BG);
+  paintDial(c);
+  paintCards(c);
 }
 
 void themeWind(const UiState &s, bool full) {
@@ -98,8 +142,17 @@ void themeWind(const UiState &s, bool full) {
     G->fillRect(150, 0, 90, 22, BG);
     textR(230, 4, 2, s.accent, hm);
   }
-  if (!(full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn)) return;
-  lastWx = s.wx.version;
-  lastWxOn = s.weatherOn;
-  uiPaint(full, 0, 24, 240, 216, paintWind, (void *)&s);
+  static uint32_t lastAnim = 0;
+  if (full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn) {
+    lastWx = s.wx.version;
+    lastWxOn = s.weatherOn;
+    lastAnim = s.ms;
+    uiPaint(full, 0, 24, 240, 216, paintWind, (void *)&s);
+    return;
+  }
+  // só a bússola anda: ~8 quadros por segundo, desenhada fora da tela (sem piscar)
+  if (s.weatherOn && s.wx.ok && s.wx.wind && s.ms - lastAnim >= 120) {
+    lastAnim = s.ms;
+    uiPaint(false, CX - 80, 30, 160, 160, paintDial, (void *)&s);
+  }
 }

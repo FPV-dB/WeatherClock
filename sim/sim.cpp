@@ -477,6 +477,23 @@ int main() {
     delete f;
   }
 
+  // weatherbox: quadros do mostrador Vento animado (SIM_WIND_FRAMES=n), 120 ms entre eles
+  if (const char *nf = getenv("SIM_WIND_FRAMES")) {
+    Frame *f = new Frame();
+    uiBegin(f);
+    UiState w = base(14, 37, 24);
+    w.theme = THEME_WIND;
+    w.wx.gust = 46;  // rajadas bem acima da média: a seta balança
+    for (int i = 0, n = atoi(nf); i < n; i++) {
+      w.ms = 1000 + i * 120;
+      uiRenderClock(w);
+      char name[32];
+      snprintf(name, sizeof name, "wind-%02d", i);
+      save(*f, name);
+    }
+    delete f;
+  }
+
   // ---- prévias da galeria do painel (docs/faces/face-N.png) ----
   for (int t = 0; t < THEME_COUNT; t++) {
     UiState g = t == THEME_ANALOG ? base(10, 9, 30) : base(14, 37, 24);
