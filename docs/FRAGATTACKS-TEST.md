@@ -1,25 +1,25 @@
-# Testar o relógio contra FragAttacks
+# Testing the clock against FragAttacks
 
-FragAttacks (2021) são falhas no jeito como o Wi-Fi monta pacotes fragmentados e agregados. No ESP8266 elas
-ficam nas bibliotecas fechadas da Espressif (`libnet80211`, `libpp`): o comunicado da Espressif
+FragAttacks (2021) are flaws in the way Wi-Fi assembles fragmented and aggregated packets. On the ESP8266 they
+live in Espressif's closed libraries (`libnet80211`, `libpp`): Espressif's advisory
 ([AR2023-008](https://www.espressif.com/sites/default/files/advisory_downloads/AR2023-008%20Security%20Advisory%20for%20WLAN%20FragAttacks%20EN.pdf),
-V1.1 de 10/05/2024) traz correção para o ESP8266 RTOS SDK, mas não para o NONOS SDK que o núcleo Arduino
-usa. Por isso o firmware não corrige a falha em si; ele limita o que um pacote injetado consegue fazer
-(veja "O que o firmware já faz" no fim).
+V1.1 of 10/05/2024) has a fix for the ESP8266 RTOS SDK, but not for the NONOS SDK the Arduino core
+uses. So the firmware can't fix the flaw itself; it limits what an injected packet can do
+(see "What the firmware already does" at the end).
 
-Este roteiro usa a ferramenta pública do pesquisador que descobriu as falhas,
-[vanhoefm/fragattacks](https://github.com/vanhoefm/fragattacks), para medir quais delas este relógio tem.
-**Use só em aparelhos e redes seus.**
+This walkthrough uses the public tool from the researcher who found the flaws,
+[vanhoefm/fragattacks](https://github.com/vanhoefm/fragattacks), to measure which ones this clock has.
+**Only use it on your own devices and networks.**
 
-## O que precisa
+## What you need
 
-- Um PC com **Ubuntu 20.04** (kernel até 5.12; o autor testou com 5.8). Pode ser um pendrive "live".
-- Uma placa Wi-Fi USB compatível. A recomendada pelo autor é a **Alfa AWUS036ACM**. Outras testadas:
-  Intel Wireless-AC 8265/3160, Netgear WN111v2, TP-Link TL-WN722N **v1.x**, Alfa AWUS036NHA. A Intel AX200
-  **não** funciona. Com duas placas dá para usar o modo "injeção", mais confiável.
-- O relógio perto do PC.
+- A PC with **Ubuntu 20.04** (kernel up to 5.12; the author tested with 5.8). A "live" USB stick works.
+- A compatible USB Wi-Fi card. The author recommends the **Alfa AWUS036ACM**. Others tested:
+  Intel Wireless-AC 8265/3160, Netgear WN111v2, TP-Link TL-WN722N **v1.x**, Alfa AWUS036NHA. The Intel AX200
+  does **not** work. With two cards you can use "injection" mode, which is more reliable.
+- The clock near the PC.
 
-## 1. Instalar a ferramenta (uma vez)
+## 1. Install the tool (once)
 
 ```bash
 sudo apt-get update
@@ -30,7 +30,7 @@ cd fragattacks/research
 ./pysetup.sh
 ```
 
-Drivers com as correções da ferramenta (depois, reinicie o PC):
+Drivers with the tool's patches (restart the PC afterwards):
 
 ```bash
 sudo apt-get install bison flex linux-headers-$(uname -r)
@@ -41,60 +41,60 @@ make -j 4
 sudo make install
 ```
 
-Placas com `ath9k_htc` (TP-Link TL-WN722N v1, Alfa AWUS036NHA) também precisam do firmware:
+Cards with `ath9k_htc` (TP-Link TL-WN722N v1, Alfa AWUS036NHA) also need the firmware:
 `cd research/ath9k-firmware/ && ./install.sh`.
 
-## 2. Antes de cada sessão
+## 2. Before each session
 
-1. Desligue o Wi-Fi do Ubuntu no gerenciador de rede (a ferramenta precisa da placa só para ela).
-2. Abra um terminal:
+1. Turn off Ubuntu's Wi-Fi in the network manager (the tool needs the card to itself).
+2. Open a terminal:
    ```bash
    cd fragattacks/research
    sudo su
    source venv/bin/activate
    ./droptraffic.sh
    ```
-3. Descubra o nome da placa com `iw dev` (abaixo, `wlan0`; a segunda placa, se houver, `wlan1`).
+3. Find the card's name with `iw dev` (below, `wlan0`; the second card, if any, `wlan1`).
 
-## 3. Ligar o relógio na rede de teste
+## 3. Put the clock on the test network
 
-A ferramenta cria uma rede **`testnetwork`**, senha **`abcdefgh`**, com DHCP. O relógio precisa se
-conectar a ela:
+The tool creates a network called **`testnetwork`**, password **`abcdefgh`**, with DHCP. The clock has to
+join it:
 
-1. Faça **backup** no painel (Ajustes → Sistema → Fazer backup).
-2. No painel, **Resetar Wi-Fi**. O relógio abre a rede `SmallTV-Pomodoro` (a senha aparece na tela).
-3. Rode o primeiro teste abaixo (a rede `testnetwork` só existe enquanto a ferramenta roda) e, com ela no
-   ar, conecte o celular à `SmallTV-Pomodoro`, escolha `testnetwork` e digite `abcdefgh`.
-4. No fim, faça o mesmo com a rede de casa.
+1. Make a **backup** in the panel (Settings → System → Make backup).
+2. In the panel, **Reset Wi-Fi**. The clock opens the `WeatherClock-Setup` network (the password shows on screen).
+3. Run the first test below (`testnetwork` only exists while the tool runs) and, while it's up,
+   connect a phone to `WeatherClock-Setup`, choose `testnetwork` and type `abcdefgh`.
+4. At the end, do the same with your home network.
 
-O relógio responde a ping, que é o que a ferramenta usa para saber se um pacote forjado foi aceito.
+The clock answers ping, which is what the tool uses to tell whether a forged packet was accepted.
 
-## 4. Conferir o equipamento (obrigatório antes de confiar nos resultados)
+## 4. Check the equipment (required before trusting the results)
 
 ```bash
 ./fragattack.py wlan0 --ap ping
 ./fragattack.py wlan0 --ap ping I,E,E
 ```
 
-- `ping` falhou: o relógio não está conectado ou a placa não serve. Não siga.
-- `ping I,E,E` falhou: repita os testes todos com `--icmp-size 100` no fim.
+- `ping` failed: the clock isn't connected or the card isn't suitable. Stop here.
+- `ping I,E,E` failed: repeat all the tests with `--icmp-size 100` at the end.
 
-Teste de injeção da placa: `./fragattack.py wlan0 ping --inject-test wlan1 --ap` (com uma segunda placa)
-ou, no modo injeção, `./test-injection.py wlan0 wlan1`.
+Card injection test: `./fragattack.py wlan0 ping --inject-test wlan1 --ap` (with a second card)
+or, in injection mode, `./test-injection.py wlan0 wlan1`.
 
-## 5. Testes
+## 5. Tests
 
-Rode cada linha (troque `ping` pelo comando da tabela):
+Run each line (replace `COMMAND` with the one from the table):
 
 ```bash
-./fragattack.py wlan0 --ap COMANDO
+./fragattack.py wlan0 --ap COMMAND
 ```
 
-Com duas placas: `./fragattack.py wlan0 --inject wlan1 --ap COMANDO`.
+With two cards: `./fragattack.py wlan0 --inject wlan1 --ap COMMAND`.
 
-| Comando | Falha | Resultado |
+| Command | Flaw | Result |
 |---|---|---|
-| `ping I,E --amsdu` | (só mostra se aceita A-MSDU) | |
+| `ping I,E --amsdu` | (only shows whether A-MSDU is accepted) | |
 | `amsdu-inject` | CVE-2020-24588 | |
 | `amsdu-inject-bad` | CVE-2020-24588 | |
 | `ping I,F,BE,AE` | CVE-2020-24587 | |
@@ -107,27 +107,25 @@ Com duas placas: `./fragattack.py wlan0 --inject wlan1 --ap COMANDO`.
 | `ping I,P,P` | CVE-2020-26143 | |
 | `eapol-amsdu I,P` | CVE-2020-26144 | |
 | `eapol-amsdu-bad I,P` | CVE-2020-26144 | |
-| `ping I,D,P --bcast-ra` | CVE-2020-26145 (conferência manual) | |
+| `ping I,D,P --bcast-ra` | CVE-2020-26145 (manual check) | |
 
-Como ler:
+How to read it:
 
-- `TEST COMPLETED SUCCESSFULLY` → **vulnerável** a essa falha.
-- `Test timed out! Retry to be sure, or manually check result` → não aceitou; repita uma vez para confirmar.
-- Os testes com `--bcast-ra` não dão resposta automática: precisariam de uma captura no próprio aparelho,
-  que o relógio não tem. Pule ou anote como "não medido".
+- `TEST COMPLETED SUCCESSFULLY` → **vulnerable** to that flaw.
+- `Test timed out! Retry to be sure, or manually check result` → not accepted; repeat once to confirm.
+- The `--bcast-ra` tests give no automatic answer: they would need a capture on the device itself,
+  which the clock can't do. Skip them or note "not measured".
 
-Mande a tabela preenchida: com ela dá para saber quais ataques valem para este relógio.
+## What the firmware already does against an injected packet
 
-## O que o firmware já faz contra um pacote injetado
-
-| Um pacote injetado tentaria | Defesa |
+| An injected packet would try to | Defence |
 |---|---|
-| Mudar a hora (o SNTP aceita qualquer resposta) e apagar o histórico | 1.19.1: a hora só vale para o histórico quando bate com a do Open-Meteo, que chega por TCP; salto não confirmado é desfeito; data no passado nunca apaga |
-| Mandar comandos ao painel | Senha do painel (ligue em Ajustes → Sistema) |
-| Gravar outro firmware | Senha do painel; firmware assinado está planejado |
-| Travar o relógio com senhas erradas | 1.19.1: espera de 1 s por IP, sem congelar a tela |
-| Usar o relógio para multiplicar tráfego (SSDP) | 1.19.1: no máximo 4 respostas por segundo |
-| Falsear clima ou aviso de chuva | Valores limitados: mostra errado, mas não trava |
+| Change the time (SNTP accepts any reply) and wipe the history | the time only counts once it matches Open-Meteo's, which arrives over TCP; an unconfirmed jump is undone; a date in the past never erases anything |
+| Send commands to the panel | the panel password (turn it on in Settings → System) |
+| Write another firmware | the panel password, and updates must be signed (see SIGNATURES.md) |
+| Lock the clock up with wrong passwords | a 1 s wait per IP, without freezing the screen |
+| Use the clock to multiply traffic (SSDP) | at most 4 answers per second |
+| Fake the weather or a rain warning | values are bounded: it shows the wrong thing, but doesn't crash |
 
-Na rede: atualize o firmware do roteador (várias variantes dependem de o roteador também ser vulnerável) e
-deixe o relógio numa rede de convidados ou de IoT, isolada dos computadores.
+On the network side: update the router's firmware (several variants depend on the router also being vulnerable) and
+keep the clock on a guest or IoT network, isolated from your computers.

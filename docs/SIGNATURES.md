@@ -1,39 +1,39 @@
-# Atualizações assinadas (1.20.1)
+# Signed updates (since 1.20.1)
 
-Pela rede, o relógio só troca de firmware quando o arquivo enviado vem com uma assinatura válida da chave do projeto. Sem isso, qualquer pessoa ou página na mesma rede que passasse pela senha do painel (ou num relógio sem senha) poderia instalar um firmware qualquer.
+Over the network, the clock only switches firmware when the uploaded file comes with a valid signature from the project key. Without that, anyone or any web page on the same network that got past the panel password (or reached a clock with no password) could install any firmware.
 
-## Como funciona
+## How it works
 
-- **Algoritmo:** RSA-2048, PKCS#1 v1.5, sobre o SHA-256 do arquivo **exatamente como enviado** (`.bin` ou `.bin.gz`).
-- **A assinatura nunca vai dentro do firmware.** Ela é um arquivo à parte (`<arquivo>.sig`, 256 bytes) e chega ao relógio em base64 no cabeçalho HTTP `X-Firmware-Sig`. O painel lê a assinatura em `latest.json`/`beta.json` (`sig` e `gzsig`). Na página `/update`, você escolhe o `.sig` junto com o firmware.
-- **Ordem no relógio:**
-  1. Durante o envio, cada bloco entra no SHA-256 e na área de atualização.
-  2. No fim, a assinatura é conferida **antes** de `Update.end(true)`.
-  3. Sem assinatura válida, nada é agendado: o comando do eboot não é gravado e o firmware atual continua.
-- **No firmware:** só a conta `br_rsa_i15_pkcs1_vrfy` do BearSSL, com a chave em bytes (`ota_key.h`). Isso custa ~6,5 KB, contra ~37 KB das classes `PublicKey`/`SigningVerifier` do núcleo. A conta roda na pilha extra do núcleo (6,2 KB, alocada só na conferência). Com pouca memória contígua, o relógio recusa a atualização em vez de travar.
-- **Modo de recuperação** (físico: ligar e desligar 3 vezes, rede própria com a senha na tela): aceita firmware sem assinatura. É o caminho para voltar ao firmware original da GeekMagic, ou para continuar atualizando se a chave privada se perder.
+- **Algorithm:** RSA-2048, PKCS#1 v1.5, over the SHA-256 of the file **exactly as uploaded** (`.bin` or `.bin.gz`).
+- **The signature never goes inside the firmware.** It is a separate file (`<file>.sig`, 256 bytes) and reaches the clock in base64 in the `X-Firmware-Sig` HTTP header. The panel reads the signature from `latest.json`/`beta.json` (`sig` and `gzsig`). On the `/update` page, you pick the `.sig` together with the firmware.
+- **Order on the clock:**
+  1. During the upload, each block goes into the SHA-256 and into the update area.
+  2. At the end, the signature is checked **before** `Update.end(true)`.
+  3. Without a valid signature nothing is scheduled: the eboot command is not written and the current firmware carries on.
+- **In the firmware:** only BearSSL's `br_rsa_i15_pkcs1_vrfy` maths, with the key as bytes (`ota_key.h`). That costs ~6.5 KB, against ~37 KB for the core's `PublicKey`/`SigningVerifier` classes. The maths runs on the core's extra stack (6.2 KB). Weather Clock reserves that stack as soon as an upload starts, while memory is still in one piece, so the check doesn't fail for lack of memory at the end. If memory is still too short, the clock refuses the update instead of crashing.
+- **Recovery mode** (physical: power the clock on and off 3 times; it opens its own network with the password on screen) accepts unsigned firmware. That is the way back to the original GeekMagic firmware, or to keep updating if the private key is lost.
 
-## Por que não do jeito da 1.20.0
+## Why not the 1.20.0 way
 
-Na 1.20.0, a assinatura ia **colada no fim do `.bin.gz`**, no formato do `Updater` do núcleo (`installSignature`).
+In 1.20.0 the signature was **appended to the end of the `.bin.gz`**, in the format of the core's `Updater` (`installSignature`).
 
-- O gerenciador de boot (eboot) usa os **4 últimos bytes** do arquivo guardado como tamanho da imagem descompactada. Com a assinatura no fim, ele leu um tamanho errado e apagou o próprio gerenciador de boot, e o relógio deixou de ligar. Precisou de um cabo USB-serial para recuperar.
-- A 1.19.9 recusa qualquer `.bin.gz` com dados depois do gzip. A partir da 1.20.1, `sim/security_test.cjs` falha se `installSignature` aparecer no código.
-- `scripts/publicar.sh` também confere que o `.gz` termina com o tamanho do `.bin`.
+- The boot loader (eboot) uses the **last 4 bytes** of the stored file as the size of the decompressed image. With the signature at the end, it read the wrong size, erased its own boot loader, and the clock stopped booting. It took a USB-serial cable to recover.
+- 1.19.9 refuses any `.bin.gz` with data after the gzip. From 1.20.1, `sim/security_test.cjs` fails if `installSignature` appears in the code.
+- `scripts/check-gz.cjs` checks that the `.gz` ends with the size of the `.bin`.
 
-## Chaves
+## Keys
 
-- Chave privada: `~/.weatherclock/ota-private.pem` (ou `SMALLTV_SIGNING_KEY`).
-  - Nunca vai para o git, o site, a CI ou o relógio; o `.gitignore` recusa `*private*.pem` e `*.key`.
-  - **Guarde uma cópia fora do computador.** Sem ela, os relógios só aceitam novas versões pelo modo de recuperação.
-- Chave pública: `weatherclock/ota-public.pem`. O `ota_key.h` é gerado a partir dela com `node scripts/sign.cjs header`. Os testes e o `publicar.sh` conferem que o binário traz essa chave.
-- Comandos:
-  - `node scripts/sign.cjs sign <arquivos>` cria os `.sig`;
-  - `node scripts/sign.cjs verify <arquivos>` confere os `.sig`.
-- Id da chave atual: `cfe9e53642f6521e`.
+- Private key: `signing/ota-private.pem` next to the repository (or `~/.weatherclock/ota-private.pem`, or `SMALLTV_SIGNING_KEY`).
+  - It never goes to git, the website, CI or the clock; `.gitignore` refuses `*private*.pem` and `*.key`.
+  - **Keep a copy off the computer.** Without it, clocks only accept new versions through recovery mode.
+- Public key: `weatherclock/ota-public.pem`. `ota_key.h` is generated from it with `node scripts/sign.cjs header`.
+- Commands:
+  - `node scripts/sign.cjs sign <files>` creates the `.sig` files;
+  - `node scripts/sign.cjs verify <files>` checks the `.sig` files.
+  - `tools/release.sh` (kept outside this repository) signs with `openssl dgst -sha256 -sign` and publishes.
+- Current key id: `e103e5ccbc2b2a16` (Weather Clock's own key; the original project used a different one).
 
-## Transição
+## Moving from another firmware
 
-- Quem está na 1.19.9 ou anterior atualiza para a 1.20.1 normalmente: essas versões ignoram o cabeçalho.
-- A partir da 1.20.1, o painel sempre manda a assinatura.
-- Um firmware de outra origem, inclusive o original, só entra pelo modo de recuperação.
+- A clock running the original SmallTV Pomodoro, or any other firmware, can only install Weather Clock through recovery mode, because its key is different.
+- From then on, the panel always sends the signature and updates install normally.

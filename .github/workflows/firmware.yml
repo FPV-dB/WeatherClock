@@ -28,6 +28,12 @@ jobs:
         with:
           node-version: "24.18.0"
 
+      - name: JavaScript syntax (scripts and the web panel)
+        run: |
+          for f in $(git ls-files '*.js' '*.cjs'); do node --check "$f"; done
+          python3 -c "import re;s=open('web/index.html',encoding='utf-8').read();open('/tmp/panel.js','w').write('\n'.join(re.findall(r'<script>([\s\S]*?)</script>',s)))"
+          node --check /tmp/panel.js
+
       - name: 32-bit g++ (simulator and tests)
         run: sudo apt-get update -q && sudo apt-get install -y -q g++-multilib
 

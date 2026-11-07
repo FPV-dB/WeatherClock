@@ -22,7 +22,7 @@ Build: see "Building" below (`arduino-cli compile --fqbn "esp8266:esp8266:generi
 
 Alternative firmware for the **GeekMagic SmallTV Ultra** (ESP8266, 240×240 ST7789 screen): a clock with 11 faces, a Pomodoro timer, weather, a photo/GIF album and a pixel art tomato mascot that grows a plant as you keep your focus streak.
 
-🌐 **Project website:** [davicorrea0.github.io/smalltv-pomodoro](https://davicorrea0.github.io/weatherclock/): what changes on the clock, how to install it, and the [face gallery](https://davicorrea0.github.io/weatherclock/galeria.html).
+🌐 **Project website:** [davicorrea0.github.io/smalltv-pomodoro](https://davicorrea0.github.io/smalltv-pomodoro/): what changes on the clock, how to install it, and the [face gallery](https://davicorrea0.github.io/smalltv-pomodoro/galeria.html).
 
 ![The 11 built-in clock faces](docs/clock-faces.png)
 

@@ -1,5 +1,3 @@
-> 🇧🇷 **Resumo em português:** se o relógio não liga nem entra no modo de recuperação (tela apagada, sem Wi-Fi), dá para regravar o firmware pelo USB-TTL com o `esptool`, sem apagar fotos nem configurações (relógios já no layout 4M2M; veja a observação abaixo): ligue GND, TXD0→RX, RXD0→TX e GPIO0→GND (só na hora de ligar), faça uma cópia com `read_flash 0x0 0x400000` e grave com `write_flash 0x0 weatherclock-vX.Y.Z.bin`. `erase_flash` só em último caso (apaga tudo). Sem adaptador USB-TTL há alternativas (placa NodeMCU/ESP32, Raspberry Pi, Arduino Uno) na seção 6. Detalhes abaixo, em inglês.
-
 # Recovering a bricked SmallTV Ultra over USB-TTL
 
 Use this when the clock shows nothing, never joins Wi-Fi and the [3-power-cycle recovery mode](../README.md#if-something-goes-wrong) does not open: the bootloader or the program area is damaged, so only a serial flash can bring it back.
@@ -14,7 +12,7 @@ Reflashing with `write_flash 0x0 <firmware>.bin` rewrites only the program area 
 
 - A **3.3 V** USB-TTL adapter (CP2102, CH340, FT232...). Never 5 V on the ESP8266 pins.
 - Three or four jumper wires; a soldering iron helps (or spring probes / pin headers pressed against the pads).
-- `esptool` (`pip install esptool`; the Arduino ESP8266 core also ships it) and a firmware `.bin` from the [releases](https://github.com/davicorrea0/weatherclock/releases). Use the plain `.bin`, not the `.bin.gz`.
+- `esptool` (`pip install esptool`; the Arduino ESP8266 core also ships it) and a firmware `.bin` from the [releases](https://github.com/FPV-dB/WeatherClock/releases). Use the plain `.bin`, not the `.bin.gz`.
 
 ## 2. Wiring
 

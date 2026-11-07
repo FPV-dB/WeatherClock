@@ -1,58 +1,45 @@
-# Migração do layout da flash: 4M3M → 4M2M
+# Flash layout migration: 4M3M → 4M2M
 
-Até a 1.23.x o firmware usava `eesz=4M3M`; agora usa `eesz=4M2M`. Este documento explica o que muda, os limites e o procedimento de publicação.
+Up to 1.23.x the original firmware used `eesz=4M3M`; it now uses `eesz=4M2M`. Weather Clock has always been 4M2M, so this matters only for clocks coming from an old SmallTV Pomodoro version. This page explains what changed and the limits involved.
 
-## Mapa da flash (4 MB)
+## Flash map (4 MB)
 
-| Faixa | Antes (4M3M) | Depois (4M2M) |
+| Range | Before (4M3M) | After (4M2M) |
 |---|---|---|
-| `0x000000` | bootloader + programa (até ~1019 KB pelo linker) | igual |
-| área livre p/ a atualização | de `fim do programa` até `0x100000` (≈ 1 MB − programa) | de `fim do programa` até `0x200000` (≈ 2 MB − programa) |
-| LittleFS | `0x100000`–`0x3FA000` (3 MB, blocos de 8 KB) | `0x200000`–`0x3FA000` (2 MB, blocos de 8 KB) |
-| EEPROM (ajustes) | `0x3FB000` | `0x3FB000` (igual) |
-| RF cal | `0x3FC000` | `0x3FC000` (igual) |
-| Wi-Fi / SDK | `0x3FD000`–`0x3FFFFF` | igual |
+| `0x000000` | boot loader + program (up to ~1019 KB, set by the linker) | same |
+| free area for updates | from the end of the program to `0x100000` (≈ 1 MB − program) | from the end of the program to `0x200000` (≈ 2 MB − program) |
+| LittleFS | `0x100000`–`0x3FA000` (3 MB, 8 KB blocks) | `0x200000`–`0x3FA000` (2 MB, 8 KB blocks) |
+| EEPROM (settings) | `0x3FB000` | `0x3FB000` (same) |
+| RF cal | `0x3FC000` | `0x3FC000` (same) |
+| Wi-Fi / SDK | `0x3FD000`–`0x3FFFFF` | same |
 
-Conferido no core 3.1.2 (`boards.txt` e `tools/sdk/ld/eagle.flash.4m2m.ld` / `4m3m.ld`): `_EEPROM_start = 0x405fb000`, `rfcal_addr=0x3FC000`, `_FS_end = 0x405FA000`, bloco `0x2000` e página `0x100` nos dois; só `_FS_start` muda (`0x40300000` → `0x40400000`) e a janela do programa (`irom0_0_seg`, 0xfeff0 bytes ≈ 1019 KB) é a mesma. Confirmado também no ELF compilado (`nm`). Portanto **os ajustes, a senha, o Wi-Fi salvo e o contador de reinícios sobrevivem**; o que muda de lugar é só o LittleFS.
+Checked against core 3.1.2 (`boards.txt` and `tools/sdk/ld/eagle.flash.4m2m.ld` / `4m3m.ld`): `_EEPROM_start = 0x405fb000`, `rfcal_addr=0x3FC000`, `_FS_end = 0x405FA000`, block `0x2000` and page `0x100` in both; only `_FS_start` moves (`0x40300000` → `0x40400000`), and the program window (`irom0_0_seg`, 0xfeff0 bytes ≈ 1019 KB) is the same. Also confirmed in the compiled ELF (`nm`). So **settings, password, saved Wi-Fi and the restart counter survive**; only LittleFS moves.
 
-Novo limite do firmware: **~1019 KB** (1.044.464 bytes, o teto de execução do ESP8266). Antes, o limite prático era ~600 KB (firmware + `.gz` cabendo em 1 MB).
+New firmware limit: **~1019 KB** (1,044,464 bytes, the ESP8266's execution ceiling). Before, the practical limit was ~600 KB (firmware + `.gz` fitting in 1 MB).
 
-## Limite da transição (importante)
+## The transition limit
 
-A primeira versão 4M2M chega aos relógios por atualização pela rede feita pelo firmware **antigo** (4M3M), que só enxerga 1 MB: o `.gz` é gravado no fim desse 1 MB e o firmware descompactado precisa terminar antes dele. Por isso **a primeira versão 4M2M tem de continuar cabendo no layout antigo**: `firmware (arredondado a 4 KB) + .gz (arredondado, +512 bytes do envio) ≤ 1 MB`. Hoje: 551.920 bytes + .gz 407.844 bytes, folga de ~48 KB de firmware.
+The first 4M2M version reaches clocks as a network update done by the **old** (4M3M) firmware, which only sees 1 MB: the `.gz` is written at the end of that 1 MB and the decompressed firmware must end before it. So **the first 4M2M version has to fit the old layout**: `firmware (rounded to 4 KB) + .gz (rounded, +512 bytes of upload overhead) ≤ 1 MB`.
 
-Salvaguarda: o `build.sh` (e portanto o `scripts/publicar.sh`, que o chama) **recusa** o build que passe desse limite enquanto `RELOGIOS_4M3M=1` (o padrão). Só se muda isso de propósito, com `RELOGIOS_4M3M=0 sh build.sh`, quando nenhum relógio estiver mais no layout antigo (ou aceitando que quem ficou para trás atualize pelo modo de recuperação). Um relógio no layout antigo que receba uma versão maior que o limite recusa a troca ("firmware grande demais para descompactar") e continua com o firmware atual, sem risco.
+Safeguard: `build.sh` **refuses** a build over that limit while `CLOCKS_4M3M=1` (the default). Change it on purpose, with `CLOCKS_4M3M=0 sh build.sh`, once no clock is left on the old layout. A clock on the old layout that receives a version over the limit refuses the swap ("firmware too large to decompress") and keeps its current firmware, with no risk.
 
-## O que acontece no relógio
+## What happens on the clock
 
-- **Primeiro início em 4M2M** (`fsMount` em `main.cpp`): sem a marca `FS2A` na EEPROM (offset 433), o que existe em `0x200000` é um pedaço do sistema de arquivos antigo (ou do firmware original). O firmware formata uma vez, recria `/image`, `/gif` e `/faces`, grava a marca e liga o aviso "reorganizado" (`fs.mig` em `/api/state`). Nos demais inícios o LittleFS é montado **sem formatar**; se a marca existe e a montagem falha, não formata (o painel mostra o botão *Formatar memória de arquivos*).
-- O formato só vale no layout 4M2M (detectado pelo símbolo `_FS_start` do linker): a mesma fonte compilada em 4M3M nunca formata.
-- *Apagar tudo* (`/rec/wipe`) regrava a marca depois de zerar a EEPROM, para o próximo início não formatar de novo nem oferecer um backup que não existe.
-- Se perde: fotos e GIFs, mostradores baixados e o painel em `/www` (o carregador baixa de novo sozinho). Ficam: ajustes, senhas, Wi-Fi e rede (EEPROM) e, copiados do LittleFS antigo antes de formatar, o histórico (`/stats.bin`), o rodízio (`/rotation.txt`) e os avisos de fim de fase (`/hooks.txt`). No primeiro início o LittleFS antigo (0x100000-0x3FA000) ainda está intacto: a atualização pela rede só grava abaixo de 0x100000.
+- **First boot on 4M2M** (`fsMount` in `main.cpp`): without the `FS2A` mark in EEPROM (offset 433), whatever sits at `0x200000` is a piece of the old file system (or of the original firmware). The firmware formats once, recreates `/image`, `/gif` and `/faces`, writes the mark and raises the "reorganised" notice (`fs.mig` in `/api/state`). On later boots LittleFS is mounted **without formatting**; if the mark exists and mounting fails, it does not format (the panel shows a *Format storage* button).
+- Formatting only happens on the 4M2M layout (detected through the linker's `_FS_start` symbol): the same source built as 4M3M never formats.
+- *Erase everything* (`/rec/wipe`) rewrites the mark after clearing EEPROM, so the next boot doesn't format again or offer a backup that doesn't exist.
+- Lost: photos and GIFs, downloaded faces and the panel in `/www` (the loader downloads it again by itself). Kept: settings, passwords, Wi-Fi and network (EEPROM) and, copied from the old LittleFS before formatting, the history (`/stats.bin`), the rotation (`/rotation.txt`) and the end-of-phase notices (`/hooks.txt`). On the first boot the old LittleFS (0x100000-0x3FA000) is still intact: a network update only writes below 0x100000.
 
-## Fotos, GIFs e backup no painel
+## Photos, GIFs and the panel backup
 
-O painel, quando a versão oferecida traz `"layout":"4m2m"` no `latest.json`/`beta.json` e o relógio ainda não informa `fs.l2` (layout antigo), antes de atualizar:
+When the offered version has `"layout":"4m2m"` in `latest.json`/`beta.json` and the clock doesn't report `fs.l2` yet (old layout), the panel, before updating:
 
-1. avisa o que será apagado e pede confirmação;
-2. gera e baixa **um único** `smalltv-backup-AAAA-MM-DD.json` com ajustes, histórico, lista de mostradores, links dos avisos **e as fotos e GIFs** (base64, lidos de `/fs?f=...`);
-3. só se o backup deu certo e a pessoa confirma que o arquivo foi salvo é que baixa e instala o firmware.
+1. says what will be erased and asks for confirmation;
+2. creates and downloads **one** backup `.json` with settings, history, the list of faces, notice links **and the photos and GIFs** (base64, read from `/fs?f=...`);
+3. only downloads and installs the firmware if the backup worked and the user confirms the file was saved.
 
-Depois da atualização o painel mostra o cartão "A memória de arquivos foi reorganizada"; **Restaurar backup** reenvia ajustes, histórico, avisos, mostradores (da galeria) e as fotos/GIFs (por `/api/upload`; o que não couber nos 2 MB é contado e avisado) e dispensa o cartão (`/api/migdone`). É o mesmo botão de backup que já existia: um arquivo só, sem ZIP nem passos extras.
+After the update the panel shows a "file storage was reorganised" card; **Restore backup** sends back settings, history, notices, faces (from the gallery) and photos/GIFs (through `/api/upload`; anything that doesn't fit in 2 MB is counted and reported) and dismisses the card (`/api/migdone`).
 
-**Limite da arquitetura:** o painel é o que o firmware instalado guarda (`/www/<hash>.gz`); um relógio na 1.23.1 ou anterior tem o painel antigo, que **não** sabe fazer esse backup completo. Duas saídas:
+## Going back from 4M2M
 
-- *Recomendada:* publicar antes uma versão de transição **no layout 4M3M** que só leve este painel (`LAYOUT=4M3M sh build.sh`, sem `layout` no JSON), deixar os relógios atualizarem e só então publicar a 4M2M. Não é uma "ponte" de layout: é uma versão comum, e a 4M2M continua chegando direto.
-- Sem ela: as notas da versão (`notas/<versão>.json`, mostradas no cartão de atualização do painel antigo) devem dizer, nos três idiomas, para fazer antes o backup (que no painel antigo cobre ajustes, histórico e mostradores) e salvar à mão as fotos e GIFs, e que serão apagados.
-
-## Primeira instalação a partir do firmware original
-
-Continua igual: pela página do firmware original (*Firmware Upgrade*) envia-se o `.bin` (ou o `.bin.gz`, conforme o tamanho). A imagem cabe no espaço do original (mesma regra da transição acima). No primeiro início o LittleFS é formatado: **as fotos e GIFs do original não são mantidos**; salve-os antes pelo gerenciador de arquivos do original, se quiser, e reenvie pelo painel. O Wi-Fi salvo continua valendo (fica na área do SDK, que não muda).
-
-## Voltar de 4M2M
-
-Voltar para uma versão 4M3M (ou para o firmware original) mistura os endereços: o 4M3M espera o LittleFS em `0x100000` e pode escrever por cima do que o 4M2M guarda a partir de `0x200000`. Os ajustes sobrevivem; faça o backup antes e restaure depois (veja também RECOVERY.md).
-
-## Publicação
-
-`scripts/publicar.sh` usa o layout padrão (4M2M) e grava `"layout":"4m2m"` no JSON do site; com `LAYOUT=4M3M` não grava. O ensaio (sem `--publicar`) passa pelo mesmo `build.sh`, então recusa o firmware que não caiba na janela de transição.
+Going back to a 4M3M version (or to the original firmware) mixes up the addresses: 4M3M expects LittleFS at `0x100000` and may write over what 4M2M keeps from `0x200000`. Settings survive; make a backup first and restore it afterwards (see also RECOVERY.md).
