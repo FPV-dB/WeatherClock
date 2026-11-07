@@ -25,7 +25,7 @@ function conferir(bin, gz) {
   if (depois !== 0) erros.push(`${depois} byte(s) after the end of the gzip (signature or garbage): the eboot would read the wrong size`);
   else {
     const t = gz.length - 8;
-    if (gz.readUInt32LE(t + 4) !== bin.length % 2 ** 32) erros.push('the size in the gzip trailer doesn't match the .bin');
+    if (gz.readUInt32LE(t + 4) !== bin.length % 2 ** 32) erros.push('the size in the gzip trailer does not match the .bin');
     if (zlib.crc32 && gz.readUInt32LE(t) !== zlib.crc32(bin)) erros.push("the gzip trailer's CRC32 doesn't match the .bin");
   }
   return erros;

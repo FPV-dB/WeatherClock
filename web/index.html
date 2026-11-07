@@ -539,7 +539,7 @@ function skipUpdate(){try{localStorage.updSkip=UPD.version}catch(e){}$('upd').cl
 // u.layout "4m2m": the version reorganises file storage (the program gains space, LittleFS moves and is formatted on first boot).
 // Clocks that don't report fs.l2 yet are on the old layout: save the full backup FIRST and only then update.
 async function doUpdate(){const u=UPD;if(!u||updating)return;const mig=u.layout=='4m2m'&&!(st&&st.fs&&st.fs.l2);
- if(!confirm(mig?t('Version {0} reorganizes the clock's file storage: photos, GIFs and downloaded faces will be erased (settings, Wi-Fi, history, rotation and notifications stay). Before updating, the panel saves a full backup on your device; afterwards, use Restore backup. Continue?',u.version):t('Update the clock to version {0}? It restarts by itself at the end.',u.version)))return;
+ if(!confirm(mig?t('Version {0} reorganizes the clock\'s file storage: photos, GIFs and downloaded faces will be erased (settings, Wi-Fi, history, rotation and notifications stay). Before updating, the panel saves a full backup on your device; afterwards, use Restore backup. Continue?',u.version):t('Update the clock to version {0}? It restarts by itself at the end.',u.version)))return;
  if(mig){$('updgo').disabled=true;const ok=await backup();$('updgo').disabled=false;if(!ok||!confirm(t('Was the backup saved? Check the smalltv-backup-*.json file in your downloads. Update now?')))return}
  const gz=!!u.gz,sig=gz?u.gzsig:u.sig,h={};  // with a password, the browser already sends the panel login
  if(sig)h['X-Firmware-Sig']=sig;  // 1.20.1+: without the file's signature the clock refuses the swap
