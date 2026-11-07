@@ -482,7 +482,7 @@ int main() {
     Frame *f = new Frame();
     uiBegin(f);
     UiState w = base(14, 37, 24);
-    w.theme = THEME_WIND;
+    w.theme = getenv("SIM_ANIM_THEME") ? atoi(getenv("SIM_ANIM_THEME")) : THEME_WIND;
     w.wx.gust = 46;  // rajadas bem acima da média: a seta balança
     for (int i = 0, n = atoi(nf); i < n; i++) {
       w.ms = 1000 + i * 120;

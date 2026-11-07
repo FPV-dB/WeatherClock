@@ -31,7 +31,7 @@ static void paintDays(void *c) {
     if (i) G->drawFastHLine(10, y - 1, 220, CARD);
     const char *name = i ? WD[(s.now.tm_wday + i) % 7] : tr("HOJE", "TODAY", "HOY");
     text(10, cy - 7, 2, i ? TEXT : s.accent, name);
-    weatherIcon(84, cy - 2, 0.42f, d.code, true, BG);
+    weatherIcon(84, cy - 2, 0.42f, d.code, true, BG, s.ms | 1);
     if (d.rain != 255 && d.rain >= 10) {
       char r[6];
       snprintf(r, sizeof r, "%d%%", d.rain);
@@ -62,6 +62,18 @@ static void paintDays(void *c) {
   }
 }
 
+// weatherbox: só a coluna dos ícones é redesenhada (fora da tela) para animar
+static const int ICON_X = 66, ICON_W = 34;
+static void paintIcons(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(ICON_X, ROW_Y - 2, ICON_W, s.wx.nd * ROW_H, BG);
+  for (int i = 0; i < s.wx.nd; i++) {
+    const int y = ROW_Y + i * ROW_H, cy = y + ROW_H / 2 - 1;
+    if (i) G->drawFastHLine(ICON_X, y - 1, ICON_W, CARD);
+    weatherIcon(84, cy - 2, 0.42f, s.wx.d[i].code, true, BG, s.ms | 1);
+  }
+}
+
 void themeForecast(const UiState &s, bool full) {
   char hm[8] = "--:--";
   if (s.timeOk) snprintf(hm, sizeof hm, "%02d:%02d", displayHour(s), s.now.tm_min);
@@ -87,7 +99,14 @@ void themeForecast(const UiState &s, bool full) {
   // dias: só quando o clima muda, o dia vira ou o clima liga/desliga
   char key[24];
   snprintf(key, sizeof key, "%u %d %d %d", (unsigned)s.wx.version, s.weatherOn, s.wx.ok, s.timeOk ? s.now.tm_wday : -1);
-  if (!changed(cA, key) && !full) return;
+  static uint32_t lastAnim = 0;
+  if (!changed(cA, key) && !full) {
+    if (s.weatherOn && s.wx.ok && s.wx.nd && s.ms - lastAnim >= 150) {
+      lastAnim = s.ms;
+      uiPaint(false, ICON_X, ROW_Y - 2, ICON_W, s.wx.nd * ROW_H, paintIcons, (void *)&s);
+    }
+    return;
+  }
   if (!(s.weatherOn && s.wx.ok && s.wx.nd)) {
     G->fillRect(0, ROW_Y - 4, 240, 240 - ROW_Y + 4, BG);
     textC(120, 112, 2, MUTED, s.weatherOn ? tr("Buscando clima", "Fetching weather", "Buscando clima") : tr("Clima desligado", "Weather off", "Clima apagado"));

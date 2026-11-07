@@ -228,9 +228,10 @@ void cloudShape(int cx, int cy, float s, uint16_t c) {
   G->fillCircle(cx + 12 * s, cy + 4 * s, 7 * s, c);
   G->fillRoundRect(cx - 16 * s, cy + 3 * s, 35 * s, 9 * s, 4 * s, c);
 }
+static float sunSpin = 0;  // weatherbox: giro dos raios (radianos) para o ícone animado
 void sunShape(int cx, int cy, float s) {
   for (int i = 0; i < 8; i++) {
-    float a = i * K_PI / 4;
+    float a = i * K_PI / 4 + sunSpin;
     int x0 = cx + cosf(a) * 13 * s, y0 = cy + sinf(a) * 13 * s;
     int x1 = cx + cosf(a) * 18 * s, y1 = cy + sinf(a) * 18 * s;
     for (int k = -1; k <= 1; k++) G->drawLine(x0 + k, y0, x1 + k, y1, SUN);
@@ -241,33 +242,46 @@ void moonShape(int cx, int cy, float s, uint16_t bg) {
   G->fillCircle(cx, cy, 12 * s, uiRgb(244, 236, 200));
   G->fillCircle(cx + 6 * s, cy - 4 * s, 10 * s, bg);
 }
-// Desenha sobre uma área já limpa com "bg".
-void weatherIcon(int cx, int cy, float s, int c, bool day, uint16_t bg) {
+// Desenha sobre uma área já limpa com "bg". Com ms > 0 (weatherbox) o ícone anima: raios girando, nuvem
+// indo e vindo, chuva e neve caindo, neblina deslizando e o raio piscando. Com ms = 0 fica como antes.
+void weatherIcon(int cx, int cy, float s, int c, bool day, uint16_t bg, uint32_t ms) {
   bool rain = (c >= 51 && c <= 67) || (c >= 80 && c <= 82);
   bool snow = (c >= 71 && c <= 77) || c == 85 || c == 86;
   bool storm = c >= 95;
+  const float t = ms / 1000.0f;
+  const float drift = ms ? sinf(t * 1.6f) * 2.5f * s : 0;  // nuvem balança de lado
+  sunSpin = ms ? t * 0.6f : 0;
   if (c == 0) {
     if (day) sunShape(cx, cy, s);
     else moonShape(cx, cy, s, bg);
   } else if (c <= 2) {
     if (day) sunShape(cx - 7 * s, cy - 7 * s, s * 0.75f);
     else moonShape(cx - 7 * s, cy - 7 * s, s * 0.75f, bg);
-    cloudShape(cx + 3 * s, cy + 4 * s, s * 0.8f, CLOUD);
+    cloudShape(cx + 3 * s + drift, cy + 4 * s, s * 0.8f, CLOUD);
   } else if (c == 45 || c == 48) {
-    for (int i = 0; i < 4; i++) G->fillRoundRect(cx - 18 * s, cy - 10 * s + i * 7 * s, 36 * s, 3 * s + 1, 2, CLOUD);
+    for (int i = 0; i < 4; i++) {
+      const float dx = ms ? sinf(t * 1.2f + i * 1.3f) * 3 * s : 0;
+      G->fillRoundRect(cx - 18 * s + dx, cy - 10 * s + i * 7 * s, 36 * s, 3 * s + 1, 2, CLOUD);
+    }
   } else {
-    cloudShape(cx, cy - 4 * s, s, storm || rain ? DCLOUD : CLOUD);
+    // a chuva e a neve caem num ciclo de 10*s px, por baixo da nuvem
+    const float fall = ms ? fmodf(t * 18 * s, 10 * s) : 0;
     if (rain)
       for (int i = -1; i <= 1; i++)
-        for (int k = 0; k < 2; k++)
-          G->drawLine(cx + i * 9 * s + k, cy + 12 * s, cx + i * 9 * s - 4 * s + k, cy + 20 * s, RAIN);
+        for (int k = 0; k < 2; k++) {
+          const float y0 = cy + 8 * s + fmodf(fall + (i + 1) * 3.3f * s, 10 * s);
+          G->drawLine(cx + i * 9 * s + k, y0, cx + i * 9 * s - 4 * s + k, y0 + 8 * s, RAIN);
+        }
     if (snow)
-      for (int i = -1; i <= 1; i++) G->fillCircle(cx + i * 9 * s, cy + 16 * s, 2 * s + 1, TEXT);
-    if (storm) {
+      for (int i = -1; i <= 1; i++)
+        G->fillCircle(cx + i * 9 * s + (ms ? sinf(t * 2 + i) * 2 * s : 0), cy + 12 * s + fmodf(fall + (i + 1) * 3.3f * s, 10 * s), 2 * s + 1, TEXT);
+    cloudShape(cx + drift, cy - 4 * s, s, storm || rain ? DCLOUD : CLOUD);
+    if (storm && (!ms || (ms / 150) % 10 < 3)) {  // pisca em ~30% do tempo
       G->fillTriangle(cx + 2 * s, cy + 6 * s, cx - 6 * s, cy + 16 * s, cx + 1 * s, cy + 15 * s, SUN);
       G->fillTriangle(cx - 1 * s, cy + 13 * s, cx + 6 * s, cy + 13 * s, cx - 4 * s, cy + 24 * s, SUN);
     }
   }
+  sunSpin = 0;
 }
 
 const char *rainSoonText(uint8_t m) {
