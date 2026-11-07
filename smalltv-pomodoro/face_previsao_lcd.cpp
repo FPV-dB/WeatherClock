@@ -36,10 +36,41 @@ static int picFor(int c) {
 }
 
 // pictograma: acesos em LCD_ON e apagados em fantasma, como os ícones fixos de um LCD real
-static void picto(int x, int y, int p) {
+// weatherbox: com phase > 0, segmentos acendem e apagam como num LCD animado de verdade
+static bool pictoOn(int p, int r, int c, uint32_t phase) {
+  if (!phase) return true;
+  switch (p) {
+    case 0: {  // sol: raios retos e diagonais se alternam
+      const bool core = r >= 2 && r <= 6 && c >= 3 && c <= 8;
+      if (core) return true;
+      const bool diag = r == 1 || r == 7;
+      return (phase % 2) ? diag : !diag;
+    }
+    case 1: return r > 2 || c > 3 || phase % 2;            // poucas nuvens: os raios piscam
+    case 3: return r < 6 || r - 6 == (int)(phase % 3);     // chuva: uma fileira de gotas por vez, descendo
+    case 4: return r < 5 || phase % 4 < 2;                 // tempestade: o raio pisca
+    case 5: return r < 6 || (r == 6) == (phase % 2 == 0);  // neve: flocos alternam de altura
+    case 6: return !(r == 3 || r == 7) || phase % 2;       // neblina: faixas curtas piscam
+  }
+  return true;
+}
+
+static void picto(int x, int y, int p, uint32_t phase = 0) {
   for (int r = 0; r < 10; r++)
     for (int c = 0; c < 12; c++)
-      G->fillRect(x + c * 2, y + r * 2, 2, 2, pgm_read_byte(&PIC[p][r][c]) == '#' ? LCD_ON : LCD_GHOST);
+      G->fillRect(x + c * 2, y + r * 2, 2, 2, pgm_read_byte(&PIC[p][r][c]) == '#' && pictoOn(p, r, c, phase) ? LCD_ON : LCD_GHOST);
+}
+
+// weatherbox: só a coluna dos pictogramas, redesenhada para animar
+static const int PIC_X = 62, PIC_W = 24;
+static void paintPictos(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(PIC_X, ROW_Y - 4, PIC_W, 4 * ROW_H + 2, LCD_BG);
+  for (int i = 0; i < 4 && i < s.wx.nd; i++) {
+    const int y = ROW_Y + i * ROW_H, cy = y + ROW_H / 2 - 2;
+    picto(PIC_X, cy - 10, picFor(s.wx.d[i].code), s.ms / 400 + 1);
+    if (i < 3) G->drawFastHLine(PIC_X, y + ROW_H - 2, PIC_W, uiRgb(140, 154, 116));
+  }
 }
 
 // número de 2 dígitos em DSEG7 e grau; negativo leva o "-" na casa da dezena, como num LCD real
@@ -76,7 +107,7 @@ static void paintRows(void *c) {
       G->fillRect(16, cy - 10, 40, 20, LCD_ON);
       textC(36, cy - 7, 2, LCD_BG, name);
     } else textC(36, cy - 7, 2, LCD_ON, name);
-    picto(62, cy - 10, picFor(d.code));
+    picto(62, cy - 10, picFor(d.code), s.ms / 400 + 1);
     dsegTemp(104, cy - 12, 24, d.tmax);
     dsegTemp(152, cy - 6, 14, d.tmin);
     if (d.rain != 255) {
@@ -126,7 +157,14 @@ void themeForecastLcd(const UiState &s, bool full) {
   }
   char key[24];
   snprintf(key, sizeof key, "%u %d %d %d", (unsigned)s.wx.version, s.weatherOn, s.wx.ok, s.timeOk ? s.now.tm_wday : -1);
-  if (!changed(cA, key) && !full) return;
+  static uint32_t lastAnim = 0;
+  if (!changed(cA, key) && !full) {
+    if (s.weatherOn && s.wx.ok && s.wx.nd && s.ms - lastAnim >= 200) {
+      lastAnim = s.ms;
+      uiPaint(false, PIC_X, ROW_Y - 4, PIC_W, 4 * ROW_H + 2, paintPictos, (void *)&s);
+    }
+    return;
+  }
   if (!(s.weatherOn && s.wx.ok && s.wx.nd)) {
     G->fillRect(14, ROW_Y - 4, 212, 4 * ROW_H + 2, LCD_BG);
     textC(120, 120, 2, LCD_ON, s.weatherOn ? tr("BUSCANDO", "FETCHING", "BUSCANDO") : tr("SEM CLIMA", "NO WEATHER", "SIN CLIMA"));

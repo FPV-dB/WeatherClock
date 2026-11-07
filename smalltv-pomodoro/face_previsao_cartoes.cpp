@@ -38,41 +38,61 @@ static void drop(int x, int y, uint16_t c) {
 }
 
 // Tempo em pixel art (pixels de 2x2), centrado em (cx, cy), numa área de ~40 x 36
-static void pixelWeather(int cx, int cy, int c) {
+static void pixelWeather(int cx, int cy, int c, uint32_t ms = 0) {
   const bool rain = (c >= 51 && c <= 67) || (c >= 80 && c <= 82), snow = (c >= 71 && c <= 77) || c == 85 || c == 86;
   const bool storm = c >= 95, fog = c == 45 || c == 48;
   auto px = [](int x, int y, uint16_t col) { G->fillRect(x, y, 2, 2, col); };
+  // weatherbox: com ms > 0 anima em passos de pixel art (2 px): sol sobe e desce, nuvem vai e vem,
+  // gotas e flocos caem, neblina desliza e o raio pisca
+  const int step = ms ? (int)(ms / 250 % 4) : 0;
+  const int bob = ms ? (step == 1 ? -2 : step == 3 ? 2 : 0) : 0;   // ida e volta de 2 px
+  const int fall = ms ? (int)(ms / 180 % 4) * 2 : 0;               // 0, 2, 4, 6 px para baixo
   if (c == 0) {
-    uiSprite(&SPR_SOL, cx - 16, cy - 16, 2);
+    uiSprite(&SPR_SOL, cx - 16, cy - 16 + bob, 2);
     return;
   }
   if (c <= 2) {  // poucas nuvens: sol atrás, nuvem na frente
     uiSprite(&SPR_SOL, cx - 20, cy - 20, 2);
-    uiSprite(&SPR_NUVEM, cx - 10, cy - 2, 2);
+    uiSprite(&SPR_NUVEM, cx - 10 + bob, cy - 2, 2);
     return;
   }
   const UiSprite *cloud = rain || storm ? &SPR_NUVEM_CHUVA : &SPR_NUVEM;
   const int top = rain || snow || storm || fog ? cy - 16 : cy - 9;
-  uiSprite(cloud, cx - 16, top, 2);
   const int y0 = top + 20;
   if (rain || storm)  // gotas em diagonal, como na cena Tomate
     for (int i = 0; i < 4; i++) {
       if (storm && i == 2) continue;  // lugar do raio
-      int x = cx - 12 + i * 8;
-      px(x, y0, RAIN);
-      px(x - 2, y0 + 4, RAIN);
-      px(x - 4, y0 + 8, RAIN);
+      int x = cx - 12 + i * 8, d = ms ? (fall + i * 2) % 8 : 0;
+      px(x - d / 2, y0 + d, RAIN);
+      px(x - 2 - d / 2, y0 + 4 + d, RAIN);
+      px(x - 4 - d / 2, y0 + 8 + d, RAIN);
     }
   if (snow)
     for (int i = 0; i < 3; i++) {
-      px(cx - 10 + i * 10, y0 + 1, TEXT);
-      px(cx - 5 + i * 10, y0 + 8, TEXT);
+      int d = ms ? (fall + i * 2) % 8 : 0;
+      px(cx - 10 + i * 10 + (d & 2 ? 2 : 0), y0 + 1 + d, TEXT);
+      px(cx - 5 + i * 10 - (d & 2 ? 2 : 0), y0 + 8 + d, TEXT);
     }
+  uiSprite(cloud, cx - 16 + (fog ? 0 : bob), top, 2);  // a nuvem por cima das gotas
   if (fog)
-    for (int i = 0; i < 2; i++) G->fillRect(cx - 14 + i * 6, y0 + 2 + i * 6, 24, 2, DCLOUD);
-  if (storm) {  // raio em degraus de pixel
+    for (int i = 0; i < 2; i++) G->fillRect(cx - 14 + i * 6 + (i ? -bob : bob), y0 + 2 + i * 6, 24, 2, DCLOUD);
+  if (storm && (!ms || step < 2)) {  // raio em degraus de pixel (pisca)
     static const int8_t B[][2] = {{2, 0}, {1, 1}, {0, 2}, {1, 2}, {2, 2}, {1, 3}, {0, 4}};
     for (auto &b : B) G->fillRect(cx + 2 + b[0] * 3, y0 - 2 + b[1] * 3, 3, 3, SUN);
+  }
+}
+
+// weatherbox: faixa dos ícones (todas as colunas), redesenhada fora da tela para animar
+static const int ICON_Y = CARD_Y + 28, ICON_H = 56;
+static void paintIcons(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(0, ICON_Y, 240, ICON_H, BG);
+  for (int i = 0; i < 4 && i < s.wx.nd; i++) {
+    const int x = 6 + i * (CARD_W + CARD_GAP), cx = x + CARD_W / 2;
+    G->fillRect(x, ICON_Y, CARD_W, ICON_H, CARD_BG);
+    G->drawFastVLine(x, ICON_Y, ICON_H, CARD_LINE);
+    G->drawFastVLine(x + CARD_W - 1, ICON_Y, ICON_H, CARD_LINE);
+    pixelWeather(cx, CARD_Y + 54, s.wx.d[i].code, s.ms | 1);
   }
 }
 
@@ -122,7 +142,14 @@ void themeForecastCards(const UiState &s, bool full) {
   // cartões: só quando o clima muda, o dia vira ou o clima liga/desliga
   char key[24];
   snprintf(key, sizeof key, "%u %d %d %d", (unsigned)s.wx.version, s.weatherOn, s.wx.ok, s.timeOk ? s.now.tm_wday : -1);
-  if (!changed(cA, key) && !full) return;
+  static uint32_t lastAnim = 0;
+  if (!changed(cA, key) && !full) {
+    if (s.weatherOn && s.wx.ok && s.wx.nd && s.ms - lastAnim >= 125) {
+      lastAnim = s.ms;
+      uiPaint(false, 0, ICON_Y, 240, ICON_H, paintIcons, (void *)&s);
+    }
+    return;
+  }
   if (!(s.weatherOn && s.wx.ok && s.wx.nd)) {
     G->fillRect(0, CARD_Y, 240, CARD_H, BG);
     otxC(120, 104, 20, MUTED, s.weatherOn ? tr("Buscando clima", "Fetching weather", "Buscando clima") : tr("Clima desligado", "Weather off", "Clima apagado"), BG);
