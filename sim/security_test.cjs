@@ -25,7 +25,7 @@ const ends=[...end.matchAll(/Update\.end\(true\)/g)].map(m=>m.index);
 if(ends.length!==2)throw Error('expected two Update.end(true) in the upload end');
 const gzEnd=end.slice(end.indexOf('if (ota.gz) {'),ends[0]);
 if(!gzEnd.includes('if (!otaSigOk()) Update.end();'))throw Error('.bin.gz swap scheduled without the signature check');
-const binEnd=end.slice(end.indexOf('arquivo corrompido (CRC)'),ends[1]);
+const binEnd=end.slice(end.indexOf('file is corrupt (CRC)'),ends[1]);
 if(!binEnd.includes('else otaSigOk();')||!binEnd.includes('if (ota.err.length()) Update.end();'))throw Error('.bin swap scheduled without the signature check');
 const sigOk=source.slice(source.indexOf('static bool otaSigOk() {'),source.indexOf('\n}',source.indexOf('static bool otaSigOk() {')));
 if(!sigOk.includes('if (recoveryMode) return true;')||!sigOk.includes('stack_thunk_add_ref();')||!sigOk.includes('getMaxFreeBlockSize()'))
