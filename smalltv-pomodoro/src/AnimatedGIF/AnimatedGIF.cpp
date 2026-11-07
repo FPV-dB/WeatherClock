@@ -256,6 +256,12 @@ int AnimatedGIF::open(const char *szFilename, GIF_OPEN_CALLBACK *pfnOpen, GIF_CL
 
 } /* open() */
 
+AnimatedGIF::~AnimatedGIF()
+{
+    free(_gif.usGIFTable);
+    free(_gif.ucGIFPixels);
+} /* ~AnimatedGIF() */
+
 void AnimatedGIF::close()
 {
     if (_gif.pfnClose)
@@ -272,8 +278,15 @@ void AnimatedGIF::begin(unsigned char ucPaletteType)
 {
 uint8_t *p;
 uint32_t u32;
+uint16_t *tab = _gif.usGIFTable;
+uint8_t *pix = _gif.ucGIFPixels;
 
     memset(&_gif, 0, sizeof(_gif));
+    if (!tab) tab = (uint16_t *)malloc(sizeof(uint16_t) << MAX_CODE_SIZE);
+    if (!pix) pix = (uint8_t *)malloc(PIXEL_LAST * 2);
+    _gif.usGIFTable = tab;
+    _gif.ucGIFPixels = pix;
+    if (!tab || !pix) _gif.iError = GIF_ERROR_MEMORY;
     if (ucPaletteType != GIF_PALETTE_RGB565_LE && ucPaletteType != GIF_PALETTE_RGB565_BE && ucPaletteType != GIF_PALETTE_RGB888)
         _gif.iError = GIF_INVALID_PARAMETER;
     _gif.ucPaletteType = ucPaletteType;

@@ -1675,13 +1675,17 @@ bool showAlbumItem(const String &f) {
       uiError(tr("GIF fora do padrao", "Unsupported GIF", "GIF fuera de norma"));
       return false;
     }
-    gif = new (std::nothrow) AnimatedGIF();  // ~24 KB contíguos de RAM
+    gif = new (std::nothrow) AnimatedGIF();  // ~8 KB aqui + duas tabelas de 8 KB em begin()
+    if (gif) gif->begin(GIF_PALETTE_RGB565_LE);
+    if (gif && !gif->ready()) {
+      delete gif;
+      gif = nullptr;
+    }
     if (!gif) {
       uiError(tr("Sem memoria p/ GIF", "No memory for GIF", "Sin memoria p/ GIF"));
       if (millis() > 3600000UL && !memRestartAt) memRestartAt = millis() | 1;
       return true;  // mantém a tela de aviso até o próximo item
     }
-    gif->begin(GIF_PALETTE_RGB565_LE);
     if (!gif->open(f.c_str(), mediaOpen, mediaClose, gifRead, gifSeek, gifDraw)) {
       gif->close();
       delete gif;

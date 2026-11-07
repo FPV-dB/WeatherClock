@@ -1306,7 +1306,7 @@ init_codetable:
     nextcode = cc + 2;
     nextlim = (unsigned short) ((1 << codesize));
     // This part of the table needs to be reset multiple times
-    memset(&giftabs[cc], LINK_UNUSED, sizeof(pImage->usGIFTable) - sizeof(giftabs[0])*cc);
+    memset(&giftabs[cc], LINK_UNUSED, (sizeof(giftabs[0]) << MAX_CODE_SIZE) - sizeof(giftabs[0])*cc);
     GET_CODE
     while (code == cc) // repeated clear codes are legal; checked reads bound this loop
     {

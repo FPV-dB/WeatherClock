@@ -205,8 +205,10 @@ typedef struct gif_image_tag
     int iLocalPalSize, iGlobalPalSize;
     uint8_t ucLZW[LZW_BUF_SIZE]; // holds de-chunked LZW data
     // These next 3 are used in Turbo mode to have a larger ucLZW buffer
-    uint16_t usGIFTable[1<<MAX_CODE_SIZE];
-    uint8_t ucGIFPixels[(PIXEL_LAST*2)];
+    // weatherbox: as duas tabelas grandes (8 KB cada) ficam em blocos à parte, alocados em begin(): com a
+    // memória fragmentada, três pedaços de ~8 KB cabem onde um de ~24 KB não cabe
+    uint16_t *usGIFTable; // [1<<MAX_CODE_SIZE]
+    uint8_t *ucGIFPixels; // [PIXEL_LAST*2]
     uint8_t ucLineBuf[MAX_WIDTH+15]; // current line
     uint8_t *pLineBufAligned;
 } GIFIMAGE;
@@ -251,8 +253,11 @@ class AnimatedGIF
     void mergeTransparent(uint8_t *pSrc, uint8_t *pDst, uint8_t ucTrans, int iLen);
     void cookPixels(uint8_t *pSrc, uint8_t *pDst, int iTrans, int iLen, uint32_t *pPalette, uint16_t *pRGB565);
 
+    ~AnimatedGIF();
+    bool ready() const { return _gif.usGIFTable && _gif.ucGIFPixels; }  // tabelas alocadas em begin()
+
   private:
-    GIFIMAGE _gif;
+    GIFIMAGE _gif = {};
 };
 #else
 // C interface
