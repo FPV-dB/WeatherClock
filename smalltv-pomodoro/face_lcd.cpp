@@ -61,6 +61,31 @@ void dsegDigit(int x, int y, int h, int d, uint16_t on, uint16_t off) {
   }
 }
 
+static void paintLcdWx(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(16, 152, 150, 52, LCD_BG);
+  if (s.weatherOn && s.wx.ok) {
+    int t = (int)lroundf(s.wx.t);
+    if (t >= 0 && t <= 99) {
+      dsegDigit(20, 158, 36, t >= 10 ? t / 10 : -1, LCD_ON, LCD_GHOST);
+      dsegDigit(46, 158, 36, t % 10, LCD_ON, LCD_GHOST);
+    } else {
+      char n[8];
+      snprintf(n, sizeof n, "%d", t);
+      text(20, 160, 3, LCD_ON, n);
+    }
+    degree(74, 156, 1, LCD_ON);
+    text(82, 156, 2, LCD_ON, s.fahr ? "F" : "C");
+  }
+  if (s.weatherOn && s.wx.ok) {
+    char f[16];
+    snprintf(f, sizeof f, "%s%u", windDir(s.wx.wdir), s.wx.wind);
+    text(100, 158, 2, LCD_ON, f);
+    snprintf(f, sizeof f, "%d%%", s.wx.hum);
+    text(100, 180, 2, LCD_ON, f);
+  }
+}
+
 void themeLcd(const UiState &s, bool full) {
   if (full) {
     textC(120, 9, 1, uiRgb(170, 170, 182), tr("CLIMA   VENTO   UMIDADE", "WEATHER   WIND   HUMIDITY", "CLIMA   VIENTO   HUMEDAD"));
@@ -76,11 +101,15 @@ void themeLcd(const UiState &s, bool full) {
   }
   char ab[24];
   snprintf(ab, sizeof ab, "%s|%s|%d", a, b, s.hour12 && s.timeOk ? (s.now.tm_hour < 12 ? 1 : 2) : 0);
-  if (changed(cStatL, ab)) {
-    G->fillRect(18, 34, 204, 18, LCD_BG);
-    text(22, 36, 2, LCD_ON, a);
-    textR(218, 36, 2, LCD_ON, b);
-    if (s.hour12 && s.timeOk) text(66, 40, 1, LCD_ON, s.now.tm_hour < 12 ? "AM" : "PM");
+  if (changed(cStatL, ab)) {  // weatherbox: a linha toda fora da tela (sem piscar)
+    struct L { const char *a, *b, *ampm; } l = {a, b, s.hour12 && s.timeOk ? (s.now.tm_hour < 12 ? "AM" : "PM") : nullptr};
+    uiPaint(full, 18, 34, 204, 18, [](void *p) {
+      const L &l = *(const L *)p;
+      G->fillRect(18, 34, 204, 18, LCD_BG);
+      text(22, 36, 2, LCD_ON, l.a);
+      textR(218, 36, 2, LCD_ON, l.b);
+      if (l.ampm) text(66, 40, 1, LCD_ON, l.ampm);
+    }, &l);
   }
   // horas e minutos grandes, em itálico
   int v[4] = {-1, -1, -1, -1};
@@ -91,11 +120,20 @@ void themeLcd(const UiState &s, bool full) {
   }
   // dígitos DSEG7 de 78 px (48 de largura), centrados nos dois-pontos em x=120
   const int X[4] = {10, 65, 127, 182}, Y = 62, H = 78;
-  for (int i = 0; i < 4; i++)
-    if (full || lastDig[i] != v[i]) {
-      dsegDigit(X[i], Y, H, v[i], LCD_ON, LCD_GHOST);
-      lastDig[i] = v[i];
-    }
+  bool digits = full;
+  for (int i = 0; i < 4; i++) digits |= lastDig[i] != v[i];
+  if (digits) {  // weatherbox: a fileira inteira (dígitos e dois-pontos) montada fora da tela
+    struct R { const int *x, *v; int y, h; bool colon; } r = {X, v, Y, H, !s.timeOk || s.now.tm_sec % 2 == 0};
+    uiPaint(full, 8, Y - 2, 224, H + 4, [](void *p) {
+      const R &r = *(const R *)p;
+      G->fillRect(8, r.y - 2, 224, r.h + 4, LCD_BG);
+      for (int i = 0; i < 4; i++) dsegDigit(r.x[i], r.y, r.h, r.v[i], LCD_ON, LCD_GHOST);
+      G->fillCircle(120, r.y + 24, 4, r.colon ? LCD_ON : LCD_GHOST);
+      G->fillCircle(120, r.y + 54, 4, r.colon ? LCD_ON : LCD_GHOST);
+    }, &r);
+    for (int i = 0; i < 4; i++) lastDig[i] = v[i];
+    lastColon = r.colon;
+  }
   bool colon = !s.timeOk || s.now.tm_sec % 2 == 0;
   if (full || colon != lastColon) {
     G->fillCircle(120, Y + 24, 4, colon ? LCD_ON : LCD_GHOST);
@@ -105,39 +143,22 @@ void themeLcd(const UiState &s, bool full) {
   // segundos pequenos
   int sec = s.timeOk ? s.now.tm_sec : -1;
   if (full || sec != lastSecW) {
-    dsegDigit(172, 158, 36, sec < 0 ? -1 : sec / 10, LCD_ON, LCD_GHOST);
-    dsegDigit(198, 158, 36, sec < 0 ? -1 : sec % 10, LCD_ON, LCD_GHOST);
+    uiPaint(full, 168, 154, 56, 44, [](void *p) {  // segundos fora da tela
+      const int sec = *(const int *)p;
+      G->fillRect(168, 154, 56, 44, LCD_BG);
+      dsegDigit(172, 158, 36, sec < 0 ? -1 : sec / 10, LCD_ON, LCD_GHOST);
+      dsegDigit(198, 158, 36, sec < 0 ? -1 : sec % 10, LCD_ON, LCD_GHOST);
+    }, &sec);
     lastSecW = sec;
   }
   // temperatura (7 segmentos médios) e, no lugar do tomate, vento e umidade (weatherbox)
   if (full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn) {
-    G->fillRect(16, 152, 150, 52, LCD_BG);
-    if (s.weatherOn && s.wx.ok) {
-      int t = (int)lroundf(s.wx.t);
-      if (t >= 0 && t <= 99) {
-        dsegDigit(20, 158, 36, t >= 10 ? t / 10 : -1, LCD_ON, LCD_GHOST);
-        dsegDigit(46, 158, 36, t % 10, LCD_ON, LCD_GHOST);
-      } else {
-        char n[8];
-        snprintf(n, sizeof n, "%d", t);
-        text(20, 160, 3, LCD_ON, n);
-      }
-      degree(74, 156, 1, LCD_ON);
-      text(82, 156, 2, LCD_ON, s.fahr ? "F" : "C");
-    }
-    if (s.weatherOn && s.wx.ok) {
-      char f[16];
-      snprintf(f, sizeof f, "%s%u", windDir(s.wx.wdir), s.wx.wind);
-      text(100, 158, 2, LCD_ON, f);
-      snprintf(f, sizeof f, "%d%%", s.wx.hum);
-      text(100, 180, 2, LCD_ON, f);
-    }
+    uiPaint(full, 16, 152, 150, 52, paintLcdWx, (void *)&s);  // weatherbox: fora da tela
     lastWx = s.wx.version;
     lastWxOn = s.weatherOn;
   }
   if (changed(cStatR, s.ip ? s.ip : "")) {
-    G->fillRect(0, 216, 240, 12, BG);
-    textC(120, 220, 1, MUTED, cStatR.s);
+    uiTextBox(0, 216, 240, 12, BG, 120, 220, 1, MUTED, cStatR.s, 'c');
   }
 }
 

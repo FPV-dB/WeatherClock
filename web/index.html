@@ -131,7 +131,7 @@ nav button[hidden],[hidden]{display:none!important}
 #rotlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:6px 0 4px}
 #rotlist label{display:flex;gap:8px;align-items:center;justify-content:flex-start;padding:8px 10px;border-radius:10px;background:var(--card2);font-size:14px;margin:0}
 #rotlist input{margin:0}
-#radarc{margin-bottom:16px}#welcome{margin-bottom:16px;border:1px solid var(--long)}#welcome p{color:var(--mut);margin:6px 0 12px}#radarc img{display:block;width:100%;max-width:240px;aspect-ratio:1;margin:8px auto 0;border-radius:12px;image-rendering:pixelated}
+#radarc{margin-bottom:16px}.warn{background:rgba(255,196,0,.12);border:1px solid rgba(255,196,0,.5);color:var(--fg);border-radius:10px;padding:10px 12px;margin:10px 0 6px;font-size:14px}#welcome{margin-bottom:16px;border:1px solid var(--long)}#welcome p{color:var(--mut);margin:6px 0 12px}#radarc img{display:block;width:100%;max-width:240px;aspect-ratio:1;margin:8px auto 0;border-radius:12px;image-rendering:pixelated}
 
 </style></head><body>
 <header><b>Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span></header>
@@ -210,6 +210,15 @@ nav button[hidden],[hidden]{display:none!important}
 
 <!-- ============ FOTOS ============ -->
 <section class="tab" id="t2">
+ <div class="card" id="radarset">
+  <b>Rain radar</b>
+  <div class="warn">&#9888; <b>Needs a computer.</b> The clock can't download radar images by itself. The radar only updates while a computer on the same Wi-Fi is switched on and running the Weather Clock radar program.</div>
+  <label>Radar to watch<select id="rsel" onchange="radarRanges()"></select></label>
+  <label>Range<select id="rkm"></select></label>
+  <p><button class="btn p" onclick="radarSave()">Save radar</button></p>
+  <small>The program fetches the Bureau of Meteorology radar every 10 minutes and sends it to the clock. <a href="https://github.com/FPV-dB/WeatherClock/releases/latest" target="_blank" rel="noopener">Get the radar program</a> (Mac) and run its installer. Australia only. To show the radar, set What to show to "Alternate clock and album" on the Clock page.</small>
+  <small id="rstat"></small>
+ </div>
  <div class="card">
   <small id="fsinfo"></small><div class="bar"><i id="fsbar" style="width:0"></i></div>
   <div class="grid" id="grid"></div>
@@ -368,7 +377,7 @@ const post=(u,b)=>fetch(u,{method:'POST',body:b});
 const kb=n=>n>1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB';
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('v');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('v'),2200)}
 function tab(i){if(i==1)i=0;curTab=i;document.querySelectorAll('.tab').forEach((e,k)=>e.classList.toggle('on',k==i));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==i));
- try{localStorage.tab=i}catch(e){}if(i==2)files();if(i==3)hooksLoad();if(i==1&&!STATS)loadStats();window.scrollTo(0,0)}
+ try{localStorage.tab=i}catch(e){}if(i==2){files();radarLoad()}if(i==3)hooksLoad();if(i==1&&!STATS)loadStats();window.scrollTo(0,0)}
 const fkey=f=>f.pkg?'p:'+f.pkg:'t:'+f.t;  // embutido "t:N" ou pacote "p:id"
 const curKey=s=>s.cfg.theme==200?'p:'+s.cfg.pkg:'t:'+s.cfg.theme;
 const faceSrc=f=>f.src||(f.pkg?'/face?pkg='+encodeURIComponent(f.pkg):SITE+'img/faces/face-'+f.t+'.png');  // embutidos: prévia no site (não ocupa a flash)
@@ -403,6 +412,23 @@ function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.o
  const rain=w.rin?'<span class="rn">'+(w.rin<15?t('Rain any minute'):t('Rain in {0} min',w.rin))+'</span>':'';
  c.innerHTML='<div class="ic">'+WXI(w.code,w.day)+'</div><div class="tp">'+dg(w.t)+'</div><div class="ds">'+w.desc+(s.cfg.city?' · '+s.cfg.city:'')+'</div>'
   +'<div class="chips">'+chip(t('High'),dg(w.max))+chip(t('Low'),dg(w.min))+(w.wind!=null?chip(t('Wind'),WDIR(w.wdir)+' '+w.wind+' km/h')+chip(t('Gusts'),w.gust+' km/h'):'')+chip(t('Humidity'),w.h+'%')+rain+'</div>'}
+// weatherbox: radar escolhido (o programa no computador lê /api/radar e manda /image/radar.gif)
+let RADARS=null;
+const kmTo=(a,b,c,d)=>{const r=Math.PI/180,x=(d-b)*r*Math.cos((a+c)/2*r),y=(c-a)*r;return Math.round(Math.hypot(x,y)*6371)};
+async function radarLoad(){try{if(!RADARS)RADARS=(await (await fetch(SITE+'radars.json',{cache:'no-store'})).json()).radars;
+ const cur=await (await fetch('/api/radar')).json(),c=st?st.cfg:{},has=c.lat||c.lon,sel=$('rsel');
+ const list=RADARS.map(r=>({...r,d:has?kmTo(c.lat,c.lon,r.lat,r.lon):null})).sort((a,b)=>has?a.d-b.d:a.name.localeCompare(b.name));
+ sel.innerHTML='';const o0=document.createElement('option');o0.value=0;o0.textContent=t('Nearest to {0}',c.city||t('your city'))+(has?' ('+list[0].name+')':'');sel.appendChild(o0);
+ list.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=r.name+', '+r.state+(r.d!=null?' · '+r.d+' km':'');sel.appendChild(o)});
+ sel.value=cur.id;radarRanges(cur.km);
+ const f=(await (await fetch('/api/files')).json()).files.find(x=>x.n=='/image/radar.gif');
+ $('rstat').textContent=f?t('Radar images are arriving from the computer program.'):t('No radar image yet: the program on the computer isn\'t running, or hasn\'t sent one yet.')}
+ catch(e){$('rstat').textContent=t('Could not load the radar list.')}}
+function radarPick(){const id=+$('rsel').value,c=st?st.cfg:{};if(id||!RADARS)return RADARS&&RADARS.find(r=>r.id==id);
+ return RADARS.map(r=>({...r,d:kmTo(c.lat||0,c.lon||0,r.lat,r.lon)})).sort((a,b)=>a.d-b.d)[0]}
+function radarRanges(km){const r=radarPick(),k=$('rkm'),keep=km||+k.value||64;k.innerHTML='';((r&&r.ranges)||[64,128,256,512]).forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=t('{0} km radius',v);k.appendChild(o)});
+ k.value=[...k.options].some(o=>+o.value==keep)?keep:k.options[0].value}
+function radarSave(){post('/api/radar',new URLSearchParams({id:$('rsel').value,km:$('rkm').value})).then(r=>toast(r.ok?t('Saved: the program uses it from its next update'):t('Falha: ')+r.status))}
 function radarDraw(){const i=$('radarimg'),v=Math.floor(Date.now()/120000);if(!i||i.dataset.v==v)return;i.dataset.v=v;
  i.onload=()=>{$('radarc').hidden=false};i.onerror=()=>{$('radarc').hidden=true};i.src='/fs?f=%2Fimage%2Fradar.gif&v='+v}
 function rotDraw(){const box=$('rotlist');if(!box||!FACES.length)return;const rk=rotKeys(),sig=FACES.map(f=>f.n).join()+'|'+rk.join();if(box.dataset.sig==sig)return;box.dataset.sig=sig;box.innerHTML='';

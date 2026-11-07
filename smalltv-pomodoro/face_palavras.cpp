@@ -175,8 +175,7 @@ void themeWords(const UiState &s, bool full) {
   char hm[8];
   snprintf(hm, sizeof hm, "%02d:%02d", displayHour(s), s.now.tm_min);
   if (changed(cC, hm)) {
-    G->fillRect(0, 212, 240, 18, BG);
-    textC(120, 214, 2, uiRgb(90, 90, 100), hm);
+    uiTextBox(0, 212, 240, 18, BG, 120, 214, 2, uiRgb(90, 90, 100), hm, 'c');
   }
 }
 

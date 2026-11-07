@@ -136,12 +136,10 @@ void themeWind(const UiState &s, bool full) {
   char l[24];
   dateLabel(s, l, sizeof l);
   if (changed(cStatL, l)) {
-    G->fillRect(0, 4, 140, 10, BG);
-    text(10, 7, 1, MUTED, l);
+    uiTextBox(0, 4, 140, 10, BG, 10, 7, 1, MUTED, l, 'l');
   }
   if (changed(cC, hm)) {
-    G->fillRect(150, 0, 90, 22, BG);
-    textR(230, 4, 2, s.accent, hm);
+    uiTextBox(150, 0, 90, 22, BG, 230, 4, 2, s.accent, hm, 'r');
   }
   static uint32_t lastAnim = 0;
   if (full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn) {

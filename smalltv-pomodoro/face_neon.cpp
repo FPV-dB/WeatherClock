@@ -35,8 +35,20 @@ static void neonPair(int x0, int w, int v, int i, uint16_t c) {
 static void paintHours(void *v) { neonPair(0, 116, *(int *)v, 0, NEON_A); }
 static void paintMinutes(void *v) { neonPair(126, 114, *(int *)v, 2, NEON_B); }
 static void paintDate(void *d) {
-  G->fillRect(0, 12, 240, 18, BG);
-  textC(120, 14, 2, uiRgb(150, 150, 170), (const char *)d);
+  uiTextBox(0, 12, 240, 18, BG, 120, 14, 2, uiRgb(150, 150, 170), (const char *)d, 'c');
+}
+
+static void paintNeonWx(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(0, 142, 240, 70, BG);  // a faixa inteira: o buffer fora da tela começa vazio
+  G->drawFastHLine(40, 146, 160, mix(BG, NEON_B, 0.35f));
+  if (s.weatherOn && s.wx.ok) tempDesc(158, 2, NEON_B, uiRgb(170, 230, 245), s.wx.t, weatherText(s.wx.code));
+  G->fillRect(0, 186, 240, 24, BG);  // weatherbox: vento e umidade no lugar dos focos
+  if (s.weatherOn && s.wx.ok) {
+    char f[28];
+    snprintf(f, sizeof f, "%s %u km/h  %d%%", windDir(s.wx.wdir), s.wx.wind, s.wx.hum);
+    textC(120, 191, 2, NEON_A, f);
+  }
 }
 
 void themeNeon(const UiState &s, bool full) {
@@ -54,26 +66,21 @@ void themeNeon(const UiState &s, bool full) {
   }
   bool colon = !s.timeOk || s.now.tm_sec % 2 == 0;
   if (colon != lastColon) {
-    neonDot(NEON_Y + 26, colon);
-    neonDot(NEON_Y + 56, colon);
+    uiPaint(full, 110, NEON_Y + 16, 20, 50, [](void *p) {  // os pontos fora da tela (sem piscar)
+      const bool on = *(const bool *)p;
+      G->fillRect(110, NEON_Y + 16, 20, 50, BG);
+      neonDot(NEON_Y + 26, on);
+      neonDot(NEON_Y + 56, on);
+    }, &colon);
     lastColon = colon;
   }
   if (full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn) {
-    G->fillRect(0, 142, 240, 32, BG);
-    G->drawFastHLine(40, 146, 160, mix(BG, NEON_B, 0.35f));
-    if (s.weatherOn && s.wx.ok) tempDesc(158, 2, NEON_B, uiRgb(170, 230, 245), s.wx.t, weatherText(s.wx.code));
-    G->fillRect(0, 186, 240, 24, BG);  // weatherbox: vento e umidade no lugar dos focos
-    if (s.weatherOn && s.wx.ok) {
-      char f[28];
-      snprintf(f, sizeof f, "%s %u km/h  %d%%", windDir(s.wx.wdir), s.wx.wind, s.wx.hum);
-      textC(120, 191, 2, NEON_A, f);
-    }
+    uiPaint(full, 0, 142, 240, 70, paintNeonWx, (void *)&s);  // weatherbox: fora da tela, sem piscar
     lastWx = s.wx.version;
     lastWxOn = s.weatherOn;
   }
   if (changed(cStatR, s.ip ? s.ip : "")) {
-    G->fillRect(0, 222, 240, 10, BG);
-    textC(120, 224, 1, MUTED, cStatR.s);
+    uiTextBox(0, 222, 240, 10, BG, 120, 224, 1, MUTED, cStatR.s, 'c');
   }
 }
 

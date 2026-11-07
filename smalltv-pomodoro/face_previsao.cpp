@@ -80,19 +80,16 @@ void themeForecast(const UiState &s, bool full) {
   char l[24];
   dateLabel(s, l, sizeof l);
   if (changed(cStatL, l)) {
-    G->fillRect(0, 4, 140, 10, BG);
-    text(10, 7, 1, MUTED, l);
+    uiTextBox(0, 4, 140, 10, BG, 10, 7, 1, MUTED, l, 'l');
   }
   if (changed(cC, hm)) {
-    G->fillRect(150, 0, 90, 22, BG);
-    textR(230, 4, 2, s.accent, hm);
+    uiTextBox(150, 0, 90, 22, BG, 230, 4, 2, s.accent, hm, 'r');
   }
   // título: cidade (ou "Previsão") e as colunas
   char t[28];
   snprintf(t, sizeof t, "%.20s", s.city && s.city[0] ? s.city : tr("Previsao", "Forecast", "Pronostico"));
   if (changed(cB, t)) {
-    G->fillRect(0, 26, 240, 12, BG);
-    text(10, 28, 1, TEXT, t);
+    uiTextBox(0, 26, 240, 12, BG, 10, 28, 1, TEXT, t, 'l');
     textR(BAR_X - 6, 28, 1, MUTED, tr("MIN", "LOW", "MIN"));
     text(BAR_X + BAR_W + 6, 28, 1, MUTED, tr("MAX", "HIGH", "MAX"));
   }
@@ -108,8 +105,7 @@ void themeForecast(const UiState &s, bool full) {
     return;
   }
   if (!(s.weatherOn && s.wx.ok && s.wx.nd)) {
-    G->fillRect(0, ROW_Y - 4, 240, 240 - ROW_Y + 4, BG);
-    textC(120, 112, 2, MUTED, s.weatherOn ? tr("Buscando clima", "Fetching weather", "Buscando clima") : tr("Clima desligado", "Weather off", "Clima apagado"));
+    uiTextBox(0, ROW_Y - 4, 240, 240 - ROW_Y + 4, BG, 120, 112, 2, MUTED, s.weatherOn ? tr("Buscando clima", "Fetching weather", "Buscando clima") : tr("Clima desligado", "Weather off", "Clima apagado"), 'c');
     textC(120, 140, 1, MUTED, tr("defina a cidade no painel", "set the city in the panel", "elige la ciudad en el panel"));
     return;
   }

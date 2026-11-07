@@ -212,13 +212,24 @@ void statusBar(const UiState &s, const char *right, uint16_t bg) {
   char l[24];
   dateLabel(s, l, sizeof l);
   if (changed(cStatL, l)) {
-    G->fillRect(0, 4, 120, 10, bg);
-    text(10, 6, 1, MUTED, l);
+    uiTextBox(0, 4, 120, 10, bg, 10, 6, 1, MUTED, l, 'l');
   }
   if (changed(cStatR, right)) {
-    G->fillRect(120, 4, 120, 10, bg);
-    textR(230, 6, 1, MUTED, right);
+    uiTextBox(120, 4, 120, 10, bg, 230, 6, 1, MUTED, right, 'r');
   }
+}
+
+struct TextBoxJob { int x, y, w, h; uint16_t bg; int tx, ty; uint8_t sz; uint16_t c; const char *s; char align; };
+static void paintTextBox(void *p) {
+  const TextBoxJob &j = *(const TextBoxJob *)p;
+  G->fillRect(j.x, j.y, j.w, j.h, j.bg);
+  if (j.align == 'r') textR(j.tx, j.ty, j.sz, j.c, j.s);
+  else if (j.align == 'c') textC(j.tx, j.ty, j.sz, j.c, j.s);
+  else text(j.tx, j.ty, j.sz, j.c, j.s);
+}
+void uiTextBox(int x, int y, int w, int h, uint16_t bg, int tx, int ty, uint8_t sz, uint16_t c, const char *s, char align) {
+  TextBoxJob j = {x, y, w, h, bg, tx, ty, sz, c, s, align};
+  uiPaint(false, x, y, w, h, paintTextBox, &j);
 }
 
 // ---------- ícones de clima ----------
@@ -500,7 +511,7 @@ bool uiOffscreen(int x, int y, int w, int h, void (*draw)(void *), void *ctx) {
   if (x + w > 240) w = 240 - x;
   if (y + h > 240) h = 240 - y;
   if (w <= 0 || h <= 0) return true;
-  const int BYTES = 8192;  // ~8 KB por faixa: só existe durante o desenho
+  const int BYTES = 4096;  // weatherbox: ~4 KB por faixa (cabe mesmo com a memória fragmentada); só existe durante o desenho
   int rows = BYTES / (2 * w);
   if (rows > h) rows = h;
   uint16_t *b = (uint16_t *)malloc(w * rows * 2);
@@ -756,18 +767,17 @@ void uiRenderPomodoro(const UiState &s) {
     snprintf(st, sizeof st, tr("termina %02d:%02d", "ends %02d:%02d", "termina %02d:%02d"), e.tm_hour, e.tm_min);
   } else st[0] = 0;
   if (changed(cB, st)) {
-    G->fillRect(50, 184, 140, 10, BG);
-    textC(120, 186, 1, s.running ? MUTED : TEXT, st);
+    uiTextBox(50, 184, 140, 10, BG, 120, 186, 1, s.running ? MUTED : TEXT, st, 'c');
   }
 }
 
 // ---------- telas avulsas ----------
 static int8_t bootLast = -1;  // posição desenhada da barra do início (-1: tela nova, desenha a moldura)
-void uiMessage(const char *title, const char *l1, const char *l2, const char *l3) {
-  uiScrollEnd();
-  screen = SCR_MSG;
-  bootLast = -1;
-  G->fillScreen(BG);
+struct MsgJob { const char *title, *l1, *l2, *l3; };
+static void paintMessage(void *p) {
+  const MsgJob &m = *(const MsgJob *)p;
+  const char *title = m.title, *l1 = m.l1, *l2 = m.l2, *l3 = m.l3;
+  G->fillRect(0, 0, 240, 190, BG);
   // weatherbox: logotipo de sol com nuvem e o título na fonte Outfit, no lugar do tomate
   weatherIcon(120, 50, 1.45f, 2, true, BG);
   const int tw = vecWidth(VF_OUTFIT_TXT, title, 28);
@@ -776,12 +786,24 @@ void uiMessage(const char *title, const char *l1, const char *l2, const char *l3
   textC(120, 158, 1, MUTED, l2);
   textC(120, 172, 1, MUTED, l3);
 }
+void uiMessage(const char *title, const char *l1, const char *l2, const char *l3) {
+  uiScrollEnd();
+  const bool again = screen == SCR_MSG;
+  screen = SCR_MSG;
+  // weatherbox: a tela inteira é montada fora da tela e enviada pronta (sem o clarão preto entre mensagens);
+  // a barra do início, se já estava na tela, é redesenhada por uiBootProgress
+  MsgJob m = {title, l1, l2, l3};
+  if (!again) {  // tela nova: limpa também a faixa da barra
+    G->fillRect(0, 190, 240, 50, BG);
+    bootLast = -1;
+  }
+  uiPaint(false, 0, 0, 240, 190, paintMessage, &m);  // a barra (y >= 192) fica onde está
+}
 
 // Troca só a linha de destaque da mensagem na tela (ex.: "Iniciando" -> "Conectando Wi-Fi"), sem redesenhar o resto
 void uiMessageLine(const char *l1) {
   if (screen != SCR_MSG) return;
-  G->fillRect(0, 124, 240, 20, BG);
-  textC(120, 126, 2, LONG, l1);
+  uiTextBox(0, 124, 240, 20, BG, 120, 126, 2, LONG, l1, 'c');
 }
 
 // Tela de início: barra em pixel art (moldura de cantos recortados e 16 blocos de 8x8). Enquanto falta alguma
@@ -809,8 +831,13 @@ void uiBootProgress(uint32_t ms, uint8_t done) {
 // weatherbox: relógio pequeno no canto inferior direito, numa caixa escura (por cima do radar do álbum)
 void uiCornerClock(const char *hm) {
   const int w = strlen(hm) * 12 - 2, x0 = 240 - w - 8, y0 = 216;
-  G->fillRoundRect(x0 - 5, y0 - 4, w + 10, 24, 5, 0);
-  text(x0, y0, 2, TEXT, hm);
+  // fora da tela, como um retângulo inteiro (os cantos arredondados ficam pretos): troca sem piscar
+  uiPaint(false, x0 - 5, y0 - 4, w + 10, 24, [](void *p) {
+    const char *hm = (const char *)p;
+    const int w = strlen(hm) * 12 - 2, x0 = 240 - w - 8, y0 = 216;
+    G->fillRect(x0 - 5, y0 - 4, w + 10, 24, 0);
+    text(x0, y0, 2, TEXT, hm);
+  }, (void *)hm);
 }
 
 // ---------- weatherbox: primeira instalação ----------
@@ -895,8 +922,7 @@ void uiColorTest() {
   const uint16_t c[4] = {0xF800, 0x07E0, 0x001F, 0xFFFF};
   const char *n[4] = {tr("VERMELHO", "RED", "ROJO"), tr("VERDE", "GREEN", "VERDE"), tr("AZUL", "BLUE", "AZUL"), tr("BRANCO", "WHITE", "BLANCO")};
   for (int i = 0; i < 4; i++) {
-    G->fillRect(i * 60 + 4, 26, 52, 160, c[i]);
-    textC(i * 60 + 30, 194, 1, TEXT, n[i]);
+    uiTextBox(i * 60 + 4, 26, 52, 160, c[i], i * 60 + 30, 194, 1, TEXT, n[i], 'c');
   }
   textC(120, 218, 1, MUTED, tr("o 1o deve ser vermelho e o", "the 1st should be red and the", "la 1a debe ser roja y el"));
   textC(120, 228, 1, MUTED, tr("fundo preto", "background black", "fondo negro"));
@@ -927,8 +953,7 @@ void uiVcomTest(uint8_t vcom, bool full) {
   int mv = 100 + 25 * vcom;  // registrador VCOMS do ST7789: 0,100 V + 25 mV por passo
   char v[20];
   snprintf(v, sizeof v, "VCOM %d%c%03d V", mv / 1000, uiLang == 1 ? '.' : ',', mv % 1000);
-  G->fillRect(0, 18, 240, 18, BG);
-  textC(120, 20, 2, vcom == UI_VCOM_DEFAULT ? TEXT : SUN, v);
+  uiTextBox(0, 18, 240, 18, BG, 120, 20, 2, vcom == UI_VCOM_DEFAULT ? TEXT : SUN, v, 'c');
 }
 
 void uiError(const char *msg) {

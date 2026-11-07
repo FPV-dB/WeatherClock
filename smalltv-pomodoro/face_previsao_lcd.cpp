@@ -104,8 +104,7 @@ static void paintRows(void *c) {
     const int y = ROW_Y + i * ROW_H, cy = y + ROW_H / 2 - 2;
     const char *name = WD[(s.now.tm_wday + i) % 7];
     if (!i) {  // hoje: o nome em negativo, como o dia marcado num relógio de pulso
-      G->fillRect(16, cy - 10, 40, 20, LCD_ON);
-      textC(36, cy - 7, 2, LCD_BG, name);
+      uiTextBox(16, cy - 10, 40, 20, LCD_ON, 36, cy - 7, 2, LCD_BG, name, 'c');
     } else textC(36, cy - 7, 2, LCD_ON, name);
     picto(62, cy - 10, picFor(d.code), s.ms / 400 + 1);
     dsegTemp(104, cy - 12, 24, d.tmax);
@@ -136,8 +135,7 @@ void themeForecastLcd(const UiState &s, bool full) {
   for (char *p = t; *p; p++)
     if (*p >= 'a' && *p <= 'z') *p -= 32;
   if (changed(cB, t)) {
-    G->fillRect(16, 34, 132, 16, LCD_BG);
-    text(20, 38, 1, LCD_ON, t);
+    uiTextBox(16, 34, 132, 16, LCD_BG, 20, 38, 1, LCD_ON, t, 'l');
   }
   int v[4] = {-1, -1, -1, -1};
   if (s.timeOk) {
@@ -166,8 +164,7 @@ void themeForecastLcd(const UiState &s, bool full) {
     return;
   }
   if (!(s.weatherOn && s.wx.ok && s.wx.nd)) {
-    G->fillRect(14, ROW_Y - 4, 212, 4 * ROW_H + 2, LCD_BG);
-    textC(120, 120, 2, LCD_ON, s.weatherOn ? tr("BUSCANDO", "FETCHING", "BUSCANDO") : tr("SEM CLIMA", "NO WEATHER", "SIN CLIMA"));
+    uiTextBox(14, ROW_Y - 4, 212, 4 * ROW_H + 2, LCD_BG, 120, 120, 2, LCD_ON, s.weatherOn ? tr("BUSCANDO", "FETCHING", "BUSCANDO") : tr("SEM CLIMA", "NO WEATHER", "SIN CLIMA"), 'c');
     return;
   }
   uiPaint(full, 14, ROW_Y - 4, 212, 4 * ROW_H + 2, paintRows, (void *)&s);

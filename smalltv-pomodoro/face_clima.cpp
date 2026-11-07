@@ -67,8 +67,7 @@ void themeWeather(const UiState &s, bool full) {
   char l[24];
   dateLabel(s, l, sizeof l);
   if (changed(cStatL, l)) {
-    G->fillRect(0, 4, 140, 10, BG);
-    text(10, 7, 1, MUTED, l);
+    uiTextBox(0, 4, 140, 10, BG, 10, 7, 1, MUTED, l, 'l');
   }
   if (changed(cC, hm)) {
     struct T { const char *hm; uint16_t c; } t = {hm, s.accent};

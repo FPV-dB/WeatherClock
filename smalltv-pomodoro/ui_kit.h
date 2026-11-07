@@ -37,7 +37,10 @@ int textW(const char *s, uint8_t sz);
 void text(int x, int y, uint8_t sz, uint16_t c, const char *s);
 void textC(int cx, int y, uint8_t sz, uint16_t c, const char *s);  // centralizado em cx
 void textR(int rx, int y, uint8_t sz, uint16_t c, const char *s);  // alinhado à direita em rx
-void degree(int x, int y, uint8_t sz, uint16_t c);                 // símbolo de grau desenhado
+void degree(int x, int y, uint8_t sz, uint16_t c);
+// weatherbox: limpa a caixa e escreve o texto fora da tela, num só envio: troca sem piscar.
+// align: 'l' esquerda (tx = início), 'r' direita (tx = fim), 'c' centro (tx = meio)
+void uiTextBox(int x, int y, int w, int h, uint16_t bg, int tx, int ty, uint8_t sz, uint16_t c, const char *s, char align = 'l');                 // símbolo de grau desenhado
 void tempText(int cx, int y, uint8_t sz, uint16_t c, float v);     // "23°" centralizado
 void tempDesc(int cy, uint8_t sz, uint16_t ct, uint16_t cd, float t, const char *desc);  // "23° Chuva"
 

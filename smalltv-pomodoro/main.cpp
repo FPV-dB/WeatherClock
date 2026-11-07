@@ -46,7 +46,7 @@ extern "C" uint32_t _FS_start;
 
 void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h);  // ui.cpp: recorta para a área suja; fora da tela, cai na faixa
 
-#define FW_VERSION "2.0.1"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
+#define FW_VERSION "2.0.2"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
 #define HOSTNAME   "weatherclock"
 #define AP_NAME    "WeatherClock-Setup"
 
@@ -1478,6 +1478,107 @@ bool inAlbum = false;
 uint32_t viewUntil = 0;
 String curFile;
 AnimatedGIF *gif = nullptr;
+File wcrFile;
+bool wcrOn = false;
+uint8_t wcrFrames = 0, wcrFrame = 0;
+uint16_t wcrDelay[32];
+uint32_t wcrData = 0;   // posição do primeiro quadro no arquivo
+uint32_t wcrData1 = 0;  // posição do segundo quadro (o laço volta para ele)
+bool wcrWrap = false;   // o último quadro leva o último de volta ao primeiro: o laço não redesenha tudo
+
+// Lê e confere o cabeçalho; deixa o arquivo no primeiro quadro
+bool wcrOpen(File &f, uint8_t &frames, uint16_t *delays, uint32_t &data) {
+  uint8_t h[10];
+  if (!f || f.read(h, 10) != 10 || memcmp(h, "WCR2", 4)) return false;
+  const uint16_t w = h[4] | h[5] << 8, ht = h[6] | h[7] << 8;
+  frames = h[8];
+  if (w != 240 || ht != 240 || !frames || frames > 32) return false;
+  for (int i = 0; i < frames; i++) {
+    uint8_t d[2];
+    if (f.read(d, 2) != 2) return false;
+    delays[i] = d[0] | d[1] << 8;
+  }
+  data = 10 + 2 * frames;
+  return true;
+}
+
+bool validWcr(const String &path) {
+  File f = LittleFS.open(path, "r");
+  uint8_t n;
+  uint16_t d[32];
+  uint32_t data;
+  const bool ok = wcrOpen(f, n, d, data) && f.size() > data + 4;
+  f.close();
+  return ok;
+}
+
+extern int16_t gifMaskX, gifMaskY;
+// Um quadro: registros n < 0x80 = n pixels da cor seguinte (RGB565); n >= 0x80 = (n & 0x7F) + 1 pixels que
+// ficam como estão (o quadro anterior). Monta trechos de linha e manda cada trecho pronto (sem piscar).
+bool wcrDrawFrame() {
+  uint8_t lb[4];
+  if (wcrFile.read(lb, 4) != 4) return false;
+  uint32_t left = lb[0] | lb[1] << 8 | (uint32_t)lb[2] << 16 | (uint32_t)lb[3] << 24;
+  uint8_t in[192];
+  int have = 0, pos = 0;
+  auto next = [&](int &b) -> bool {
+    if (pos == have) {
+      if (!left) return false;
+      have = wcrFile.read(in, left < sizeof in ? left : sizeof in);
+      if (have <= 0) return false;
+      left -= have;
+      pos = 0;
+    }
+    b = in[pos++];
+    return true;
+  };
+  uint16_t *row = uiRowBuf();
+  int x = 0, y = 0, span = -1;  // span: início do trecho pintado ainda não enviado
+  auto flush = [&]() {
+    if (span < 0) return;
+    int end = x;
+    if (y >= gifMaskY && end > gifMaskX) end = gifMaskX;  // o canto do relógio do radar fica de fora
+    if (end > span) {
+      tft.setAddrWindow(span, y, end - span, 1);
+      tftPixels(row + span, end - span);
+    }
+    span = -1;
+  };
+  tft.startWrite();
+  int n, lo, hi;
+  while (y < 240 && next(n)) {
+    if (n & 0x80) {  // pula: mantém o que já está na tela
+      int k = (n & 0x7F) + 1;
+      while (k > 0 && y < 240) {
+        flush();
+        const int step = k < 240 - x ? k : 240 - x;
+        x += step;
+        k -= step;
+        if (x == 240) { x = 0; y++; }
+      }
+      continue;
+    }
+    if (!next(lo) || !next(hi)) break;
+    const uint16_t c = lo | hi << 8;
+    while (n > 0 && y < 240) {
+      if (span < 0) span = x;
+      const int step = n < 240 - x ? n : 240 - x;
+      for (int j = 0; j < step; j++) row[x + j] = c;
+      x += step;
+      n -= step;
+      if (x == 240) {
+        flush();
+        x = 0;
+        y++;
+      }
+    }
+    if ((y & 15) == 0) yield();
+  }
+  flush();
+  tft.endWrite();
+  if (left) wcrFile.seek(wcrFile.position() + left);
+  return y == 240;
+}
 File mediaFile;
 int gifOffX = 0, gifOffY = 0;
 uint32_t nextFrameAt = 0;
@@ -1494,6 +1595,11 @@ bool endsWithIgnoreCase(const String &s, const char *suffix) {
 }
 bool isGif(const String &n) { return endsWithIgnoreCase(n, ".gif"); }
 bool isJpg(const String &n) { return endsWithIgnoreCase(n, ".jpg") || endsWithIgnoreCase(n, ".jpeg"); }
+// weatherbox: animação já em pixels (.wcr, feita pelo programa do radar). Cabeçalho "WCR1", largura e altura
+// (u16), quadros (u8), 1 byte livre e a pausa de cada quadro em ms (u16); depois, por quadro, o tamanho (u32)
+// e pares (repetições u8, cor RGB565 u16). Vai do arquivo para a tela linha a linha: ~1 KB de RAM, sem o
+// decodificador de GIF (24 KB), então não depende da memória estar inteira.
+bool isWcr(const String &n) { return endsWithIgnoreCase(n, ".wcr"); }
 
 // Pastas usadas pelo firmware original: /image (fotos e GIFs) e /gif.
 const char *MEDIA_DIRS[] = {"/image", "/gif"};
@@ -1510,7 +1616,7 @@ void rebuildAlbum() {
       if (d.isDirectory()) continue;
       String n = String(dir) + "/" + d.fileName();
       // a animação de boot do firmware original não entra no álbum
-      if ((isJpg(n) || isGif(n)) && d.fileName() != "boot.gif" && d.fileName() != "boot.jpg") album.push_back(n);
+      if ((isJpg(n) || isGif(n) || isWcr(n)) && d.fileName() != "boot.gif" && d.fileName() != "boot.jpg") album.push_back(n);
     }
   }
 }
@@ -1701,6 +1807,10 @@ void stopAlbum() {
     delete gif;
     gif = nullptr;
   }
+  if (wcrOn) {
+    wcrFile.close();
+    wcrOn = false;
+  }
   inAlbum = false;
   curFile = "";
   gifMaskX = gifMaskY = 240;
@@ -1716,11 +1826,30 @@ uint32_t memRestartAt = 0;
 bool showAlbumItem(const String &f) {
   stopAlbum();
   if (!LittleFS.exists(f)) return false;
-  packHold();
+  if (!isWcr(f)) packHold();  // o .wcr quase não usa memória: o mostrador pode ficar carregado
   tft.fillScreen(0);
   uiInvalidate();
   inAlbum = true;
   curFile = f;
+  if (isWcr(f)) {
+    wcrFile = LittleFS.open(f, "r");
+    if (!wcrOpen(wcrFile, wcrFrames, wcrDelay, wcrData)) {
+      wcrFile.close();
+      uiError(tr("Arquivo invalido", "Invalid file", "Archivo invalido"));
+      return false;
+    }
+    wcrOn = true;
+    wcrFrame = 0;
+    wcrData1 = 0;
+    {
+      uint8_t hb[10];
+      File h = LittleFS.open(f, "r");
+      wcrWrap = h && h.read(hb, 10) == 10 && hb[9] == 1 && wcrFrames > 2;
+      h.close();
+    }
+    nextFrameAt = 0;
+    return true;
+  }
   if (isGif(f)) {
     if (!validGif(f)) {
       uiError(tr("GIF fora do padrao", "Unsupported GIF", "GIF fuera de norma"));
@@ -1754,15 +1883,33 @@ bool showAlbumItem(const String &f) {
 }
 
 void albumLoop() {
-  if (!gif || (int32_t)(millis() - nextFrameAt) < 0) return;
-  int delayMs = 0;
-  int r = gif->playFrame(false, &delayMs);
-  if (r < 0) {  // erro: desiste deste GIF
-    stopAlbum();
-    return;
+  if ((!gif && !wcrOn) || (int32_t)(millis() - nextFrameAt) < 0) return;
+  if (wcrOn) {
+    if (!wcrDrawFrame()) {
+      stopAlbum();
+      return;
+    }
+    nextFrameAt = millis() + max((int)wcrDelay[wcrFrame], 20);
+    if (wcrFrame == 0 && !wcrData1) wcrData1 = wcrFile.position();
+    if (++wcrFrame >= wcrFrames) {  // fim: com o quadro de volta, segue do segundo; senão, do primeiro
+      if (wcrWrap && wcrData1) {
+        wcrFrame = 1;
+        wcrFile.seek(wcrData1);
+      } else {
+        wcrFrame = 0;
+        wcrFile.seek(wcrData);
+      }
+    }
+  } else {
+    int delayMs = 0;
+    int r = gif->playFrame(false, &delayMs);
+    if (r < 0) {  // erro: desiste deste GIF
+      stopAlbum();
+      return;
+    }
+    if (r == 0) gif->reset();  // último quadro: recomeça
+    nextFrameAt = millis() + max(delayMs, 20);
   }
-  if (r == 0) gif->reset();  // último quadro: recomeça
-  nextFrameAt = millis() + max(delayMs, 20);
   // weatherbox: no radar, a hora de agora no canto; o GIF não desenha ali, então só redesenha quando muda
   struct tm t;
   if (curFile.indexOf("radar") >= 0 && localNow(t)) {
@@ -2201,7 +2348,7 @@ void handleUpload() {
       if (isalnum(c) || c == '-' || c == '_' || c == '.') name += c;
     while (name.indexOf("..") >= 0) name.replace("..", ".");  // mediaPath recusa "..": o arquivo não poderia ser apagado
     if (name.length() > 28) name = name.substring(name.length() - 28);
-    if (!isJpg(name) && !isGif(name)) {
+    if (!isJpg(name) && !isGif(name) && !isWcr(name)) {
       uploadError = F("Use JPG ou GIF");
       return;
     }
@@ -2234,6 +2381,9 @@ void handleUpload() {
     if (up.status == UPLOAD_FILE_END && !uploadError.length() && isGif(uploadPath) && !validGif(uploadPath)) {
       LittleFS.remove(uploadPath);
       uploadError = tr("GIF fora do padrao", "Unsupported GIF", "GIF fuera de norma");
+    } else if (up.status == UPLOAD_FILE_END && !uploadError.length() && isWcr(uploadPath) && !validWcr(uploadPath)) {
+      LittleFS.remove(uploadPath);
+      uploadError = F("WCR invalido");
     } else if (up.status == UPLOAD_FILE_END && !uploadError.length() && isJpg(uploadPath) && !validJpg(uploadPath)) {
       LittleFS.remove(uploadPath);
       uploadError = tr("JPG fora do padrao", "Unsupported JPG", "JPG fuera de norma");
@@ -2520,6 +2670,35 @@ void setupWeb() {
     File f = fsOk ? LittleFS.open("/hooks.txt", "w") : File();
     if (f) {
       f.print(hookWork + "\n" + hookBreak + "\n");
+      f.close();
+    }
+    server.send(f ? 200 : 500, "text/plain", f ? "ok" : "falhou");
+  });
+  // weatherbox: radar escolhido no painel (id do radar do BoM, 0 = o mais perto; alcance em km). O relógio só
+  // guarda a escolha: quem baixa o radar e manda a imagem é um programa num computador (radar/refresh.sh)
+  server.on("/api/radar", HTTP_GET, [] {
+    if (!readOk()) return;
+    int id = 0, km = 64;
+    File f = fsOk ? LittleFS.open("/radar.txt", "r") : File();
+    if (f) {
+      id = f.parseInt();
+      km = f.parseInt();
+      f.close();
+    }
+    char j[48];
+    snprintf(j, sizeof j, "{\"id\":%d,\"km\":%d}", id, km);
+    server.send(200, "application/json", j);
+  });
+  server.on("/api/radar", HTTP_POST, [] {
+    if (!guard()) return;
+    const int id = server.arg("id").toInt(), km = server.arg("km").toInt();
+    if (id < 0 || id > 99 || (km != 64 && km != 128 && km != 256 && km != 512)) {
+      server.send_P(400, PSTR("text/plain"), PSTR("radar invalido"));
+      return;
+    }
+    File f = fsOk ? LittleFS.open("/radar.txt", "w") : File();
+    if (f) {
+      f.printf("%d %d\n", id, km);
       f.close();
     }
     server.send(f ? 200 : 500, "text/plain", f ? "ok" : "falhou");
@@ -3300,9 +3479,8 @@ void rotLoop() {
     if (it.startsWith("t:")) {
       int t = it.substring(2).toInt();
       if (t < 0 || t >= THEME_COUNT) continue;
-      cfg.theme = t;
-      facePackUnload();
-    } else if (it.startsWith("p:") && loadPack(it.substring(2))) {
+      cfg.theme = t;  // weatherbox: o pacote do rodízio continua carregado (recarregar a cada volta fragmenta a memória)
+    } else if (it.startsWith("p:") && (it.substring(2) == facePackId() || loadPack(it.substring(2)))) {
       cfg.theme = THEME_PACK;
       strlcpy(cfg.facePkg, it.substring(2).c_str(), sizeof cfg.facePkg);
     } else continue;

@@ -299,8 +299,7 @@ void themeFlip(const UiState &s, bool full) {
   char d[24];
   dateLabel(s, d, sizeof d);
   if (changed(cStatL, d)) {
-    G->fillRect(0, 8, 240, 18, BG);
-    textC(120, 12, 2, MUTED, d);
+    uiTextBox(0, 8, 240, 18, BG, 120, 12, 2, MUTED, d, 'c');
   }
   int h = s.timeOk ? displayHour(s) : -1, m = s.timeOk ? s.now.tm_min : -1;
   // na primeira vez desenha parado; depois, as plaquinhas que mudaram viram juntas
@@ -324,8 +323,7 @@ void themeFlip(const UiState &s, bool full) {
     lastWxOn = s.weatherOn;
   }
   if (changed(cStatR, s.ip ? s.ip : "")) {
-    G->fillRect(0, 224, 240, 10, BG);
-    textC(120, 226, 1, MUTED, cStatR.s);
+    uiTextBox(0, 224, 240, 10, BG, 120, 226, 1, MUTED, cStatR.s, 'c');
   }
 }
 

@@ -48,6 +48,13 @@ static void windCard(const UiState &s, int x, int y) {
   if (fill > 0) G->fillRoundRect(bx, by, fill < 8 ? 8 : fill, 8, 4, LONG);
 }
 
+static void paintCards(void *c) {  // weatherbox: os dois cartões montados fora da tela
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(0, 112, 240, 128, BG);
+  weatherCard(s, 8, 112);
+  windCard(s, 124, 112);
+}
+
 void themeMatrix(const UiState &s, bool full) {
   statusBar(s, s.ip ? s.ip : "", BG);
   if (!s.timeOk) {
@@ -67,8 +74,7 @@ void themeMatrix(const UiState &s, bool full) {
     }
   }
   if (full || lastWx != s.wx.version || lastWxOn != (int)s.weatherOn) {
-    weatherCard(s, 8, 112);
-    windCard(s, 124, 112);
+    uiPaint(full, 0, 112, 240, 128, paintCards, (void *)&s);
     lastWx = s.wx.version;
     lastWxOn = s.weatherOn;
   }
