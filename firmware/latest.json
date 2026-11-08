@@ -1,29 +1,23 @@
 {
-  "version": "2.0.9",
-  "date": "2026-11-08",
+  "version": "2.0.10",
+  "date": "2026-11-09",
   "file": "weatherclock.bin",
-  "size": 600288,
+  "size": 603968,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 432589,
-  "sig": "KJssjNHwZiNfipslkQ9HFbeZaqAqq7Ka0B2GPqvScMOVd+TA+B+JdjwZ4gS71FZmZz/6CP7iJYJVoVi8+ls5zV6lklPewfByQvZdTF+8kkQWr7bNuj05AdVGD1nXJzI89TouNUmsUAxahS/oyvADk6HVrmMY0ZkCszsS7rHoUfx5MahW6H1LWLlXcC9G3kSZEI7oksZu17fhYojz0BQKFKntGVlvMwa3qdyv8/ognrq5vPOHVEoD6FN+pInwO++dofKSCfGtEgxkzVNuyvjd4bl2KDLXLhm+brFzls/2OOAOrbshAW6jYBoaEn8JlHGG9323Z9Hkr3oY41QTeqpQig==",
-  "gzsig": "oeeYbDmGVxUgevsK/PYVe0eeJcwcwPThf3BaynOW1YiIB1AXhzmyyuFSDfIWP0QsLDTxTjwC94pGw+bH6Q/zQ1kcmLmhmjG0xhag/SCWvrf2HrXVPdvAddHQEsg2DoXOhUkifXgLAJTN7zFxTNFE34HdxJMNa6DAdcuohj7Xc0/T0DK/HmjLoXJnL4l6g61SHvzDBkdwthNBXOSydjxNDAqWDBMABhi2dX7Zij4QljCknoUpZJ/zp+sLKJJq8BxFX/aZze8sl7XaqhtWJD/d6ZYhP/Ld6/eJ4dpvAa1I6zeo24PO0FYVyMv4k8ABuyrXDdOXFuCwMZj00P7OP//YDw==",
-  "panel": "panel-e0e9ba130305bf02e8cfc897.html.gz",
-  "psri": "sha256-4Om6EwMFvwLoz8iX4kNMPTy9E098KAOWLqRBpuAD1kE=",
+  "gzsize": 435205,
+  "sig": "IM7yCpxqayp+X8XkkPSMGUjOd0RwI4OwfUCXPbbQ/hhJR1hUbOcp91YlxggvhUQRWG/ynielOq5ZewH+bCfYPORpLGOTxlZwqKyAMKPf367IXoxvB4P4KU0ipctXFaIVkAbEGLqkPYGWAFntZPpwRrMBZLqaW0i3ZHyrvt0i79Fwzf80rkJzqrVORhtR0nLiu760A4FDmBsAV7SH5lN1oTx8tJOfiYhhETFjXXtQGYEhE3EdCsdVFYh5sObYzUnlWD+NaTCo89jDHg4wN0S3KnSvGYZ2tHH3d0ByNNFqSMHRHh6r+vJAh0OGBhX3NGspRK7+Y2HGXaxREOTq7QgVMA==",
+  "gzsig": "M7FaynVYiVWpMLxCwIxrYFV7vbBfBOjGYiEyr/vhy+o7G9B2m2vsPv7d4A9EdGpLXommNV/3Is7nZE3yECz4cx8BOnviD1eC7Cj8XUfr+jWDrx0A3N3iX7NqYhtkPMA9+C/DAkgNiXMmfrbzSKFFF1OIgB8WRt2PMuqy2uqrQQ5c/skIKKU+MYi8kRKo1Zp74b/8GZtuYq6ePzhht0+Pu5XjMhUCSV2UgY52rJlGOw6CRl7Ds3CbQv9S8oTCJy8NA1dY0jEsRBK5uYBG15KKCpB4L7zgqTgWlKO8u8peNAxKCupaKYYRcd5SkN2Gv1uW3SsZpR5grcANZ+GaMJOBoA==",
+  "panel": "panel-45f2b9e057e861128b72020b.html.gz",
+  "psri": "sha256-RfK54FfoYRKLcgILhMM1ldqojVD7l2HzNJcbut2X2fs=",
   "notes": {
     "en": [
-      "New Moon face: phase, % lit, moonrise and moonset, where the moon is now, next full and new moon",
-      "Sky face: daylight, golden hour, blue hour, twilights and night, with the sun's height and direction",
-      "Air & UV: smaller UV number (no longer cut off)"
+      "New Rain face: chance of rain and millimetres for today, the next 12 hours and the coming days"
     ],
     "pt": [
-      "New Moon face: phase, % lit, moonrise and moonset, where the moon is now, next full and new moon",
-      "Sky face: daylight, golden hour, blue hour, twilights and night, with the sun's height and direction",
-      "Air & UV: smaller UV number (no longer cut off)"
+      "New Rain face: chance of rain and millimetres for today, the next 12 hours and the coming days"
     ],
     "es": [
-      "New Moon face: phase, % lit, moonrise and moonset, where the moon is now, next full and new moon",
-      "Sky face: daylight, golden hour, blue hour, twilights and night, with the sun's height and direction",
-      "Air & UV: smaller UV number (no longer cut off)"
+      "New Rain face: chance of rain and millimetres for today, the next 12 hours and the coming days"
     ]
   }
 }
