@@ -1,35 +1,23 @@
 {
-  "version": "2.0.4",
+  "version": "2.0.5",
   "date": "2026-11-08",
   "file": "weatherclock.bin",
   "size": 586576,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 422686,
-  "sig": "QNhbuJXSw4NpkcRyjTURklK3zjVqXXb/zihZRYIHHmPr2X5k0vSw+fT0CdwLCOChB4MJCDXYFkpWRpimoT6gtlRM8jHzMaNgFrUdwFX35sZxiz/re34zQp4m1ZfJbX1myzhWe458M9PCBqSaJwsWMQ6KRvfFsWFZtmetwLxv98UlP2vhdvxDchwBUqZ+cOy/ZHIaGloHwR+q/mq/3oDC8iM6WC/SAGrkWIC666jhJ50rYf7/fgyweE+WJ1tGs4keVkhifY36Rtv8QWeQN8xrYkVz4efPseFxijgxmSx6SIxgdy/edBHVihUenJtBGDKNgwvVp44d1MIAVzQp8ZSP1Q==",
-  "gzsig": "mSgeetaGP4xnrdjJXKBi9veIfMFpyh3PQtwPZT1KMsYNK9IU7biRvQ+aq8BHri/KzvowAIRoDWs6UJPvf3TH3MyzZGXi8P6B3chNiCPEnDHiPp9zVR5fehRHNfSFMsu33TgpMhocqr6y4T7JH5vH7JcB06SSZP68fKEKR2v+voW9LDb89QTI3oC1qeLu1fNeCp12fYsNa3wTqrDaPsEmkCcP/2Z6h/eWjR8osIyMgvCV8J4+9+ZX1TarhL9odVtD0CoHNPnq2YzOEr3l0BRpD0s2r0osuIwqhCQi3fAB11ePcCmjDagKh8Cv/9wXPF33yXRt3Q/AvWzOVp+J356OQA==",
+  "gzsize": 422687,
+  "sig": "NMCblhddLtwT97vj5DnMsjZfcD21tMyrBARcazAoskGWd/MRN+5XADDa07m2Hwaap1b3ihHyfps8elKwaMLrJ1RaAX0S/xQrx0xNeFp6KU1rcbKxiSYMrAjPKlf83d4sC4caIgfq+SlkhlUij6KuH+weqQpVJZgzm21j7G4xDBKEfVsNAnvPHwISLmsEPWKFAoWnB6AieBI6nZzH3mgRGnwiEEAuf+jwsZXB2jOQYrCzz4iBRG693CTzQKuavmoooV8MmOqXKEWn4ZSfVwztSm0Or+8XqJ2hte/eDPN4N8vzxjVwmrSICUJ3sFVJMyzFTuclVj3UFKAIvoUMaMizCA==",
+  "gzsig": "Dc6puxxw9b7GsE02sx7OJTYS89dRDbTF1/Z07+kJOCN1kVA4Cdm1nqJbERq8PT9HeCRnLj99NzvoYBYD4lMjqW0LpP27BTpEpzq2nQicwf+gNYrVYfOLjjraeI9fRcuXxdZfP9D2H74JYZ82EkJwPpDF6SgGwp6IU8UDOs86TTdjOo3ghuXqUXwDnKaon6+iL57cBrtv2JoaC1MqRwNvZFL9s5tJPyD3oywz2qRc1nErXSi82ngh3LWZ55XX4BlWg3O5yUMV4jveAvN7Xm/w6IsSZBHFPNJOmfgvY5b97MEajp6OR3nfCClKsd4J23WmT0qQO5FT5hl2m8o9y6xm3Q==",
   "panel": "panel-3d08a2106c1b382d7fcc5ef9.html.gz",
   "psri": "sha256-PQiiEGwbOC1/zF75ePjVZSBzcLGsif9TFBbh5JKZOdk=",
   "notes": {
     "en": [
-      "Three new faces: Sky (sun path and moon phase), Next 12 hours, Umbrella",
-      "Feels-like temperature, UV index, air quality, sunrise and sunset",
-      "Clock name, and Prepare as a gift (erases everything except the firmware)",
-      "About page with credits",
-      "Bureau of Meteorology warnings card (needs the radar program on a computer)"
+      "Fixes weather not loading in 2.0.4"
     ],
     "pt": [
-      "Three new faces: Sky (sun path and moon phase), Next 12 hours, Umbrella",
-      "Feels-like temperature, UV index, air quality, sunrise and sunset",
-      "Clock name, and Prepare as a gift (erases everything except the firmware)",
-      "About page with credits",
-      "Bureau of Meteorology warnings card (needs the radar program on a computer)"
+      "Fixes weather not loading in 2.0.4"
     ],
     "es": [
-      "Three new faces: Sky (sun path and moon phase), Next 12 hours, Umbrella",
-      "Feels-like temperature, UV index, air quality, sunrise and sunset",
-      "Clock name, and Prepare as a gift (erases everything except the firmware)",
-      "About page with credits",
-      "Bureau of Meteorology warnings card (needs the radar program on a computer)"
+      "Fixes weather not loading in 2.0.4"
     ]
   }
 }
