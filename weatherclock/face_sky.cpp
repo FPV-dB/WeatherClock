@@ -329,6 +329,22 @@ static void airCard(int x, const char *label, uint16_t v10, uint8_t level, bool 
 // The UV scale: 11 steps (11 = 11+), coloured by level. The current step breathes and a marker bounces
 // above it (weatherbox: animated, redrawn off-screen on its own).
 static const int SC_Y = 86, SC_H = 40;
+// A small sun beside "UV INDEX" whose rays turn and pulse, so the face is visibly alive even at night (UV 0).
+static const int SUN_X = 94, SUN_Y = 42;  // its box (81..107, 29..55) stays clear of the card edge and the UV number
+static void uvSun(const UiState &s, uint16_t col) {
+  const float turn = (s.ms % 4000) * 2 * K_PI / 4000;
+  const int ph = (int)(s.ms / 90 % 16), wave = ph < 8 ? ph : 16 - ph;
+  for (int k = 0; k < 8; k++) {
+    const float r = turn + k * K_PI / 4, len = 9 + (k % 2 ? wave / 3.0f : 1);
+    thickLine(SUN_X + 7 * cosf(r), SUN_Y + 7 * sinf(r), SUN_X + len * cosf(r), SUN_Y + len * sinf(r), 2, col);
+  }
+  G->fillCircle(SUN_X, SUN_Y, 5, col);
+}
+static void paintSun(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(SUN_X - 13, SUN_Y - 13, 27, 27, CARD);
+  uvSun(s, s.wx.uv10 != 255 ? uvColor(s.wx.uv10) : SUN);
+}
 static void uvScale(const UiState &s) {
   const bool uvOk = s.wx.uv10 != 255;
   const int uv = uvOk ? (s.wx.uv10 + 5) / 10 : 0;
@@ -339,9 +355,9 @@ static void uvScale(const UiState &s) {
     const uint16_t col = uvColor(i * 10 - 5);
     const bool cur = uvOk && (uv == i || (i == 11 && uv > 11));
     if (cur) {
-      const int grow = s.ms ? wave / 3 : 0;  // 0..2 px taller
-      G->fillRoundRect(x - grow / 2, 102 - grow, 16 + grow, 22 + grow, 3, s.ms ? mix16(col, TEXT, wave / 2) : col);
-      const int my = 90 + (s.ms ? (wave < 4 ? wave : 8 - wave) : 0);  // the marker bounces 0..4 px
+      const int grow = s.ms ? wave / 2 : 0;  // 0..4 px taller
+      G->fillRoundRect(x - grow / 2, 102 - grow, 16 + grow, 22 + grow, 3, s.ms ? mix16(col, TEXT, wave) : col);
+      const int my = 88 + (s.ms ? wave * 3 / 4 : 0);  // the marker bounces 0..6 px
       G->fillTriangle(x + 3, my, x + 13, my, x + 8, my + 6, TEXT);
     } else G->fillRoundRect(x, 106, 16, 14, 3, on ? col : mix16(CARD, col, 4));
   }
@@ -359,6 +375,7 @@ static void paintAir(void *c) {
   // UV
   G->fillRoundRect(8, 28, 224, 104, 14, CARD);
   text(18, 36, 1, MUTED, tr("INDICE UV", "UV INDEX", "INDICE UV"));
+  uvSun(s, s.wx.uv10 != 255 ? uvColor(s.wx.uv10) : SUN);
   const bool uvOk = s.wx.uv10 != 255;
   const int uv = uvOk ? (s.wx.uv10 + 5) / 10 : 0;
   const uint16_t uc = uvOk ? uvColor(s.wx.uv10) : MUTED;
@@ -389,9 +406,10 @@ void themeAir(const UiState &s, bool full) {
     uiPaint(full, 0, 24, 240, 216, paintAir, (void *)&s);
     return;
   }
-  static uint32_t lastAnim = 0;  // weatherbox: only the scale moves, ~10 frames per second
-  if (s.weatherOn && s.wx.ok && s.wx.uv10 != 255 && s.ms - lastAnim >= 90) {
+  static uint32_t lastAnim = 0;  // weatherbox: only the sun and the scale move, ~10 frames per second
+  if (s.weatherOn && s.wx.ok && s.ms - lastAnim >= 90) {
     lastAnim = s.ms;
-    uiPaint(false, 14, SC_Y, 214, SC_H, paintScale, (void *)&s);
+    uiPaint(false, SUN_X - 13, SUN_Y - 13, 27, 27, paintSun, (void *)&s);
+    if (s.wx.uv10 != 255) uiPaint(false, 14, SC_Y, 214, SC_H, paintScale, (void *)&s);
   }
 }
