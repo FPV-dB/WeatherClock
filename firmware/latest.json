@@ -1,23 +1,26 @@
 {
-  "version": "2.0.7",
+  "version": "2.0.8",
   "date": "2026-11-08",
   "file": "weatherclock.bin",
-  "size": 590336,
+  "size": 590800,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 425243,
-  "sig": "qR58kY3EXSYphqmHXowhRNiu5zFojjNG3Z/6NS6D2gi2QZHadBHlGrRV44U2DlXLrNtnZ+h8QZfjllRmsNNfys7Woi2fw2NpRfd5zIPauOnmvqkeHu1k/zMMk6BrCbMlCRL2q1gdUmLsV07J3a+3ow/nAb2d3OJhRfQgrWSlb0UFsLHQmW43ZD+uP+YvBAaiOyP0rPLjfcKE6cnY+4zQRsUgIVVh61dy479pxLPRnW1pEjnS3JEV2sne1voLoKcvv1v2VN7h0Kn2G+EoCGjfljj000xOO7nk7bxHXVdvzRaaNae8Z72wX4i+Kp+kXnDOjSdPRb7Jr88CQmT3B8dPgQ==",
-  "gzsig": "f/h4I1JUwe8d1sVLnVHJe2t/4Jb4Oc98vpWxM87ClvHsIXrf7msJ4ty/vryLrXtLx/wlKwuQmyCqIuqkbkRS7573DiENz2/OdDCJbZUyEVDbvROYKgmh9t/QhsTewBj1zJqCc0KD2XdkJuN7j2BIJvrJUAQtP3MwwxTcjgwsVS8sX6V9x5zWqOGRelG2RNvWsyDar0RFTcVA0Jf7flH4e0DYMFWt4dyHPjHpxZSpl89+kTWGc47giwzdoXx0VGP79QKnYR1FVybLLGg64Iqhdwwjvhpe+9Mpmd7LSpTIg0Xbvb3SfIYwIRxGNgd+X2XJH/xaSZqcDEGqQaTuEt8L2w==",
-  "panel": "panel-853aaa66456bc7b1f2b23fbb.html.gz",
-  "psri": "sha256-hTqqZkVrx7Hysj+71Yn/uIFzP1AE9B5seYFRRIMs3S8=",
+  "gzsize": 425560,
+  "sig": "aR9va0wnRB4O5beHj4JhL2CX+xvINQlve9N67yZNAqDz53PzrkGT4Gia5pFBGwAQAD3n/FKalNs6jqzlA4Z3L4QRgXqFwIYb9o9GrryBecpBF/M+LEQsIayJ+KDnN5wOM+C4AJ6+rCmTM8RMjJPn4D9wgrX2YOr948ZlIwbFNQ80XxEr96EZ4uhI+tBHe/qzejgBloEk6eIX8E1fzJ/U/tVTHwg/vpZR7ktRITArzWI1ssBmELe82E09X/mEd7pBtMeFgTfnUlRD9JbClP3teD5NQjMT7mjVXgjeGJ6zBjEd/LsdtVTLIbpcQ/oOozzAoJ+MwVxcReqL7wNUaI+L8g==",
+  "gzsig": "DyHF3Yjuv2665GQSkP7PwKtSgwSR0Vzh1roqMqByKwm9Kc9KQRnjOtRwGOecW1mytlyhjxzGZX5uuS1thDd7Iv5wk8kMkihNSZKKg9vvqeOWivYAkpJY5l2UAsnVLkkj2s/dgWYicla7hcESz6S/vKY89hjTwrzzamHjn/y0uXCmIePvtTm9iP8FULnfkMAXMn0ocxtKEoxJRnM1uO5Wumko+1O4mjBIC+On63ZSQM4b/xN/OcdqJkR4he8ZwW4ERVTKxLbxtyP1q6BvodvorARueiDnAF/Sc5h8iyLR4/6a29Do1Ny0lAzryiNM5lvVInr9nG59xNOkqXxaI5HLcA==",
+  "panel": "panel-d723945a3a7fb11d2256a8de.html.gz",
+  "psri": "sha256-1yOUWjp/sR0iVqjeDIsDPbQqVh5q7XLrtSOrD8HbEp8=",
   "notes": {
     "en": [
-      "Animated Sky, Next 12 hours and Umbrella faces"
+      "Air & UV: turning sun and stronger pulse",
+      "Animated gallery previews for the new faces"
     ],
     "pt": [
-      "Animated Sky, Next 12 hours and Umbrella faces"
+      "Air & UV: turning sun and stronger pulse",
+      "Animated gallery previews for the new faces"
     ],
     "es": [
-      "Animated Sky, Next 12 hours and Umbrella faces"
+      "Air & UV: turning sun and stronger pulse",
+      "Animated gallery previews for the new faces"
     ]
   }
 }
