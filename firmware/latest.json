@@ -1,26 +1,29 @@
 {
-  "version": "2.0.8",
+  "version": "2.0.9",
   "date": "2026-11-08",
   "file": "weatherclock.bin",
-  "size": 590800,
+  "size": 600288,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 425560,
-  "sig": "aR9va0wnRB4O5beHj4JhL2CX+xvINQlve9N67yZNAqDz53PzrkGT4Gia5pFBGwAQAD3n/FKalNs6jqzlA4Z3L4QRgXqFwIYb9o9GrryBecpBF/M+LEQsIayJ+KDnN5wOM+C4AJ6+rCmTM8RMjJPn4D9wgrX2YOr948ZlIwbFNQ80XxEr96EZ4uhI+tBHe/qzejgBloEk6eIX8E1fzJ/U/tVTHwg/vpZR7ktRITArzWI1ssBmELe82E09X/mEd7pBtMeFgTfnUlRD9JbClP3teD5NQjMT7mjVXgjeGJ6zBjEd/LsdtVTLIbpcQ/oOozzAoJ+MwVxcReqL7wNUaI+L8g==",
-  "gzsig": "DyHF3Yjuv2665GQSkP7PwKtSgwSR0Vzh1roqMqByKwm9Kc9KQRnjOtRwGOecW1mytlyhjxzGZX5uuS1thDd7Iv5wk8kMkihNSZKKg9vvqeOWivYAkpJY5l2UAsnVLkkj2s/dgWYicla7hcESz6S/vKY89hjTwrzzamHjn/y0uXCmIePvtTm9iP8FULnfkMAXMn0ocxtKEoxJRnM1uO5Wumko+1O4mjBIC+On63ZSQM4b/xN/OcdqJkR4he8ZwW4ERVTKxLbxtyP1q6BvodvorARueiDnAF/Sc5h8iyLR4/6a29Do1Ny0lAzryiNM5lvVInr9nG59xNOkqXxaI5HLcA==",
-  "panel": "panel-d723945a3a7fb11d2256a8de.html.gz",
-  "psri": "sha256-1yOUWjp/sR0iVqjeDIsDPbQqVh5q7XLrtSOrD8HbEp8=",
+  "gzsize": 432589,
+  "sig": "KJssjNHwZiNfipslkQ9HFbeZaqAqq7Ka0B2GPqvScMOVd+TA+B+JdjwZ4gS71FZmZz/6CP7iJYJVoVi8+ls5zV6lklPewfByQvZdTF+8kkQWr7bNuj05AdVGD1nXJzI89TouNUmsUAxahS/oyvADk6HVrmMY0ZkCszsS7rHoUfx5MahW6H1LWLlXcC9G3kSZEI7oksZu17fhYojz0BQKFKntGVlvMwa3qdyv8/ognrq5vPOHVEoD6FN+pInwO++dofKSCfGtEgxkzVNuyvjd4bl2KDLXLhm+brFzls/2OOAOrbshAW6jYBoaEn8JlHGG9323Z9Hkr3oY41QTeqpQig==",
+  "gzsig": "oeeYbDmGVxUgevsK/PYVe0eeJcwcwPThf3BaynOW1YiIB1AXhzmyyuFSDfIWP0QsLDTxTjwC94pGw+bH6Q/zQ1kcmLmhmjG0xhag/SCWvrf2HrXVPdvAddHQEsg2DoXOhUkifXgLAJTN7zFxTNFE34HdxJMNa6DAdcuohj7Xc0/T0DK/HmjLoXJnL4l6g61SHvzDBkdwthNBXOSydjxNDAqWDBMABhi2dX7Zij4QljCknoUpZJ/zp+sLKJJq8BxFX/aZze8sl7XaqhtWJD/d6ZYhP/Ld6/eJ4dpvAa1I6zeo24PO0FYVyMv4k8ABuyrXDdOXFuCwMZj00P7OP//YDw==",
+  "panel": "panel-e0e9ba130305bf02e8cfc897.html.gz",
+  "psri": "sha256-4Om6EwMFvwLoz8iX4kNMPTy9E098KAOWLqRBpuAD1kE=",
   "notes": {
     "en": [
-      "Air & UV: turning sun and stronger pulse",
-      "Animated gallery previews for the new faces"
+      "New Moon face: phase, % lit, moonrise and moonset, where the moon is now, next full and new moon",
+      "Sky face: daylight, golden hour, blue hour, twilights and night, with the sun's height and direction",
+      "Air & UV: smaller UV number (no longer cut off)"
     ],
     "pt": [
-      "Air & UV: turning sun and stronger pulse",
-      "Animated gallery previews for the new faces"
+      "New Moon face: phase, % lit, moonrise and moonset, where the moon is now, next full and new moon",
+      "Sky face: daylight, golden hour, blue hour, twilights and night, with the sun's height and direction",
+      "Air & UV: smaller UV number (no longer cut off)"
     ],
     "es": [
-      "Air & UV: turning sun and stronger pulse",
-      "Animated gallery previews for the new faces"
+      "New Moon face: phase, % lit, moonrise and moonset, where the moon is now, next full and new moon",
+      "Sky face: daylight, golden hour, blue hour, twilights and night, with the sun's height and direction",
+      "Air & UV: smaller UV number (no longer cut off)"
     ]
   }
 }
