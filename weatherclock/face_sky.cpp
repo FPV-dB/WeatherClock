@@ -381,7 +381,7 @@ static void paintAir(void *c) {
   const uint16_t uc = uvOk ? uvColor(s.wx.uv10) : MUTED;
   char v[8];
   snprintf(v, sizeof v, uvOk ? "%d" : "--", uv);
-  vecText(VF_OUTFIT, 18, 50, 44, v, uc, CARD);
+  vecText(VF_OUTFIT, 18, 48, 36, v, uc, CARD);  // ends at y 84, above the animated scale strip (y 86+)
   if (uvOk) {
     const char *t = uvText(s.wx.uv10);
     textR(222, 52, textW(t, 2) <= 120 ? 2 : 1, uc, t);
