@@ -1246,7 +1246,10 @@ UiState makeState() {
   s.ip = ipText;
   s.ms = millis();
   s.celebrate = alertUntil != 0;
-  s.south = cfg.lat < 0;  // a phase just finished: end animation on the Pomodoro
+  s.south = cfg.lat < 0;
+  s.lat = cfg.lat;
+  s.lon = cfg.lon;
+  s.utc = s.timeOk ? (uint32_t)time(nullptr) : 0;  // a phase just finished: end animation on the Pomodoro
   return s;
 }
 

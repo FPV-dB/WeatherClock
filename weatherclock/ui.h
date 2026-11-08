@@ -78,6 +78,8 @@ struct UiState {
   uint32_t ms;     // millis(): drives the animations
   bool celebrate;  // a Pomodoro phase just finished: plays the end animation
   bool south;      // weatherbox: southern hemisphere (the moon's lit side is mirrored)
+  float lat, lon;  // weatherbox: the clock's place (for the sun's position)
+  uint32_t utc;    // weatherbox: seconds since 1970, UTC (0 = unknown)
 };
 
 constexpr uint16_t uiRgb(uint8_t r, uint8_t g, uint8_t b) {

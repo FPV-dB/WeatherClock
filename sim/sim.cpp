@@ -67,6 +67,14 @@ static UiState base(int h, int m, int s) {
     memcpy(st.wx.ht, T, 12); memcpy(st.wx.hp, P, 12);
   }
   st.south = true;
+  // weatherbox: Adelaide, and the matching UTC (local time is ACDT, UTC+10:30)
+  st.lat = -34.85f; st.lon = 138.54f;
+  {
+    int y = st.now.tm_year + 1900, mo = st.now.tm_mon + 1, d = st.now.tm_mday;
+    if (mo < 3) { y--; mo += 12; }
+    long days = 365L * y + y / 4 - y / 100 + y / 400 + (153 * (mo - 3) + 2) / 5 + d - 719469;
+    st.utc = (uint32_t)(days * 86400L + h * 3600L + m * 60L + s - 37800L);
+  }
   st.city = getenv("SIM_CITY") ? getenv("SIM_CITY") : "Florianopolis";
   st.accent = uiRgb(242, 242, 242);
   st.ip = "192.168.1.101";

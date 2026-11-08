@@ -4,6 +4,8 @@
 //  - Umbrella: a big yes / maybe / no for today, with feels-like, UV and air quality.
 // Registered in faces_list.h; uses the drawing kit in ui_kit.h. Everything is drawn off-screen (no flicker).
 #include "ui_kit.h"
+#include <ctype.h>
+#include <math.h>
 
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
@@ -92,6 +94,64 @@ static void moonDisc(int cx, int cy, int r, float age, bool south) {
   G->drawCircle(cx, cy, r, uiRgb(90, 92, 104));
 }
 
+// ---------- the light of the day: where the sun is and what "hour" that makes ----------
+// Sun position from the UTC time and the place (the usual low-precision formulas, good to a few tenths of a degree).
+static void sunPosition(uint32_t utc, float lat, float lon, float &el, float &az) {
+  const float D2R = K_PI / 180;
+  const double n = utc / 86400.0 - 10957.5;  // days since 2000-01-01 12:00 UTC
+  const float L = fmod(280.460 + 0.9856474 * n, 360.0), g = fmod(357.528 + 0.9856003 * n, 360.0) * D2R;
+  const float lam = (L + 1.915f * sinf(g) + 0.020f * sinf(2 * g)) * D2R, eps = (23.439f - 0.0000004f * (float)n) * D2R;
+  const float ra = atan2f(cosf(eps) * sinf(lam), cosf(lam)), dec = asinf(sinf(eps) * sinf(lam));
+  const float gmst = fmod(280.46061837 + 360.98564736629 * n, 360.0);
+  const float ha = (gmst + lon) * D2R - ra, la = lat * D2R;
+  el = asinf(sinf(la) * sinf(dec) + cosf(la) * cosf(dec) * cosf(ha)) / D2R;
+  az = atan2f(-sinf(ha), tanf(dec) * cosf(la) - sinf(la) * cosf(ha)) / D2R;
+  if (az < 0) az += 360;
+}
+
+// 0 night, 1 astronomical twilight, 2 nautical twilight, 3 blue hour, 4 golden hour, 5 daylight
+static uint8_t lightPhase(float el) {
+  return el >= 6 ? 5 : el >= -4 ? 4 : el >= -6 ? 3 : el >= -12 ? 2 : el >= -18 ? 1 : 0;
+}
+static const char *lightName(uint8_t p) {
+  switch (p) {
+    case 5: return tr("DIA CLARO", "DAYLIGHT", "PLENO DIA");
+    case 4: return tr("HORA DOURADA", "GOLDEN HOUR", "HORA DORADA");
+    case 3: return tr("HORA AZUL", "BLUE HOUR", "HORA AZUL");
+    case 2: return tr("CREPUSCULO NAUTICO", "NAUTICAL TWILIGHT", "CREPUSC. NAUTICO");
+    case 1: return tr("CREPUSCULO ASTRON.", "ASTRO TWILIGHT", "CREPUSC. ASTRON.");
+    default: return tr("NOITE", "NIGHT", "NOCHE");
+  }
+}
+static uint16_t lightColor(uint8_t p) {
+  static const uint16_t C[6] = {uiRgb(110, 120, 170), uiRgb(90, 110, 200), uiRgb(80, 130, 230), uiRgb(70, 150, 255),
+                                uiRgb(255, 176, 50), uiRgb(255, 220, 90)};
+  return C[p < 6 ? p : 0];
+}
+// Worked out when the body is redrawn (every 5 minutes), not on every animation frame.
+static struct { bool ok; float el, az; uint8_t phase, next; int nextMin; } light;
+static void lightUpdate(const UiState &s) {
+  light.ok = s.utc && (s.lat || s.lon);
+  if (!light.ok) return;
+  sunPosition(s.utc, s.lat, s.lon, light.el, light.az);
+  light.phase = lightPhase(light.el);
+  light.nextMin = -1;
+  for (int k = 2; k <= 24 * 60; k += 2) {  // the next change, in 2-minute steps
+    float e, a;
+    sunPosition(s.utc + k * 60, s.lat, s.lon, e, a);
+    uint8_t p = lightPhase(e);
+    if (p != light.phase) {
+      light.next = p;
+      light.nextMin = (s.now.tm_hour * 60 + s.now.tm_min + k) % 1440;
+      break;
+    }
+  }
+}
+static const char *compass16(float az) {
+  static const char D[16][4] = {"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
+  return D[(int)((az + 11.25f) / 22.5f) % 16];
+}
+
 static void paintSky(void *c) {
   const UiState &s = *(const UiState *)c;
   G->fillRect(0, 24, 240, 216, BG);
@@ -138,6 +198,26 @@ static void paintSky(void *c) {
       moonDisc(bx, by, 10, moonAge(s.now), s.south);
     }
   }
+  // the light of the moment, inside the arc: its name, the sun's height and direction, and what comes next
+  if (light.ok) {
+    const char *n = lightName(light.phase);
+    textC(120, 74, textW(n, 2) <= 150 ? 2 : 1, lightColor(light.phase), n);
+    char l[40];
+    const int e = (int)lroundf(light.el);
+    snprintf(l, sizeof l, tr("sol %d  %s", "sun %d  %s", "sol %d  %s"), e, compass16(light.az));
+    const int w = textW(l, 1) + 6, x0 = 120 - w / 2;
+    char head[12];
+    snprintf(head, sizeof head, tr("sol %d", "sun %d", "sol %d"), e);
+    text(x0, 96, 1, MUTED, l);
+    degree(x0 + textW(head, 1) + 1, 96, 1, MUTED);
+    if (light.nextMin >= 0) {
+      char hm[12];
+      hhmm(s, light.nextMin, hm, sizeof hm);
+      snprintf(l, sizeof l, tr("%s as %s", "%s at %s", "%s a las %s"), lightName(light.next), hm);
+      for (char *p = l; *p; p++) *p = (char)tolower((unsigned char)*p);
+      textC(120, 110, 1, mix16(BG, lightColor(light.next), 12), l);
+    }
+  }
   // sunrise and sunset under the horizon
   char t[12];
   text(14, cy + 8, 1, MUTED, tr("NASCER", "SUNRISE", "SALIDA"));
@@ -162,6 +242,7 @@ static void paintSky(void *c) {
 void themeSky(const UiState &s, bool full) {
   topBar(s, full);
   if (bodyDue(s, full, 5)) {
+    lightUpdate(s);
     uiPaint(full, 0, 24, 240, 216, paintSky, (void *)&s);
     return;
   }
