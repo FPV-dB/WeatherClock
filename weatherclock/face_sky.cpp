@@ -262,3 +262,61 @@ void themeUmbrella(const UiState &s, bool full) {
   topBar(s, full);
   if (bodyDue(s, full, 60)) uiPaint(full, 0, 24, 240, 216, paintUmbrella, (void *)&s);
 }
+
+// ---------- Air & UV ----------
+// UV index with its level, a coloured 11-step scale and today's peak; below, PM2.5, PM10 and the air quality index.
+static void airCard(int x, const char *label, uint16_t v10, uint8_t level, bool known, const char *unit) {
+  const int y = 140, w = 70, h = 92, cx = x + w / 2;
+  G->fillRoundRect(x, y, w, h, 12, CARD);
+  textC(cx, y + 8, 1, MUTED, label);
+  char v[8];
+  if (!known) snprintf(v, sizeof v, "--");
+  else snprintf(v, sizeof v, "%u", (unsigned)((v10 + 5) / 10));
+  const uint16_t c = known ? levelColor(level) : MUTED;
+  const int vh = 30, vw = vecWidth(VF_OUTFIT, v, vh);
+  vecText(VF_OUTFIT, cx - vw / 2, y + 22, vh, v, c, CARD);
+  textC(cx, y + 58, 1, MUTED, unit);
+  if (known) textC(cx, y + 74, 1, c, levelText(level));
+}
+
+static void paintAir(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(0, 24, 240, 216, BG);
+  if (noWeather(s)) return;
+  // UV
+  G->fillRoundRect(8, 28, 224, 104, 14, CARD);
+  text(18, 36, 1, MUTED, tr("INDICE UV", "UV INDEX", "INDICE UV"));
+  const bool uvOk = s.wx.uv10 != 255;
+  const int uv = uvOk ? (s.wx.uv10 + 5) / 10 : 0;
+  const uint16_t uc = uvOk ? uvColor(s.wx.uv10) : MUTED;
+  char v[8];
+  snprintf(v, sizeof v, uvOk ? "%d" : "--", uv);
+  vecText(VF_OUTFIT, 18, 50, 44, v, uc, CARD);
+  if (uvOk) {
+    const char *t = uvText(s.wx.uv10);
+    textR(222, 52, textW(t, 2) <= 120 ? 2 : 1, uc, t);
+  }
+  if (s.wx.uvMax10 != 255) {
+    char m[24];
+    snprintf(m, sizeof m, tr("pico hoje %d", "today's peak %d", "maximo hoy %d"), (s.wx.uvMax10 + 5) / 10);
+    textR(222, 76, 1, MUTED, m);
+  }
+  // the scale: 11 steps (11 = 11+), coloured by level; the current value is the tall one
+  for (int i = 1; i <= 11; i++) {
+    const int x = 18 + (i - 1) * 19, on = uvOk && (uv >= i || (i == 11 && uv > 11));
+    const uint16_t col = uvColor(i * 10 - 5);
+    const bool cur = uvOk && (uv == i || (i == 11 && uv > 11));
+    G->fillRoundRect(x, cur ? 102 : 106, 16, cur ? 22 : 14, 3, on ? col : mix16(CARD, col, 4));
+  }
+  // particles and the index
+  airCard(8, "PM2.5", s.wx.pm25, pmLevel(s.wx.pm25, true), s.wx.pm25 != 0xFFFF, "ug/m3");
+  airCard(85, "PM10", s.wx.pm10, pmLevel(s.wx.pm10, false), s.wx.pm10 != 0xFFFF, "ug/m3");
+  const bool aqOk = s.wx.aqi != 0xFFFF;
+  const uint8_t aql = !aqOk ? 0 : s.wx.aqi <= 50 ? 0 : s.wx.aqi <= 100 ? 1 : s.wx.aqi <= 150 ? 2 : s.wx.aqi <= 200 ? 3 : 4;
+  airCard(162, tr("INDICE AR", "AIR INDEX", "INDICE AIRE"), aqOk ? s.wx.aqi * 10 : 0, aql, aqOk, "US AQI");
+}
+
+void themeAir(const UiState &s, bool full) {
+  topBar(s, full);
+  if (bodyDue(s, full, 15)) uiPaint(full, 0, 24, 240, 216, paintAir, (void *)&s);
+}

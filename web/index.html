@@ -430,7 +430,7 @@ function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.o
  const rain=w.rin?'<span class="rn">'+(w.rin<15?t('Rain any minute'):t('Rain in {0} min',w.rin))+'</span>':'';
  c.innerHTML='<div class="ic">'+WXI(w.code,w.day)+'</div><div class="tp">'+dg(w.t)+'</div><div class="ds">'+w.desc+(s.cfg.city?' · '+s.cfg.city:'')+'</div>'
   +'<div class="chips">'+chip(t('High'),dg(w.max))+chip(t('Low'),dg(w.min))+(w.wind!=null?chip(t('Wind'),WDIR(w.wdir)+' '+w.wind+' km/h')+chip(t('Gusts'),w.gust+' km/h'):'')+chip(t('Humidity'),w.h+'%')
-  +(w.feels!=null?chip(t('Feels like'),dg(w.feels)):'')+(w.uv>=0?chip('UV',Math.round(w.uv/10)):'')+(w.aqi>=0?chip(t('Air quality'),w.aqi):'')
+  +(w.feels!=null?chip(t('Feels like'),dg(w.feels)):'')+(w.uv>=0?chip('UV',Math.round(w.uv/10)+(w.uvmax>=0?' ('+t('peak {0}',Math.round(w.uvmax/10))+')':'')):'')+(w.aqi>=0?chip(t('Air quality'),w.aqi):'')+(w.pm25>=0?chip('PM2.5',Math.round(w.pm25/10)+' µg/m³'):'')+(w.pm10>=0?chip('PM10',Math.round(w.pm10/10)+' µg/m³'):'')
   +(w.rise>=0?chip(t('Sunrise'),hm(w.rise)):'')+(w.set>=0?chip(t('Sunset'),hm(w.set)):'')+rain+'</div>'}
 const hm=m=>{let h=Math.floor(m/60);const ap=st&&st.cfg.h12;if(ap)h=h%12||12;return h+':'+String(m%60).padStart(2,'0')};
 function giftReset(){if(!confirm(t('Prepare this clock as a gift? Everything except the firmware is erased: Wi-Fi, city, name, password, photos and faces. This cannot be undone.')))return;post('/api/giftreset').then(()=>toast(t('Erased. The clock is restarting with the first-install help.'))).catch(()=>toast(t('Failed')))}

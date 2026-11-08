@@ -124,6 +124,9 @@ const char *moonName(uint8_t phase);        // "Full moon"... in the screen lang
 const char *uvText(uint8_t uv10);           // "Low", "Moderate", "High", "Very high", "Extreme"
 uint16_t uvColor(uint8_t uv10);
 const char *aqiText(uint16_t aqi);          // "Good", "Moderate", "Unhealthy"...
+uint8_t pmLevel(uint16_t pm10x, bool fine); // 0 good .. 4 hazardous (pm in µg/m³ x 10; fine = PM2.5)
+const char *levelText(uint8_t level);       // "Good", "Fair", "Poor", "Very poor", "Hazardous"
+uint16_t levelColor(uint8_t level);
 uint16_t aqiColor(uint16_t aqi);
 
 // ---------- registered faces (faces_list.h) ----------

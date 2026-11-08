@@ -59,7 +59,7 @@ static UiState base(int h, int m, int s) {
   st.weatherOn = true;
   st.wx = {true, 23.4f, 14.2f, 27.1f, 44, 2, true, 1, 5, {{2, 14, 27, 10}, {61, 15, 21, 80}, {95, 13, 19, 100}, {3, -2, 22, 20}, {0, 12, 29, 0}}};
   st.wx.wind = 18; st.wx.gust = 31; st.wx.wdir = 225;  // weatherbox: SW wind
-  st.wx.feels = 24.6f; st.wx.uv10 = 72; st.wx.aqi = 38; st.wx.rise = 5 * 60 + 52; st.wx.set = 19 * 60 + 41;
+  st.wx.feels = 24.6f; st.wx.uv10 = 72; st.wx.aqi = 38; st.wx.uvMax10 = 94; st.wx.pm25 = 58; st.wx.pm10 = 84; st.wx.rise = 5 * 60 + 52; st.wx.set = 19 * 60 + 41;
   {
     static const int8_t T[12] = {23, 24, 25, 26, 26, 25, 24, 22, 20, 19, 18, 17};
     static const uint8_t P[12] = {5, 5, 10, 20, 45, 70, 80, 55, 30, 15, 10, 5};

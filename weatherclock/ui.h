@@ -47,6 +47,8 @@ struct UiWeather {
   uint8_t nh, h0;      // hours in ht/hp (next 12 h, starting with the current hour h0)
   int8_t ht[12];       // temperature per hour (rounded, screen unit)
   uint8_t hp[12];      // chance of rain per hour, %
+  uint8_t uvMax10;     // today's highest UV index x 10 (255 = no data)
+  uint16_t pm25, pm10; // particulate matter, µg/m³ x 10 (0xFFFF = no data)
 };
 static const int UI_HOURS = 12;
 

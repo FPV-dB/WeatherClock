@@ -357,6 +357,28 @@ const char *aqiText(uint16_t a) {
   if (a <= 200) return tr("Ruim", "Unhealthy", "Mala");
   return tr("Pessimo", "Hazardous", "Peligrosa");
 }
+// Particle levels for one hour of air, close to the Australian air quality categories:
+// PM2.5 25 / 50 / 100 / 300 µg/m³ and PM10 50 / 100 / 200 / 600 µg/m³ mark the steps.
+uint8_t pmLevel(uint16_t v, bool fine) {
+  const uint16_t *t;
+  static const uint16_t F25[4] = {250, 500, 1000, 3000}, F10[4] = {500, 1000, 2000, 6000};
+  t = fine ? F25 : F10;
+  uint8_t l = 0;
+  while (l < 4 && v >= t[l]) l++;
+  return l;
+}
+const char *levelText(uint8_t l) {
+  switch (l) {
+    case 0: return tr("Bom", "Good", "Buena");
+    case 1: return tr("Razoavel", "Fair", "Aceptable");
+    case 2: return tr("Ruim", "Poor", "Mala");
+    case 3: return tr("Muito ruim", "Very poor", "Muy mala");
+    default: return tr("Perigoso", "Hazardous", "Peligrosa");
+  }
+}
+uint16_t levelColor(uint8_t l) {
+  return l == 0 ? uiRgb(62, 207, 122) : l == 1 ? uiRgb(255, 214, 60) : l == 2 ? uiRgb(255, 150, 40) : l == 3 ? uiRgb(255, 70, 60) : uiRgb(190, 90, 255);
+}
 uint16_t aqiColor(uint16_t a) {
   return a <= 50 ? uiRgb(62, 207, 122) : a <= 100 ? uiRgb(255, 214, 60) : a <= 150 ? uiRgb(255, 150, 40) : a <= 200 ? uiRgb(255, 70, 60) : uiRgb(190, 90, 255);
 }

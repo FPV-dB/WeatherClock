@@ -848,6 +848,8 @@ struct Weather {
   float feels = 0;
   uint8_t uv10 = 255;
   uint16_t aqi = 0xFFFF;
+  uint8_t uvMax10 = 255;
+  uint16_t pm25 = 0xFFFF, pm10 = 0xFFFF;
   uint8_t nh = 0, h0 = 0;
   int8_t ht[UI_HOURS];
   uint8_t hp[UI_HOURS];
@@ -943,7 +945,7 @@ bool fetchWeather() {
   appendFixed(url, cfg.lon, 4);
   url += F("&current=temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m,apparent_temperature,uv_index"
            "&hourly=temperature_2m,precipitation_probability&forecast_hours=12"
-           "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset"
+           "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max"
            "&minutely_15=precipitation,precipitation_probability&forecast_minutely_15=4"
            "&timezone=auto&forecast_days=");
   url += UI_DAYS;
@@ -973,6 +975,7 @@ bool fetchWeather() {
   filter["daily"]["temperature_2m_min"] = true;
   filter["daily"]["sunrise"] = true;
   filter["daily"]["sunset"] = true;
+  filter["daily"]["uv_index_max"] = true;
   JsonDocument doc;
   DeserializationError err = deserializeJson(doc, client, DeserializationOption::Filter(filter));
   client.stop();
@@ -990,6 +993,8 @@ bool fetchWeather() {
   {
     JsonVariantConst uv = doc["current"]["uv_index"];
     wx.uv10 = uv.isNull() ? 255 : (uint8_t)constrain(lroundf(uv.as<float>() * 10), 0, 254);
+    JsonVariantConst um = doc["daily"]["uv_index_max"][0];
+    wx.uvMax10 = um.isNull() ? 255 : (uint8_t)constrain(lroundf(um.as<float>() * 10), 0, 254);
     JsonArrayConst ht = doc["hourly"]["temperature_2m"], hp = doc["hourly"]["precipitation_probability"];
     const char *h0 = doc["hourly"]["time"][0] | (const char *)nullptr;
     const char *tp = h0 ? strchr(h0, 'T') : nullptr;
@@ -1060,15 +1065,20 @@ static void fetchAqi() {
   appendFixed(url, cfg.lat, 4);
   url += F("&longitude=");
   appendFixed(url, cfg.lon, 4);
-  url += F("&current=us_aqi");
+  url += F("&current=us_aqi,pm2_5,pm10");
   if (httpGet(client, url, 5000) != 200) return;
   JsonDocument filter;
   filter["current"]["us_aqi"] = true;
+  filter["current"]["pm2_5"] = true;
+  filter["current"]["pm10"] = true;
   JsonDocument doc;
   if (deserializeJson(doc, client, DeserializationOption::Filter(filter))) return;
   client.stop();
   JsonVariantConst a = doc["current"]["us_aqi"];
   wx.aqi = a.isNull() ? 0xFFFF : (uint16_t)constrain(a.as<int>(), 0, 999);
+  auto pm = [](JsonVariantConst v) { return v.isNull() ? (uint16_t)0xFFFF : (uint16_t)constrain(lroundf(v.as<float>() * 10), 0, 9999); };
+  wx.pm25 = pm(doc["current"]["pm2_5"]);
+  wx.pm10 = pm(doc["current"]["pm10"]);
   wx.version++;
 }
 
@@ -1207,6 +1217,9 @@ UiState makeState() {
   s.wx.feels = wx.feels;
   s.wx.uv10 = wx.uv10;
   s.wx.aqi = wx.aqi;
+  s.wx.uvMax10 = wx.uvMax10;
+  s.wx.pm25 = wx.pm25;
+  s.wx.pm10 = wx.pm10;
   s.wx.rise = sunRise;
   s.wx.set = sunSet;
   s.wx.nh = wx.nh;
@@ -2246,6 +2259,12 @@ void sendState() {
   j += wx.uv10 == 255 ? -1 : (int)wx.uv10;
   j += F(",\"aqi\":");
   j += wx.aqi == 0xFFFF ? -1 : (int)wx.aqi;
+  j += F(",\"uvmax\":");
+  j += wx.uvMax10 == 255 ? -1 : (int)wx.uvMax10;
+  j += F(",\"pm25\":");
+  j += wx.pm25 == 0xFFFF ? -1 : (int)wx.pm25;
+  j += F(",\"pm10\":");
+  j += wx.pm10 == 0xFFFF ? -1 : (int)wx.pm10;
   j += F(",\"code\":");
   j += wx.code;
   j += F(",\"day\":");
@@ -3012,7 +3031,7 @@ void setupWeb() {
       wx.ok = false;
       wx.version++;
       wxNext = aqiNext = millis();  // fetch the weather (and air quality) now
-      wx.aqi = 0xFFFF;
+      wx.aqi = wx.pm25 = wx.pm10 = 0xFFFF;
     }
     saveSettings();
     updateBrightness(true);

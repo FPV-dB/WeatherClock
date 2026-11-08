@@ -47,7 +47,7 @@ The screen is **240 × 240** pixels; `x` grows to the right and `y` downwards.
 | `{WIND}` wind speed | `{GUST}` gusts | `{WDIR}` wind direction (`SW`) | `{UNIT}` `C` or `F` |
 | `{RAIN}` `rain 15 min` / `rain soon`, empty with no rain in the next hour | `{FOCUS}` focus sessions today | `{GOAL}` daily goal | `{STREAK}` `{BEST}` |
 | `{FEELS}` feels-like temperature | `{UV}` UV index | `{AQI}` US air quality index | `{MOON}` moon phase (`Full moon`) |
-| `{SUNRISE}` `{SUNSET}` (follow 12/24 h) | | | |
+| `{SUNRISE}` `{SUNSET}` (follow 12/24 h) | `{UVMAX}` today's peak UV | `{PM25}` `{PM10}` particles, µg/m³ | |
 
 `{TEMP}`, `{TMIN}` and `{TMAX}` already come in the unit chosen in the panel (°C or °F). `°` can be written straight into the text (`"{TEMP}°"`).
 

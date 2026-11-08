@@ -21,4 +21,5 @@
   X(WIND, themeWind, "Wind", "Compass, speed, gusts and wind strength") \
   X(SKY, themeSky, "Sky", "Sun path with sunrise and sunset, and the moon phase") \
   X(HOURS, themeHours, "Next 12 hours", "Temperature graph and chance of rain, hour by hour") \
-  X(UMBRELLA, themeUmbrella, "Umbrella", "Do I need an umbrella today? Plus feels-like, UV and air quality")
+  X(UMBRELLA, themeUmbrella, "Umbrella", "Do I need an umbrella today? Plus feels-like, UV and air quality") \
+  X(AIR, themeAir, "Air & UV", "UV index with today's peak, and PM2.5 and PM10 particle levels")
