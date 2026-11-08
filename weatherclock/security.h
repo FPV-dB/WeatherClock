@@ -53,7 +53,7 @@ struct AuthThrottle {
   }
 };
 static bool safeHttpUrl(const char *s, size_t n) {
-  if (n < 8 || n > 400 || memcmp(s, "http://", 7)) return false;
+  if (n < 8 || n > 600 || memcmp(s, "http://", 7)) return false;  // weatherbox: the weather request is ~430 characters
   for (size_t i=0; i<n; i++) {
     unsigned char c = s[i];
     if (c <= 0x20 || c == 0x7f || c == '"' || c == '\\' || c == '#') return false;
