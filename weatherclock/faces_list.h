@@ -18,4 +18,7 @@
   X(FORECAST, themeForecast, "Forecast", "Today and the next 4 days, with rain and low/high") \
   X(FORECAST_CARDS, themeForecastCards, "Forecast cards", "Four days in cards, with the high in focus") \
   X(FORECAST_LCD, themeForecastLcd, "Forecast LCD", "Four days on the retro LCD screen") \
-  X(WIND, themeWind, "Wind", "Compass, speed, gusts and wind strength")
+  X(WIND, themeWind, "Wind", "Compass, speed, gusts and wind strength") \
+  X(SKY, themeSky, "Sky", "Sun path with sunrise and sunset, and the moon phase") \
+  X(HOURS, themeHours, "Next 12 hours", "Temperature graph and chance of rain, hour by hour") \
+  X(UMBRELLA, themeUmbrella, "Umbrella", "Do I need an umbrella today? Plus feels-like, UV and air quality")

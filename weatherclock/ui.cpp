@@ -315,6 +315,52 @@ const char *weatherText(int c) {
   return "";
 }
 
+// ---------- weatherbox: sky ----------
+// Moon age from a known new moon (2000-01-06 18:14 UTC) and the synodic month (29.530589 days).
+// Good to within about half a day, plenty for an 8-step phase.
+float moonAge(const struct tm &t) {
+  long y = t.tm_year + 1900, m = t.tm_mon + 1, d = t.tm_mday;
+  if (m < 3) { y--; m += 12; }
+  long days = 365 * y + y / 4 - y / 100 + y / 400 + (153 * (m - 3) + 2) / 5 + d - 730426;  // days since 2000-01-01
+  float age = fmodf(days + (t.tm_hour + t.tm_min / 60.0f) / 24.0f - 5.76f, 29.530589f);
+  return age < 0 ? age + 29.530589f : age;
+}
+uint8_t moonPhase(const struct tm &t) { return (uint8_t)((int)(moonAge(t) / 29.530589f * 8 + 0.5f) % 8); }
+const char *moonName(uint8_t p) {
+  switch (p) {
+    case 0: return tr("Lua nova", "New moon", "Luna nueva");
+    case 1: return tr("Crescente", "Waxing crescent", "Creciente");
+    case 2: return tr("Quarto crescente", "First quarter", "Cuarto creciente");
+    case 3: return tr("Crescente gibosa", "Waxing gibbous", "Gibosa creciente");
+    case 4: return tr("Lua cheia", "Full moon", "Luna llena");
+    case 5: return tr("Minguante gibosa", "Waning gibbous", "Gibosa menguante");
+    case 6: return tr("Quarto minguante", "Last quarter", "Cuarto menguante");
+    default: return tr("Minguante", "Waning crescent", "Menguante");
+  }
+}
+const char *uvText(uint8_t uv10) {
+  if (uv10 == 255) return "";
+  if (uv10 < 30) return tr("Baixo", "Low", "Bajo");
+  if (uv10 < 60) return tr("Moderado", "Moderate", "Moderado");
+  if (uv10 < 80) return tr("Alto", "High", "Alto");
+  if (uv10 < 110) return tr("Muito alto", "Very high", "Muy alto");
+  return tr("Extremo", "Extreme", "Extremo");
+}
+uint16_t uvColor(uint8_t uv10) {
+  return uv10 < 30 ? uiRgb(62, 207, 122) : uv10 < 60 ? uiRgb(255, 214, 60) : uv10 < 80 ? uiRgb(255, 150, 40) : uv10 < 110 ? uiRgb(255, 70, 60) : uiRgb(190, 90, 255);
+}
+const char *aqiText(uint16_t a) {
+  if (a == 0xFFFF) return "";
+  if (a <= 50) return tr("Bom", "Good", "Buena");
+  if (a <= 100) return tr("Moderado", "Moderate", "Moderada");
+  if (a <= 150) return tr("Regular", "Poor", "Regular");
+  if (a <= 200) return tr("Ruim", "Unhealthy", "Mala");
+  return tr("Pessimo", "Hazardous", "Peligrosa");
+}
+uint16_t aqiColor(uint16_t a) {
+  return a <= 50 ? uiRgb(62, 207, 122) : a <= 100 ? uiRgb(255, 214, 60) : a <= 150 ? uiRgb(255, 150, 40) : a <= 200 ? uiRgb(255, 70, 60) : uiRgb(190, 90, 255);
+}
+
 // ---------- pixel-art sprites (assets/*.txt -> assets.h) ----------
 void uiSprite(const UiSprite *sp, int x, int y, uint8_t sc, uint8_t frame, int32_t bg) {
   UiSprite s;
@@ -774,6 +820,9 @@ void uiRenderPomodoro(const UiState &s) {
 // ---------- one-off screens ----------
 static int8_t bootLast = -1;  // drawn position of the start-up bar (-1: new screen, draw the frame)
 struct MsgJob { const char *title, *l1, *l2, *l3; };
+static char uiOwner[24] = "";
+void uiSetOwner(const char *name) { snprintf(uiOwner, sizeof uiOwner, "%s", name ? name : ""); }
+
 static void paintMessage(void *p) {
   const MsgJob &m = *(const MsgJob *)p;
   const char *title = m.title, *l1 = m.l1, *l2 = m.l2, *l3 = m.l3;
@@ -782,6 +831,7 @@ static void paintMessage(void *p) {
   weatherIcon(120, 50, 1.45f, 2, true, BG);
   const int tw = vecWidth(VF_OUTFIT_TXT, title, 28);
   vecText(VF_OUTFIT_TXT, 120 - tw / 2, 88, 28, title, TEXT, BG);
+  if (uiOwner[0]) textC(120, 2, textW(uiOwner, 2) <= 228 ? 2 : 1, SUN, uiOwner);  // weatherbox: whose clock it is
   textC(120, 126, 2, LONG, l1);
   textC(120, 158, 1, MUTED, l2);
   textC(120, 172, 1, MUTED, l3);

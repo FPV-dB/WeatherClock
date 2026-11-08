@@ -59,6 +59,14 @@ static UiState base(int h, int m, int s) {
   st.weatherOn = true;
   st.wx = {true, 23.4f, 14.2f, 27.1f, 44, 2, true, 1, 5, {{2, 14, 27, 10}, {61, 15, 21, 80}, {95, 13, 19, 100}, {3, -2, 22, 20}, {0, 12, 29, 0}}};
   st.wx.wind = 18; st.wx.gust = 31; st.wx.wdir = 225;  // weatherbox: SW wind
+  st.wx.feels = 24.6f; st.wx.uv10 = 72; st.wx.aqi = 38; st.wx.rise = 5 * 60 + 52; st.wx.set = 19 * 60 + 41;
+  {
+    static const int8_t T[12] = {23, 24, 25, 26, 26, 25, 24, 22, 20, 19, 18, 17};
+    static const uint8_t P[12] = {5, 5, 10, 20, 45, 70, 80, 55, 30, 15, 10, 5};
+    st.wx.nh = 12; st.wx.h0 = h;
+    memcpy(st.wx.ht, T, 12); memcpy(st.wx.hp, P, 12);
+  }
+  st.south = true;
   st.city = getenv("SIM_CITY") ? getenv("SIM_CITY") : "Florianopolis";
   st.accent = uiRgb(242, 242, 242);
   st.ip = "192.168.1.101";
@@ -522,6 +530,7 @@ int main() {
   // ---- one-off screens ----
   { Frame *f = new Frame(); uiBegin(f); uiMessage("Set up Wi-Fi", "WeatherClock-Setup", "password: ab12cd34", "http://192.168.4.1"); save(*f, "12_portal"); delete f; }
   { Frame *f = new Frame(); uiBegin(f);  // start-up screen: the Wi-Fi step, the time step and ready
+    if (const char *o = getenv("SIM_OWNER")) uiSetOwner(o);  // weatherbox: the clock's name on the start-up screen
     uiMessage("Weather Clock", "Connecting Wi-Fi", "v1.0", ""); uiBootProgress(300, 0); save(*f, "12b_inicio_wifi");
     uiMessage("Weather Clock", "Setting the time", "weatherclock.local", "192.168.1.178"); uiBootProgress(900, 1); save(*f, "12c_inicio_hora");
     uiMessage("Weather Clock", "Connected", "weatherclock.local", "192.168.1.178"); uiBootProgress(900, 2); save(*f, "12d_inicio_pronto"); delete f; }

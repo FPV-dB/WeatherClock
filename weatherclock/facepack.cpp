@@ -428,6 +428,15 @@ static void variable(const char *k, const UiState &s, char *v, size_t n) {
   else if (!strcmp_P(k, PSTR("TEMP"))) wx ? snprintf_P(v, n, PSTR("%d"), (int)lroundf(s.wx.t)) : snprintf_P(v, n, PSTR("--"));
   else if (!strcmp_P(k, PSTR("TMIN"))) wx ? snprintf_P(v, n, PSTR("%d"), (int)lroundf(s.wx.tmin)) : snprintf_P(v, n, PSTR("--"));
   else if (!strcmp_P(k, PSTR("TMAX"))) wx ? snprintf_P(v, n, PSTR("%d"), (int)lroundf(s.wx.tmax)) : snprintf_P(v, n, PSTR("--"));
+  else if (!strcmp_P(k, PSTR("FEELS"))) wx ? snprintf_P(v, n, PSTR("%d"), (int)lroundf(s.wx.feels)) : snprintf_P(v, n, PSTR("--"));
+  else if (!strcmp_P(k, PSTR("UV"))) wx && s.wx.uv10 != 255 ? snprintf_P(v, n, PSTR("%d"), (s.wx.uv10 + 5) / 10) : snprintf_P(v, n, PSTR("--"));
+  else if (!strcmp_P(k, PSTR("AQI"))) wx && s.wx.aqi != 0xFFFF ? snprintf_P(v, n, PSTR("%u"), s.wx.aqi) : snprintf_P(v, n, PSTR("--"));
+  else if (!strcmp_P(k, PSTR("SUNRISE")) || !strcmp_P(k, PSTR("SUNSET"))) {
+    int m = k[3] == 'R' ? s.wx.rise : s.wx.set;
+    if (!wx || m < 0) snprintf_P(v, n, PSTR("--:--"));
+    else snprintf_P(v, n, PSTR("%d:%02d"), s.hour12 ? ((m / 60) % 12 ? (m / 60) % 12 : 12) : m / 60, m % 60);
+  }
+  else if (!strcmp_P(k, PSTR("MOON"))) snprintf_P(v, n, PSTR("%s"), s.timeOk ? moonName(moonPhase(s.now)) : "");
   else if (!strcmp_P(k, PSTR("HUM"))) wx ? snprintf_P(v, n, PSTR("%d"), s.wx.hum) : snprintf_P(v, n, PSTR("--"));
   else if (!strcmp_P(k, PSTR("WIND"))) wx ? snprintf_P(v, n, PSTR("%u"), s.wx.wind) : snprintf_P(v, n, PSTR("--"));
   else if (!strcmp_P(k, PSTR("GUST"))) wx ? snprintf_P(v, n, PSTR("%u"), s.wx.gust) : snprintf_P(v, n, PSTR("--"));

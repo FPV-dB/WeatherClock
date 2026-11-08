@@ -143,6 +143,7 @@ struct Settings {
   uint8_t rainAlert;    // 1 = warns on screen when it will rain within the next hour; garbage becomes 1
   uint8_t beta;         // 1 = the panel also offers the test versions (firmware/beta.json); garbage becomes 0
   uint8_t spi80;        // reserved: was a test's 80 MHz option (the ST7789 can't keep up and the picture turns to garbage); always 0
+  char devName[24];     // weatherbox: the clock's name ("Mum's clock"), shown on the start-up screen and the panel; garbage becomes ""
 };
 const uint32_t SETTINGS_MAGIC = 0x504F4D34;     // "POM4"
 const uint32_t SETTINGS_MAGIC_V3 = 0x504F4D33;  // "POM3": same fields, without the v4 ones
@@ -161,7 +162,7 @@ void defaultSettings() {
 // factory settings). The counter lives in EEPROM, after the settings: it survives unplugging,
 // unlike RTC memory. 30 s powered on resets the count.
 const int BOOT_OFF = 400;
-static_assert(sizeof(Settings) <= BOOT_OFF, "as configuracoes invadiriam o contador de inicializacoes");
+static_assert(sizeof(Settings) <= BOOT_OFF, "the settings would overlap the boot counter");
 struct BootCount { uint32_t magic; uint8_t n; };
 const uint32_t BOOT_MAGIC = 0x424F4F54;  // "BOOT"
 uint8_t bootCount = 0;
@@ -266,6 +267,11 @@ void loadSettings() {
   if (cfg.rainAlert > 1) cfg.rainAlert = 1;
   if (cfg.beta > 1) cfg.beta = 0;
   cfg.spi80 = 0;  // anyone who switched it on in the test goes back to 40 MHz
+  {
+    bool ok = memchr(cfg.devName, 0, sizeof cfg.devName) != nullptr;
+    for (const char *c = cfg.devName; ok && *c; c++) ok = *c >= 0x20 && *c < 0x7F && *c != '"' && *c != '\\';
+    if (!ok) cfg.devName[0] = 0;
+  }
   if (!(fabsf(cfg.lat) <= 90 && fabsf(cfg.lon) <= 180)) cfg.lat = cfg.lon = 0;  // garbage or NaN would overflow String(float)
   // password for the clock's networks: 8 letters/digits without the easily confused ones, drawn by the chip's generator
   // the first time (or if the memory holds garbage) and shown on screen while the network is up
@@ -839,6 +845,12 @@ struct Weather {
   uint8_t rainIn = 0;  // see UiWeather::rainIn
   uint8_t wind = 0, gust = 0;  // km/h (weatherbox)
   uint16_t wdir = 0;
+  float feels = 0;
+  uint8_t uv10 = 255;
+  uint16_t aqi = 0xFFFF;
+  uint8_t nh = 0, h0 = 0;
+  int8_t ht[UI_HOURS];
+  uint8_t hp[UI_HOURS];
   char tzName[40] = "";  // the city's time zone according to Open-Meteo (IANA, e.g. America/Sao_Paulo)
   int32_t utcOff = 0;     // this time zone's offset right now, in seconds (the panel compares it with the clock's)
 } wx;
@@ -929,7 +941,8 @@ bool fetchWeather() {
   appendFixed(url, cfg.lat, 4);
   url += F("&longitude=");
   appendFixed(url, cfg.lon, 4);
-  url += F("&current=temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m"
+  url += F("&current=temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m,apparent_temperature,uv_index"
+           "&hourly=temperature_2m,precipitation_probability&forecast_hours=12"
            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset"
            "&minutely_15=precipitation,precipitation_probability&forecast_minutely_15=4"
            "&timezone=auto&forecast_days=");
@@ -946,6 +959,11 @@ bool fetchWeather() {
   filter["current"]["wind_speed_10m"] = true;
   filter["current"]["wind_direction_10m"] = true;
   filter["current"]["wind_gusts_10m"] = true;
+  filter["current"]["apparent_temperature"] = true;
+  filter["current"]["uv_index"] = true;
+  filter["hourly"]["time"][0] = true;  // only the first hour's time: gives the starting hour
+  filter["hourly"]["temperature_2m"] = true;
+  filter["hourly"]["precipitation_probability"] = true;
   filter["current"]["time"] = true;  // the service's local time: the second source that confirms SNTP's
   filter["utc_offset_seconds"] = true;
   filter["timezone"] = true;  // the city's time zone: the panel checks whether it matches the clock's
@@ -968,8 +986,24 @@ bool fetchWeather() {
   wx.wdir = (uint16_t)constrain(doc["current"]["wind_direction_10m"] | 0, 0, 360) % 360;
   wx.tmax = doc["daily"]["temperature_2m_max"][0];
   wx.tmin = doc["daily"]["temperature_2m_min"][0];
+  wx.feels = doc["current"]["apparent_temperature"] | wx.t;
+  {
+    JsonVariantConst uv = doc["current"]["uv_index"];
+    wx.uv10 = uv.isNull() ? 255 : (uint8_t)constrain(lroundf(uv.as<float>() * 10), 0, 254);
+    JsonArrayConst ht = doc["hourly"]["temperature_2m"], hp = doc["hourly"]["precipitation_probability"];
+    const char *h0 = doc["hourly"]["time"][0] | (const char *)nullptr;
+    const char *tp = h0 ? strchr(h0, 'T') : nullptr;
+    wx.h0 = tp && strlen(tp) >= 3 ? (uint8_t)(((tp[1] - '0') * 10 + (tp[2] - '0')) % 24) : 0;
+    wx.nh = 0;
+    for (int i = 0; i < UI_HOURS && i < (int)ht.size(); i++) {
+      float v = ht[i].as<float>();
+      wx.ht[i] = (int8_t)constrain(lroundf(isfinite(v) ? v : 0), -99, 99);
+      wx.hp[i] = hp[i].isNull() ? 255 : (uint8_t)constrain(hp[i].as<int>(), 0, 100);
+      wx.nh = i + 1;
+    }
+  }
   // the reply comes over plain HTTP: bound it before converting the decimals for /api/state
-  for (float *v : {&wx.t, &wx.tmax, &wx.tmin}) *v = isfinite(*v) ? constrain(*v, -99.0f, 99.0f) : 0;
+  for (float *v : {&wx.t, &wx.tmax, &wx.tmin, &wx.feels}) *v = isfinite(*v) ? constrain(*v, -99.0f, 99.0f) : 0;
   // rain on the way: the first quarter-hour with real rain (≥ 0.1 mm and chance ≥ 40%), if it
   // isn't raining yet. The current one becomes "any minute" (5); the following ones, 15/30/45 min.
   bool rainingNow = (wx.code >= 51 && wx.code <= 67) || (wx.code >= 80 && wx.code <= 82) || wx.code >= 95;
@@ -1016,6 +1050,28 @@ bool fetchWeather() {
   return true;
 }
 
+// weatherbox: US air quality index from Open-Meteo's air quality service (plain HTTP, no key), once an hour
+uint32_t aqiNext = 0;
+static void fetchAqi() {
+  WiFiClient client;
+  String url;
+  url.reserve(160);
+  url = F("http://air-quality-api.open-meteo.com/v1/air-quality?latitude=");
+  appendFixed(url, cfg.lat, 4);
+  url += F("&longitude=");
+  appendFixed(url, cfg.lon, 4);
+  url += F("&current=us_aqi");
+  if (httpGet(client, url, 5000) != 200) return;
+  JsonDocument filter;
+  filter["current"]["us_aqi"] = true;
+  JsonDocument doc;
+  if (deserializeJson(doc, client, DeserializationOption::Filter(filter))) return;
+  client.stop();
+  JsonVariantConst a = doc["current"]["us_aqi"];
+  wx.aqi = a.isNull() ? 0xFFFF : (uint16_t)constrain(a.as<int>(), 0, 999);
+  wx.version++;
+}
+
 void weatherLoop() {
   if (!cfg.weatherOn || !cfg.city[0] || WiFi.status() != WL_CONNECTED) return;
   if ((int32_t)(millis() - wxNext) < 0) return;
@@ -1023,6 +1079,10 @@ void weatherLoop() {
   bool ok = fetchWeather();
   wxFails = ok ? 0 : wxFails < 255 ? wxFails + 1 : 255;
   wxNext = millis() + (ok ? 15UL : 2UL) * 60000UL;
+  if (ok && (int32_t)(millis() - aqiNext) >= 0) {
+    aqiNext = millis() + 60UL * 60000UL;
+    fetchAqi();
+  }
 }
 
 // The weather confirms the time while it's set up and answering; without it, two syncs are needed.
@@ -1144,12 +1204,23 @@ UiState makeState() {
   s.weatherOn = cfg.weatherOn && cfg.city[0];
   s.wx = {wx.ok, wx.t, wx.tmin, wx.tmax, wx.hum, wx.code, wx.day, wx.version, wx.nd, {}, (uint8_t)(cfg.rainAlert ? wx.rainIn : 0), wx.wind, wx.gust, wx.wdir};
   memcpy(s.wx.d, wx.d, sizeof wx.d);
+  s.wx.feels = wx.feels;
+  s.wx.uv10 = wx.uv10;
+  s.wx.aqi = wx.aqi;
+  s.wx.rise = sunRise;
+  s.wx.set = sunSet;
+  s.wx.nh = wx.nh;
+  s.wx.h0 = wx.h0;
+  memcpy(s.wx.ht, wx.ht, sizeof wx.ht);
+  memcpy(s.wx.hp, wx.hp, sizeof wx.hp);
   s.fahr = cfg.fahr;
   if (s.fahr) {  // °F only on the screen: the weather is still stored in °C
     auto f = [](float c) { return c * 9 / 5 + 32; };
     s.wx.t = f(s.wx.t);
     s.wx.tmin = f(s.wx.tmin);
     s.wx.tmax = f(s.wx.tmax);
+    s.wx.feels = f(s.wx.feels);
+    for (int i = 0; i < s.wx.nh; i++) s.wx.ht[i] = (int8_t)constrain(lroundf(f(s.wx.ht[i])), -99, 127);
     for (UiDay &d : s.wx.d) {
       d.tmin = (int8_t)constrain(lroundf(f(d.tmin)), -99, 127);
       d.tmax = (int8_t)constrain(lroundf(f(d.tmax)), -99, 127);
@@ -1161,7 +1232,8 @@ UiState makeState() {
   strlcpy(ipText, WiFi.localIP().toString().c_str(), sizeof ipText);
   s.ip = ipText;
   s.ms = millis();
-  s.celebrate = alertUntil != 0;  // a phase just finished: end animation on the Pomodoro
+  s.celebrate = alertUntil != 0;
+  s.south = cfg.lat < 0;  // a phase just finished: end animation on the Pomodoro
   return s;
 }
 
@@ -2168,6 +2240,12 @@ void sendState() {
   j += wx.gust;
   j += F(",\"wdir\":");
   j += wx.wdir;
+  j += F(",\"feels\":");
+  appendFixed(j, wx.feels, 1);
+  j += F(",\"uv\":");
+  j += wx.uv10 == 255 ? -1 : (int)wx.uv10;
+  j += F(",\"aqi\":");
+  j += wx.aqi == 0xFFFF ? -1 : (int)wx.aqi;
   j += F(",\"code\":");
   j += wx.code;
   j += F(",\"day\":");
@@ -2242,6 +2320,8 @@ void sendState() {
   appendFixed(j, cfg.lon, 4);
   j += F(",\"city\":\"");
   jsonEscapeAppend(j, cfg.city);
+  j += F("\",\"name\":\"");
+  jsonEscapeAppend(j, cfg.devName);
   j += F("\",\"bgr\":");
   j += cfg.bgr;
   j += F(",\"inv\":");
@@ -2609,6 +2689,7 @@ void handlePanelUpload() {
   }
 }
 
+void factoryWipe();
 void setupWeb() {
   server.collectHeaders("X-SmallTV", "Content-Length", "Authorization", "Origin", "X-Firmware-Sig");
   // panel: this version's from file storage or, without it, the loader that installs it
@@ -2901,6 +2982,16 @@ void setupWeb() {
       cfg.colB = v;
     }
     // quotes or a backslash would break the /api/state JSON and freeze the panel
+    if (server.hasArg("name")) {  // weatherbox: the clock's name
+      String n = server.arg("name");
+      n.trim();
+      bool ok = n.length() < sizeof cfg.devName;
+      for (char c : n) ok = ok && c >= 0x20 && c < 0x7F && c != '"' && c != '\\';
+      if (ok) {
+        strlcpy(cfg.devName, n.c_str(), sizeof cfg.devName);
+        uiSetOwner(cfg.devName);
+      }
+    }
     String tz = server.arg("tz");
     tz.trim();
     if (tz.length() > 0 && safeText(tz)) {
@@ -2920,7 +3011,8 @@ void setupWeb() {
       cfg.weatherOn = won;
       wx.ok = false;
       wx.version++;
-      wxNext = millis();  // fetch the weather now
+      wxNext = aqiNext = millis();  // fetch the weather (and air quality) now
+      wx.aqi = 0xFFFF;
     }
     saveSettings();
     updateBrightness(true);
@@ -3062,6 +3154,12 @@ void setupWeb() {
       EEPROM.commit();
     }
     server.send(200, "text/plain", "ok");
+  });
+  // weatherbox: "Prepare as a gift" in the panel: the same full erase as recovery mode
+  server.on("/api/giftreset", HTTP_POST, [] {
+    if (!guard()) return;
+    server.send(200, "text/plain", "ok");
+    factoryWipe();
   });
   server.on("/api/format", HTTP_POST, [] {
     if (!guard()) return;
@@ -3446,24 +3544,30 @@ void startRecovery() {
   server.on("/rec/wipe", HTTP_POST, [] {
     if (!formOk()) { deny(); return; }
     server.send(200, "text/plain", "ok");
-    delay(300);
-    if (fsOk) LittleFS.format();
-    for (int i = 0; i < EE_SIZE; i++) EEPROM.write(i, 0);
-    if (fsLayout2()) {  // storage already formatted: without the mark the next boot would format again and offer a backup that doesn't exist
-      fsMark = {FS_MAGIC, 0};
-      EEPROM.put(FS_OFF, fsMark);
-    }
-    EEPROM.commit();
-    WiFi.persistent(true);
-    WiFi.disconnect(true);
-    ESP.eraseConfig();
-    delay(300);
-    ESP.restart();
+    factoryWipe();
   });
   server.on("/api/stats", HTTP_GET, sendStats);
   server.collectHeaders("X-SmallTV", "Authorization", "Content-Length", "X-Firmware-Sig");
   setupUpdate();
   server.begin();
+}
+
+// Erases files, settings (with passwords and the name) and the saved Wi-Fi, then restarts as out of the box.
+// The firmware stays. Used by recovery mode and by the panel's "Prepare as a gift".
+void factoryWipe() {
+  delay(300);
+  if (fsOk) LittleFS.format();
+  for (int i = 0; i < EE_SIZE; i++) EEPROM.write(i, 0);
+  if (fsLayout2()) {  // storage already formatted: without the mark the next boot would format again and offer a backup that doesn't exist
+    fsMark = {FS_MAGIC, 0};
+    EEPROM.put(FS_OFF, fsMark);
+  }
+  EEPROM.commit();
+  WiFi.persistent(true);
+  WiFi.disconnect(true);
+  ESP.eraseConfig();
+  delay(300);
+  ESP.restart();
 }
 
 void rotSet(const String &v) {
@@ -3774,6 +3878,7 @@ void setup() {
   applyVcom(cfg.vcom);
   uiBegin(&tft);
   uiSetLang(cfg.lang);
+  uiSetOwner(cfg.devName);
   // between animation frames (the Flip turnover): gives time to Wi-Fi and paces the turnover
   uiFrameHook = [] { yield(); };  // the animation is driven by the clock: it only gives time to Wi-Fi
   uiMillis = [] { return (uint32_t)millis(); };

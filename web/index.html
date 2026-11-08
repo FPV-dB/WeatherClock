@@ -135,7 +135,7 @@ nav button[hidden],[hidden]{display:none!important}
 #radarc{margin-bottom:16px}.warn{background:rgba(255,196,0,.12);border:1px solid rgba(255,196,0,.5);color:var(--fg);border-radius:10px;padding:10px 12px;margin:10px 0 6px;font-size:14px}#welcome{margin-bottom:16px;border:1px solid var(--long)}#welcome p{color:var(--mut);margin:6px 0 12px}#radarc canvas{display:block;width:100%;max-width:240px;aspect-ratio:1;margin:8px auto 0;border-radius:12px;image-rendering:pixelated}
 
 </style></head><body>
-<header><b>Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span></header>
+<header><b id="hname">Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span></header>
 <main>
 <div class="card" id="upd"><b id="updt"></b><ul id="updn"></ul><div class="row"><button class="btn" onclick="skipUpdate()">Later</button><button class="btn p" id="updgo" onclick="doUpdate()">Update now</button></div></div>
 
@@ -303,6 +303,8 @@ nav button[hidden],[hidden]{display:none!important}
  <div class="grp">
  <h2>System</h2>
  <div class="card">
+  <label>Clock name<input data-k="name" type="text" maxlength="23" placeholder="e.g. Mum's clock" spellcheck="false"></label>
+  <small>Shown at the top of this page and on the clock's start-up screen. Handy when you give clocks away.</small>
   <form id="op">
    <label id="oldl">Current password<input name="old" type="password" autocomplete="current-password"></label>
    <label>Panel and /update password<input name="new" type="password" autocomplete="new-password" placeholder="empty = no password"></label>
@@ -316,6 +318,8 @@ nav button[hidden],[hidden]{display:none!important}
   <p style="margin:0 0 10px"><button class="btn p" onclick="checkUpdate(true)">Check for updates</button></p>
   <div class="row"><button class="btn" onclick="location='/update'">Update firmware</button>
   <button class="btn" onclick="if(confirm(t('Erase saved Wi-Fi and restart?')))post('/api/wifireset').then(()=>toast(t('Restarting...')))">Reset Wi-Fi</button></div>
+  <p><button class="btn" onclick="giftReset()">Prepare as a gift</button></p>
+  <small>Erases everything except the firmware: Wi-Fi, city, name, password, photos and faces. The clock restarts showing the first-install help, ready for its new owner.</small>
   <p><button class="btn" id="fmt" hidden onclick="if(confirm(t('Format the storage? All photos and GIFs will be erased.')))post('/api/format').then(r=>r.text()).then(x=>{toast(t(x));files()})">Format file storage</button></p>
   <small>User for /update: admin. Over Wi-Fi the clock only accepts Weather Clock firmware signed with its own key; to go back to the original GeekMagic firmware, use recovery mode (unplug and replug 3 times). <span id="ver"></span> · free RAM <span id="heap"></span></small>
  </div>
@@ -425,7 +429,11 @@ function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.o
  const dg=v=>Math.round(s.cfg.fahr?v*9/5+32:v)+'°',chip=(k,v)=>'<span>'+k+' <b>'+v+'</b></span>';
  const rain=w.rin?'<span class="rn">'+(w.rin<15?t('Rain any minute'):t('Rain in {0} min',w.rin))+'</span>':'';
  c.innerHTML='<div class="ic">'+WXI(w.code,w.day)+'</div><div class="tp">'+dg(w.t)+'</div><div class="ds">'+w.desc+(s.cfg.city?' · '+s.cfg.city:'')+'</div>'
-  +'<div class="chips">'+chip(t('High'),dg(w.max))+chip(t('Low'),dg(w.min))+(w.wind!=null?chip(t('Wind'),WDIR(w.wdir)+' '+w.wind+' km/h')+chip(t('Gusts'),w.gust+' km/h'):'')+chip(t('Humidity'),w.h+'%')+rain+'</div>'}
+  +'<div class="chips">'+chip(t('High'),dg(w.max))+chip(t('Low'),dg(w.min))+(w.wind!=null?chip(t('Wind'),WDIR(w.wdir)+' '+w.wind+' km/h')+chip(t('Gusts'),w.gust+' km/h'):'')+chip(t('Humidity'),w.h+'%')
+  +(w.feels!=null?chip(t('Feels like'),dg(w.feels)):'')+(w.uv>=0?chip('UV',Math.round(w.uv/10)):'')+(w.aqi>=0?chip(t('Air quality'),w.aqi):'')
+  +(w.rise>=0?chip(t('Sunrise'),hm(w.rise)):'')+(w.set>=0?chip(t('Sunset'),hm(w.set)):'')+rain+'</div>'}
+const hm=m=>{let h=Math.floor(m/60);const ap=st&&st.cfg.h12;if(ap)h=h%12||12;return h+':'+String(m%60).padStart(2,'0')};
+function giftReset(){if(!confirm(t('Prepare this clock as a gift? Everything except the firmware is erased: Wi-Fi, city, name, password, photos and faces. This cannot be undone.')))return;post('/api/giftreset').then(()=>toast(t('Erased. The clock is restarting with the first-install help.'))).catch(()=>toast(t('Failed')))}
 // weatherbox: chosen radar (the program on the computer reads /api/radar and sends /image/radar.wcr)
 let RADARS=null;
 const kmTo=(a,b,c,d)=>{const r=Math.PI/180,x=(d-b)*r*Math.cos((a+c)/2*r),y=(c-a)*r;return Math.round(Math.hypot(x,y)*6371)};
@@ -635,7 +643,7 @@ function vcomSet(now){const v=$('vcom').value;$('vcomv').textContent=vcomTxt(v);
 function vcomEnd(save){clearTimeout(vcT);$('vcombox').style.display='none';$('vcomgo').style.display='';
  post('/api/vcom',new URLSearchParams(save?{v:$('vcom').value,save:1}:{stop:1})).then(r=>r.json()).then(j=>{if(st)st.cfg.vcom=j.vcom;toast(t(save?'Adjustment saved':'Adjustment canceled'))})}
 function cmd(c){try{actx=actx||new AudioContext()}catch(e){}post('/api/cmd',new URLSearchParams({c})).then(r=>r.json()).then(load)}
-function load(s){if($('aver'))$('aver').textContent=t('Version {0}',s.ver);if(s.cfg.lang!=null&&s.cfg.lang!=LG)setLang(s.cfg.lang);if(lastPhase&&s.phase!=lastPhase&&s.phase!='idle'&&lastPhase!='idle')beep();lastPhase=s.phase;
+function load(s){{const n=s.cfg.name||'Weather Clock';if($('hname').textContent!=n)$('hname').textContent=n}if($('aver'))$('aver').textContent=t('Version {0}',s.ver);if(s.cfg.lang!=null&&s.cfg.lang!=LG)setLang(s.cfg.lang);if(lastPhase&&s.phase!=lastPhase&&s.phase!='idle'&&lastPhase!='idle')beep();lastPhase=s.phase;
  // a phase that just started: the clock draws the ring and only then shows the numbers. The panel draws its
  // ring and waits for the clock to say the numbers are on screen (pshown == pseq), asking every 100 ms:
  // that way the browser never starts counting before the device
@@ -689,7 +697,7 @@ function draw(){if(!st)return;const s=st,idle=s.phase=='idle';
  const rem=idle?s.cfg.work*60000:holding?holdRem:Math.max(0,s.remaining-(s.running?Date.now()-at:0)),sec=Math.ceil(rem/1000);
  const tm=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');
  $('time').textContent=tm;$('phase').textContent=t(LBL[s.phase])+(!idle&&!s.running?' · '+t('PAUSED'):'');
- $('arc').style.strokeDashoffset=idle||!s.total?C:C*rem/s.total;document.title=idle?'Weather Clock':tm+' · '+t(LBL[s.phase])}
+ $('arc').style.strokeDashoffset=idle||!s.total?C:C*rem/s.total;document.title=idle?(s.cfg.name||'Weather Clock'):tm+' · '+t(LBL[s.phase])}
 setInterval(draw,250);
 // ---------- city (searched straight from the browser; the clock stores only lat/lon) ----------
 let qt;$('q').oninput=()=>{clearTimeout(qt);const q=$('q').value.trim();if(q.length<2){$('res').innerHTML='';return}

@@ -39,7 +39,16 @@ struct UiWeather {
   uint8_t rainIn;    // rain starting within the next hour: minutes until it (5 = any minute, 15, 30, 45); 0 = no
   uint8_t wind, gust;  // wind at 10 m, km/h (weatherbox)
   uint16_t wdir;       // direction it blows from, degrees
+  // weatherbox: more Open-Meteo data
+  float feels;         // apparent temperature
+  uint8_t uv10;        // UV index x 10 (255 = no data)
+  uint16_t aqi;        // US air quality index (0xFFFF = no data)
+  int16_t rise, set;   // sunrise and sunset, minutes of the day (local); -1 = unknown
+  uint8_t nh, h0;      // hours in ht/hp (next 12 h, starting with the current hour h0)
+  int8_t ht[12];       // temperature per hour (rounded, screen unit)
+  uint8_t hp[12];      // chance of rain per hour, %
 };
+static const int UI_HOURS = 12;
 
 struct UiState {
   bool timeOk;
@@ -66,6 +75,7 @@ struct UiState {
   const char *ip;
   uint32_t ms;     // millis(): drives the animations
   bool celebrate;  // a Pomodoro phase just finished: plays the end animation
+  bool south;      // weatherbox: southern hemisphere (the moon's lit side is mirrored)
 };
 
 constexpr uint16_t uiRgb(uint8_t r, uint8_t g, uint8_t b) {
@@ -95,6 +105,7 @@ void uiBegin(Adafruit_GFX *gfx);
 extern void (*uiFrameHook)();
 void uiCornerClock(const char *hm);
 // weatherbox: first-install screens, with a QR code for the phone
+void uiSetOwner(const char *name);  // weatherbox: the clock's name, shown on the start-up screen ("" = none)
 void uiSetupWifi(const char *ssid, const char *pass);     // join the clock's network
 void uiSetupCity(const char *ip, const char *host);       // open the panel and choose the city  // weatherbox: current time in the bottom corner, on top of the radar
 // Clock in ms for time-driven animations (firmware: millis). Without it, 20 ms steps.

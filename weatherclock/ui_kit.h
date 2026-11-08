@@ -117,6 +117,15 @@ static inline const char *windDir(int deg) {
 }
 extern uint16_t lastWx;  // compare with s.wx.version to know whether the weather changed
 
+// ---------- weatherbox: sky ----------
+uint8_t moonPhase(const struct tm &t);      // 0 new, 1 waxing crescent, 2 first quarter, 3 waxing gibbous, 4 full, 5..7 waning
+float moonAge(const struct tm &t);          // days since the last new moon (0..29.5)
+const char *moonName(uint8_t phase);        // "Full moon"... in the screen language (tr buffer)
+const char *uvText(uint8_t uv10);           // "Low", "Moderate", "High", "Very high", "Extreme"
+uint16_t uvColor(uint8_t uv10);
+const char *aqiText(uint16_t aqi);          // "Good", "Moderate", "Unhealthy"...
+uint16_t aqiColor(uint16_t aqi);
+
 // ---------- registered faces (faces_list.h) ----------
 #define X(id, fn, name, desc) void fn(const UiState &s, bool full);
 UI_FACES(X)
