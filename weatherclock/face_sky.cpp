@@ -279,6 +279,32 @@ static void airCard(int x, const char *label, uint16_t v10, uint8_t level, bool 
   if (known) textC(cx, y + 74, 1, c, levelText(level));
 }
 
+// The UV scale: 11 steps (11 = 11+), coloured by level. The current step breathes and a marker bounces
+// above it (weatherbox: animated, redrawn off-screen on its own).
+static const int SC_Y = 86, SC_H = 40;
+static void uvScale(const UiState &s) {
+  const bool uvOk = s.wx.uv10 != 255;
+  const int uv = uvOk ? (s.wx.uv10 + 5) / 10 : 0;
+  const uint32_t t = s.ms ? s.ms : 0;
+  const int ph = (int)(t / 90 % 16), wave = ph < 8 ? ph : 16 - ph;  // 0..8..0, about 1.4 s
+  for (int i = 1; i <= 11; i++) {
+    const int x = 18 + (i - 1) * 19, on = uvOk && (uv >= i || (i == 11 && uv > 11));
+    const uint16_t col = uvColor(i * 10 - 5);
+    const bool cur = uvOk && (uv == i || (i == 11 && uv > 11));
+    if (cur) {
+      const int grow = s.ms ? wave / 3 : 0;  // 0..2 px taller
+      G->fillRoundRect(x - grow / 2, 102 - grow, 16 + grow, 22 + grow, 3, s.ms ? mix16(col, TEXT, wave / 2) : col);
+      const int my = 90 + (s.ms ? (wave < 4 ? wave : 8 - wave) : 0);  // the marker bounces 0..4 px
+      G->fillTriangle(x + 3, my, x + 13, my, x + 8, my + 6, TEXT);
+    } else G->fillRoundRect(x, 106, 16, 14, 3, on ? col : mix16(CARD, col, 4));
+  }
+}
+static void paintScale(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(14, SC_Y, 214, SC_H, CARD);
+  uvScale(s);
+}
+
 static void paintAir(void *c) {
   const UiState &s = *(const UiState *)c;
   G->fillRect(0, 24, 240, 216, BG);
@@ -301,13 +327,7 @@ static void paintAir(void *c) {
     snprintf(m, sizeof m, tr("pico hoje %d", "today's peak %d", "maximo hoy %d"), (s.wx.uvMax10 + 5) / 10);
     textR(222, 76, 1, MUTED, m);
   }
-  // the scale: 11 steps (11 = 11+), coloured by level; the current value is the tall one
-  for (int i = 1; i <= 11; i++) {
-    const int x = 18 + (i - 1) * 19, on = uvOk && (uv >= i || (i == 11 && uv > 11));
-    const uint16_t col = uvColor(i * 10 - 5);
-    const bool cur = uvOk && (uv == i || (i == 11 && uv > 11));
-    G->fillRoundRect(x, cur ? 102 : 106, 16, cur ? 22 : 14, 3, on ? col : mix16(CARD, col, 4));
-  }
+  uvScale(s);
   // particles and the index
   airCard(8, "PM2.5", s.wx.pm25, pmLevel(s.wx.pm25, true), s.wx.pm25 != 0xFFFF, "ug/m3");
   airCard(85, "PM10", s.wx.pm10, pmLevel(s.wx.pm10, false), s.wx.pm10 != 0xFFFF, "ug/m3");
@@ -318,5 +338,13 @@ static void paintAir(void *c) {
 
 void themeAir(const UiState &s, bool full) {
   topBar(s, full);
-  if (bodyDue(s, full, 15)) uiPaint(full, 0, 24, 240, 216, paintAir, (void *)&s);
+  if (bodyDue(s, full, 15)) {
+    uiPaint(full, 0, 24, 240, 216, paintAir, (void *)&s);
+    return;
+  }
+  static uint32_t lastAnim = 0;  // weatherbox: only the scale moves, ~10 frames per second
+  if (s.weatherOn && s.wx.ok && s.wx.uv10 != 255 && s.ms - lastAnim >= 90) {
+    lastAnim = s.ms;
+    uiPaint(false, 14, SC_Y, 214, SC_H, paintScale, (void *)&s);
+  }
 }
