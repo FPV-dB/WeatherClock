@@ -73,6 +73,8 @@ static void hhmm(const UiState &s, int m, char *out, size_t n) {
 }
 
 // ---------- Sky ----------
+static int skyBx = -100, skyBy = -100;  // where the sun or moon was drawn (for the animation)
+static bool skyDay = true;
 // Moon disc of radius r: lit part by the moon's age; mirrored in the southern hemisphere.
 static void moonDisc(int cx, int cy, int r, float age, bool south) {
   const float p = age / 29.530589f, k = cosf(2 * K_PI * p);
@@ -114,15 +116,27 @@ static void paintSky(void *c) {
     }
     const float a = K_PI * (1 - f);
     const int bx = cx + (int)lroundf(R * cosf(a)), by = cy - (int)lroundf(R * sinf(a));
+    skyBx = bx; skyBy = by; skyDay = day;
     if (day) {
       // the part already travelled, in the sun's colour
       for (int d = 180; d >= (int)(180 * (1 - f)); d -= 6) {
         const float t = d * K_PI / 180;
         G->fillCircle(cx + (int)lroundf(R * cosf(t)), cy - (int)lroundf(R * sinf(t)), 1, uiRgb(150, 110, 30));
       }
-      G->fillCircle(bx, by, 13, uiRgb(90, 66, 10));
+      // weatherbox: 8 rays that turn slowly (s.ms) and a soft halo
+      const float turn = (s.ms % 6000) * 2 * K_PI / 6000;
+      for (int k = 0; k < 8; k++) {
+        const float r = turn + k * K_PI / 4;
+        thickLine(bx + 14 * cosf(r), by + 14 * sinf(r), bx + 19 * cosf(r), by + 19 * sinf(r), 2, SUN);
+      }
+      G->fillCircle(bx, by, 12, uiRgb(90, 66, 10));
       G->fillCircle(bx, by, 10, SUN);
-    } else if (s.timeOk) moonDisc(bx, by, 10, moonAge(s.now), s.south);
+    } else if (s.timeOk) {
+      // weatherbox: a halo that breathes around the moon
+      const int ph = (int)(s.ms / 120 % 16), w = ph < 8 ? ph : 16 - ph;
+      G->drawCircle(bx, by, 13 + w / 3, mix16(BG, uiRgb(120, 124, 150), 8 - w));
+      moonDisc(bx, by, 10, moonAge(s.now), s.south);
+    }
   }
   // sunrise and sunset under the horizon
   char t[12];
@@ -147,10 +161,21 @@ static void paintSky(void *c) {
 
 void themeSky(const UiState &s, bool full) {
   topBar(s, full);
-  if (bodyDue(s, full, 5)) uiPaint(full, 0, 24, 240, 216, paintSky, (void *)&s);
+  if (bodyDue(s, full, 5)) {
+    uiPaint(full, 0, 24, 240, 216, paintSky, (void *)&s);
+    return;
+  }
+  // weatherbox: only the box around the sun or moon is redrawn (the whole scene, clipped to it), ~8 per second
+  static uint32_t lastAnim = 0;
+  if (s.weatherOn && s.wx.ok && skyBx > -50 && s.ms - lastAnim >= 120) {
+    lastAnim = s.ms;
+    const int x = skyBx - 21 < 0 ? 0 : skyBx - 21, y = skyBy - 21 < 24 ? 24 : skyBy - 21;
+    uiPaint(false, x, y, (x + 42 > 240 ? 240 - x : 42), 42, paintSky, (void *)&s);
+  }
 }
 
 // ---------- Next 12 hours ----------
+static int hoursX = -100, hoursY = -100;  // the "now" dot (for the animation)
 static void paintHours(void *c) {
   const UiState &s = *(const UiState *)c;
   G->fillRect(0, 24, 240, 216, BG);
@@ -170,6 +195,11 @@ static void paintHours(void *c) {
   for (int i = 0; i + 1 < n; i++) thickLine(X(i), Y(s.wx.ht[i]), X(i + 1), Y(s.wx.ht[i + 1]), 3, s.accent);
   for (int i = 0; i < n; i++) {
     const int x = X(i), y = Y(s.wx.ht[i]);
+    if (i == 0 && s.ms) {  // weatherbox: a ring grows out of the "now" dot and fades
+      const int ph = (int)(s.ms / 100 % 12);
+      G->drawCircle(x, y, 4 + ph, mix16(BG, SUN, 12 - ph));
+      hoursX = x; hoursY = y;
+    }
     G->fillCircle(x, y, 3, i == 0 ? SUN : s.accent);
     if (i % 3 == 0 || i == n - 1) {  // a label every 3 hours
       char v[8];
@@ -207,7 +237,16 @@ static void paintHours(void *c) {
 
 void themeHours(const UiState &s, bool full) {
   topBar(s, full);
-  if (bodyDue(s, full, 60)) uiPaint(full, 0, 24, 240, 216, paintHours, (void *)&s);
+  if (bodyDue(s, full, 60)) {
+    uiPaint(full, 0, 24, 240, 216, paintHours, (void *)&s);
+    return;
+  }
+  static uint32_t lastAnim = 0;  // weatherbox: the ring around "now", redrawn on its own
+  if (s.weatherOn && s.wx.ok && hoursX > -50 && s.ms - lastAnim >= 100) {
+    lastAnim = s.ms;
+    const int x = hoursX - 17 < 0 ? 0 : hoursX - 17;
+    uiPaint(false, x, hoursY - 17, 34, 34, paintHours, (void *)&s);
+  }
 }
 
 // ---------- Umbrella ----------
@@ -236,7 +275,7 @@ static void paintUmbrella(void *c) {
   else if (chance >= 25) { ans = tr("TALVEZ", "MAYBE", "QUIZAS"); col = WARN; }
   else { ans = tr("NAO", "NO", "NO"); col = GOOD; }
   textC(120, 30, 2, MUTED, tr("Guarda-chuva hoje?", "Umbrella today?", "Paraguas hoy?"));
-  weatherIcon(46, 88, 1.0f, wet || chance >= 50 ? 61 : code, s.wx.day, BG);
+  weatherIcon(46, 88, 1.0f, wet || chance >= 50 ? 61 : code, s.wx.day, BG, s.ms | 1);
   const int ah = 52, aw = vecWidth(VF_OUTFIT_TXT, ans, ah);
   vecText(VF_OUTFIT_TXT, 152 - aw / 2, 60, ah, ans, col, BG);
   char line[32];
@@ -260,7 +299,15 @@ static void paintUmbrella(void *c) {
 
 void themeUmbrella(const UiState &s, bool full) {
   topBar(s, full);
-  if (bodyDue(s, full, 60)) uiPaint(full, 0, 24, 240, 216, paintUmbrella, (void *)&s);
+  if (bodyDue(s, full, 60)) {
+    uiPaint(full, 0, 24, 240, 216, paintUmbrella, (void *)&s);
+    return;
+  }
+  static uint32_t lastAnim = 0;  // weatherbox: only the weather icon moves (rain falls, sun turns...)
+  if (s.weatherOn && s.wx.ok && s.ms - lastAnim >= 150) {
+    lastAnim = s.ms;
+    uiPaint(false, 12, 60, 70, 60, paintUmbrella, (void *)&s);
+  }
 }
 
 // ---------- Air & UV ----------
