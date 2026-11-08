@@ -1,29 +1,23 @@
 {
-  "version": "2.0.6",
+  "version": "2.0.7",
   "date": "2026-11-08",
   "file": "weatherclock.bin",
-  "size": 589584,
+  "size": 590336,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 424690,
-  "sig": "elvGVZRCbRkLALBzDzvWcguy19wflY8XzAEECDxj2KaPcUKJVIR9ypFcdS4dz/+4ZfenTj6hMibJyHkXjWzCkDZRl6RUtLwRmqRemC2aTMUWrYN8WvBjZlyQ4JdPgtLcBLfLTVFBPtKwSa6eSmFSQ3IJwDcgfqKKV4AB8sR+R/9WtRxqDQhzaOeAi+tk2hFam1IELVgTTYK4yCdTDO/LI2nBsqrKmjdo0YfaA5P9I8+lOlsVAJ86/DCDrCTlbWBkWQtB70eVZf9/wg9vhEEPxwbyTB5Ohp9UJq051lRpbHkusf0pSXWfRfSj8JZ+A28Wy3UUJTzcdPdKcPDQGOV9PQ==",
-  "gzsig": "eULulk0XMwfptezHKTCa+ZR1vybb7IWN20lisaaGHePciFJ7iBWQVE091ngngo0A4LJO9mmJO9dfjJSsLcIvolag1WrXicBev8bin3Wel44tOdxcPxUHKnCd+ZgkfYL3Pe8ZTuXV7089cEfajmuTdDF+X3RsLI5rHnAbL5aJU+3K3cdHNy4lQCFLeT4vJxVwCIfWjIpUp2qDhAOKqU8uiR8XP37E+jGsgAI7ZNhoKxzdX6NWU4hEftGgqjSZZ6h+X8zTz5fk9Dj2UUr3qJvf7QjvMYbNzWR9mjNM+kVjDhtsvN+UPNnxvlKhJ1hXK1lFDisGYdG23fHcbiVMVC4ZPA==",
+  "gzsize": 425243,
+  "sig": "qR58kY3EXSYphqmHXowhRNiu5zFojjNG3Z/6NS6D2gi2QZHadBHlGrRV44U2DlXLrNtnZ+h8QZfjllRmsNNfys7Woi2fw2NpRfd5zIPauOnmvqkeHu1k/zMMk6BrCbMlCRL2q1gdUmLsV07J3a+3ow/nAb2d3OJhRfQgrWSlb0UFsLHQmW43ZD+uP+YvBAaiOyP0rPLjfcKE6cnY+4zQRsUgIVVh61dy479pxLPRnW1pEjnS3JEV2sne1voLoKcvv1v2VN7h0Kn2G+EoCGjfljj000xOO7nk7bxHXVdvzRaaNae8Z72wX4i+Kp+kXnDOjSdPRb7Jr88CQmT3B8dPgQ==",
+  "gzsig": "f/h4I1JUwe8d1sVLnVHJe2t/4Jb4Oc98vpWxM87ClvHsIXrf7msJ4ty/vryLrXtLx/wlKwuQmyCqIuqkbkRS7573DiENz2/OdDCJbZUyEVDbvROYKgmh9t/QhsTewBj1zJqCc0KD2XdkJuN7j2BIJvrJUAQtP3MwwxTcjgwsVS8sX6V9x5zWqOGRelG2RNvWsyDar0RFTcVA0Jf7flH4e0DYMFWt4dyHPjHpxZSpl89+kTWGc47giwzdoXx0VGP79QKnYR1FVybLLGg64Iqhdwwjvhpe+9Mpmd7LSpTIg0Xbvb3SfIYwIRxGNgd+X2XJH/xaSZqcDEGqQaTuEt8L2w==",
   "panel": "panel-853aaa66456bc7b1f2b23fbb.html.gz",
   "psri": "sha256-hTqqZkVrx7Hysj+71Yn/uIFzP1AE9B5seYFRRIMs3S8=",
   "notes": {
     "en": [
-      "New Air & UV face: UV index with today's peak, PM2.5 and PM10, animated UV scale",
-      "PM2.5, PM10 and UV peak in the web page and for face packs",
-      "Face pack names and the rest of the code in English"
+      "Animated Sky, Next 12 hours and Umbrella faces"
     ],
     "pt": [
-      "New Air & UV face: UV index with today's peak, PM2.5 and PM10, animated UV scale",
-      "PM2.5, PM10 and UV peak in the web page and for face packs",
-      "Face pack names and the rest of the code in English"
+      "Animated Sky, Next 12 hours and Umbrella faces"
     ],
     "es": [
-      "New Air & UV face: UV index with today's peak, PM2.5 and PM10, animated UV scale",
-      "PM2.5, PM10 and UV peak in the web page and for face packs",
-      "Face pack names and the rest of the code in English"
+      "Animated Sky, Next 12 hours and Umbrella faces"
     ]
   }
 }
