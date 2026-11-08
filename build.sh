@@ -11,7 +11,7 @@
 #
 # Limits (compressed update: the .gz sits at the end of the free area and the decompressed firmware must end before
 # it; the eboot decompresses over the current firmware):
-#  - TRANSITION (CLOCKS_4M3M=1, the default): the first 4M2M version arrives as a network update done by the
+#  - TRANSITION (CLOCKS_4M3M=1; weatherbox: off by default, every Weather Clock is on 4M2M): the first 4M2M version arrives as a network update done by the
 #    OLD firmware (4M3M), which only sees 1 MB: rounded firmware + rounded .gz (with ~512 bytes of upload overhead)
 #    <= 1 MB (1.23.1: 551 KB + .gz 407 KB). Above that the build is refused: clocks on the old layout could not
 #    install it. Once every clock is on 4M2M, run with CLOCKS_4M3M=0: the ceiling becomes the linker's,
@@ -31,7 +31,7 @@ gz=$(wc -c < build/weatherclock.ino.bin.gz)
 r() { echo $(( ($1 + 4095) / 4096 * 4096 )); }
 # 1 MB window of the old layout: applies on 4M3M and, while clocks still use it, on 4M2M too
 AREA=1048576
-[ "$LAYOUT" = 4M2M ] && [ "${CLOCKS_4M3M:-${RELOGIOS_4M3M:-1}}" = 0 ] && AREA=2097152  # the ceiling is just the linker's (1044464 bytes)
+[ "$LAYOUT" = 4M2M ] && [ "${CLOCKS_4M3M:-${RELOGIOS_4M3M:-0}}" = 0 ] && AREA=2097152  # the ceiling is just the linker's (1044464 bytes)
 if [ $(( $(r $size) + $(r $((gz + 512))) )) -gt $AREA ]; then
   echo "firmware of $size bytes (.gz $gz): would not fit in the compressed update done by the old layout (4M3M, 1 MB):"
   echo "firmware ($(r $size)) + .gz ($(r $((gz + 512)))) > $AREA. Shrink the code, or use CLOCKS_4M3M=0 if no clock is left on the old layout."
