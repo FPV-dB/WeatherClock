@@ -25,6 +25,7 @@ struct UiDay {
   uint8_t code;        // WMO weather code
   int8_t tmin, tmax;   // °C, rounded
   uint8_t rain;        // chance of rain in %, 255 = no data
+  uint16_t mm10;       // weatherbox: expected rain, mm x 10
 };
 static const int UI_DAYS = 5;
 
@@ -47,6 +48,7 @@ struct UiWeather {
   uint8_t nh, h0;      // hours in ht/hp (next 12 h, starting with the current hour h0)
   int8_t ht[12];       // temperature per hour (rounded, screen unit)
   uint8_t hp[12];      // chance of rain per hour, %
+  uint8_t hmm[12];     // weatherbox: rain per hour, mm x 10 (capped at 25.5 mm)
   uint8_t uvMax10;     // today's highest UV index x 10 (255 = no data)
   uint16_t pm25, pm10; // particulate matter, µg/m³ x 10 (0xFFFF = no data)
 };

@@ -23,4 +23,5 @@
   X(HOURS, themeHours, "Next 12 hours", "Temperature graph and chance of rain, hour by hour") \
   X(UMBRELLA, themeUmbrella, "Umbrella", "Do I need an umbrella today? Plus feels-like, UV and air quality") \
   X(AIR, themeAir, "Air & UV", "UV index with today's peak, and PM2.5 and PM10 particle levels") \
-  X(MOON, themeMoon, "Moon", "Phase and light, moonrise and moonset, where it is now, and the next full and new moon")
+  X(MOON, themeMoon, "Moon", "Phase and light, moonrise and moonset, where it is now, and the next full and new moon") \
+  X(RAIN, themeRain, "Rain", "Chance of rain and millimetres: today, the next 12 hours and the coming days")

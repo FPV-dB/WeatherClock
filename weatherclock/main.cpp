@@ -853,6 +853,7 @@ struct Weather {
   uint8_t nh = 0, h0 = 0;
   int8_t ht[UI_HOURS];
   uint8_t hp[UI_HOURS];
+  uint8_t hmm[UI_HOURS];
   char tzName[40] = "";  // the city's time zone according to Open-Meteo (IANA, e.g. America/Sao_Paulo)
   int32_t utcOff = 0;     // this time zone's offset right now, in seconds (the panel compares it with the clock's)
 } wx;
@@ -944,8 +945,8 @@ bool fetchWeather() {
   url += F("&longitude=");
   appendFixed(url, cfg.lon, 4);
   url += F("&current=temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m,apparent_temperature,uv_index"
-           "&hourly=temperature_2m,precipitation_probability&forecast_hours=12"
-           "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max"
+           "&hourly=temperature_2m,precipitation_probability,precipitation&forecast_hours=12"
+           "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max,precipitation_sum"
            "&minutely_15=precipitation,precipitation_probability&forecast_minutely_15=4"
            "&timezone=auto&forecast_days=");
   url += UI_DAYS;
@@ -966,6 +967,8 @@ bool fetchWeather() {
   filter["hourly"]["time"][0] = true;  // only the first hour's time: gives the starting hour
   filter["hourly"]["temperature_2m"] = true;
   filter["hourly"]["precipitation_probability"] = true;
+  filter["hourly"]["precipitation"] = true;
+  filter["daily"]["precipitation_sum"] = true;
   filter["current"]["time"] = true;  // the service's local time: the second source that confirms SNTP's
   filter["utc_offset_seconds"] = true;
   filter["timezone"] = true;  // the city's time zone: the panel checks whether it matches the clock's
@@ -995,7 +998,7 @@ bool fetchWeather() {
     wx.uv10 = uv.isNull() ? 255 : (uint8_t)constrain(lroundf(uv.as<float>() * 10), 0, 254);
     JsonVariantConst um = doc["daily"]["uv_index_max"][0];
     wx.uvMax10 = um.isNull() ? 255 : (uint8_t)constrain(lroundf(um.as<float>() * 10), 0, 254);
-    JsonArrayConst ht = doc["hourly"]["temperature_2m"], hp = doc["hourly"]["precipitation_probability"];
+    JsonArrayConst ht = doc["hourly"]["temperature_2m"], hp = doc["hourly"]["precipitation_probability"], hm = doc["hourly"]["precipitation"];
     const char *h0 = doc["hourly"]["time"][0] | (const char *)nullptr;
     const char *tp = h0 ? strchr(h0, 'T') : nullptr;
     wx.h0 = tp && strlen(tp) >= 3 ? (uint8_t)(((tp[1] - '0') * 10 + (tp[2] - '0')) % 24) : 0;
@@ -1004,6 +1007,7 @@ bool fetchWeather() {
       float v = ht[i].as<float>();
       wx.ht[i] = (int8_t)constrain(lroundf(isfinite(v) ? v : 0), -99, 99);
       wx.hp[i] = hp[i].isNull() ? 255 : (uint8_t)constrain(hp[i].as<int>(), 0, 100);
+      wx.hmm[i] = (uint8_t)constrain(lroundf((hm[i] | 0.0f) * 10), 0, 255);
       wx.nh = i + 1;
     }
   }
@@ -1026,6 +1030,7 @@ bool fetchWeather() {
     auto deg = [](float v) { return (int8_t)constrain(lroundf(v), -99, 99); };
     wx.d[i] = {dc[i].as<uint8_t>(), deg(dmin[i].as<float>()), deg(dmax[i].as<float>()),
                drain[i].isNull() ? (uint8_t)255 : (uint8_t)constrain(drain[i].as<int>(), 0, 100)};
+    wx.d[i].mm10 = (uint16_t)constrain(lroundf((doc["daily"]["precipitation_sum"][i] | 0.0f) * 10), 0, 9999);
     wx.nd = i + 1;
   }
   // "2026-10-21T05:31" (local time, timezone=auto) -> minutes of the day
@@ -1226,6 +1231,7 @@ UiState makeState() {
   s.wx.h0 = wx.h0;
   memcpy(s.wx.ht, wx.ht, sizeof wx.ht);
   memcpy(s.wx.hp, wx.hp, sizeof wx.hp);
+  memcpy(s.wx.hmm, wx.hmm, sizeof wx.hmm);
   s.fahr = cfg.fahr;
   if (s.fahr) {  // °F only on the screen: the weather is still stored in °C
     auto f = [](float c) { return c * 9 / 5 + 32; };
@@ -2262,6 +2268,10 @@ void sendState() {
   j += wx.uv10 == 255 ? -1 : (int)wx.uv10;
   j += F(",\"aqi\":");
   j += wx.aqi == 0xFFFF ? -1 : (int)wx.aqi;
+  j += F(",\"mm\":");  // today's expected rain, mm x 10
+  j += wx.nd ? (int)wx.d[0].mm10 : -1;
+  j += F(",\"pop\":");  // today's chance of rain, %
+  j += wx.nd && wx.d[0].rain != 255 ? (int)wx.d[0].rain : -1;
   j += F(",\"uvmax\":");
   j += wx.uvMax10 == 255 ? -1 : (int)wx.uvMax10;
   j += F(",\"pm25\":");

@@ -397,7 +397,7 @@ function tab(i){if(i==1)i=0;curTab=i;document.querySelectorAll('.tab').forEach((
  try{localStorage.tab=i}catch(e){}if(i==2){files();radarLoad()}if(i==3)hooksLoad();if(i==1&&!STATS)loadStats();window.scrollTo(0,0)}
 const fkey=f=>f.pkg?'p:'+f.pkg:'t:'+f.t;  // built-in "t:N" or pack "p:id"
 const curKey=s=>s.cfg.theme==200?'p:'+s.cfg.pkg:'t:'+s.cfg.theme;
-const ANIMF=[3,8,9,10,11,12,13,14,15,16];  // weatherbox: animated faces have a GIF preview
+const ANIMF=[3,8,9,10,11,12,13,14,15,16,17];  // weatherbox: animated faces have a GIF preview
 const faceSrc=f=>f.src||(f.pkg?'/face?pkg='+encodeURIComponent(f.pkg):SITE+'img/faces/face-'+f.t+(ANIMF.includes(f.t)?'.gif':'.png'));  // built-in: preview on the site (takes no flash)
 // no preview stored on the clock: try the site's (same id); if there isn't one, show the name
 // Queue for the clock's images: the ESP8266 server handles one connection at a time and drops some
@@ -430,7 +430,7 @@ function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.o
  const rain=w.rin?'<span class="rn">'+(w.rin<15?t('Rain any minute'):t('Rain in {0} min',w.rin))+'</span>':'';
  c.innerHTML='<div class="ic">'+WXI(w.code,w.day)+'</div><div class="tp">'+dg(w.t)+'</div><div class="ds">'+w.desc+(s.cfg.city?' · '+s.cfg.city:'')+'</div>'
   +'<div class="chips">'+chip(t('High'),dg(w.max))+chip(t('Low'),dg(w.min))+(w.wind!=null?chip(t('Wind'),WDIR(w.wdir)+' '+w.wind+' km/h')+chip(t('Gusts'),w.gust+' km/h'):'')+chip(t('Humidity'),w.h+'%')
-  +(w.feels!=null?chip(t('Feels like'),dg(w.feels)):'')+(w.uv>=0?chip('UV',Math.round(w.uv/10)+(w.uvmax>=0?' ('+t('peak {0}',Math.round(w.uvmax/10))+')':'')):'')+(w.aqi>=0?chip(t('Air quality'),w.aqi):'')+(w.pm25>=0?chip('PM2.5',Math.round(w.pm25/10)+' µg/m³'):'')+(w.pm10>=0?chip('PM10',Math.round(w.pm10/10)+' µg/m³'):'')
+  +(w.feels!=null?chip(t('Feels like'),dg(w.feels)):'')+(w.pop>=0?chip(t('Rain today'),w.pop+'% · '+(w.mm/10)+' mm'):'')+(w.uv>=0?chip('UV',Math.round(w.uv/10)+(w.uvmax>=0?' ('+t('peak {0}',Math.round(w.uvmax/10))+')':'')):'')+(w.aqi>=0?chip(t('Air quality'),w.aqi):'')+(w.pm25>=0?chip('PM2.5',Math.round(w.pm25/10)+' µg/m³'):'')+(w.pm10>=0?chip('PM10',Math.round(w.pm10/10)+' µg/m³'):'')
   +(w.rise>=0?chip(t('Sunrise'),hm(w.rise)):'')+(w.set>=0?chip(t('Sunset'),hm(w.set)):'')+rain+'</div>'}
 const hm=m=>{let h=Math.floor(m/60);const ap=st&&st.cfg.h12;if(ap)h=h%12||12;return h+':'+String(m%60).padStart(2,'0')};
 function giftReset(){if(!confirm(t('Prepare this clock as a gift? Everything except the firmware is erased: Wi-Fi, city, name, password, photos and faces. This cannot be undone.')))return;post('/api/giftreset').then(()=>toast(t('Erased. The clock is restarting with the first-install help.'))).catch(()=>toast(t('Failed')))}

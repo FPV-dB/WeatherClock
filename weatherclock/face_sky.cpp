@@ -634,3 +634,141 @@ void themeMoon(const UiState &s, bool full) {
     uiPaint(false, MOON_X - MOON_R - 12, MOON_Y - MOON_R - 12, 2 * MOON_R + 24, 2 * MOON_R + 24, paintMoonAnim, (void *)&s);
   }
 }
+
+// ---------- Rain ----------
+// Today: the chance of rain and how many millimetres; then the next 12 hours (bars = chance, numbers = mm) and the
+// coming days. Drops fall in the today card while rain is likely.
+static void mmText(uint16_t mm10, char *out, size_t n) {
+  if (mm10 == 0) snprintf(out, n, "0");
+  else if (mm10 < 100) snprintf(out, n, "%u.%u", mm10 / 10, mm10 % 10);
+  else snprintf(out, n, "%u", (mm10 + 5) / 10);
+}
+// mm in the Outfit digits; the decimal point is drawn (the number font has digits only). Returns the width.
+static int mmBig(int x, int y, int h, uint16_t mm10, uint16_t c, uint16_t bg, bool draw = true) {
+  char a[8], b[4] = "";
+  if (mm10 < 100 && mm10 % 10) { snprintf(a, sizeof a, "%u", mm10 / 10); snprintf(b, sizeof b, "%u", mm10 % 10); }
+  else snprintf(a, sizeof a, "%u", (mm10 + 5) / 10);
+  const int wa = vecWidth(VF_OUTFIT, a, h), dot = b[0] ? h / 6 + 4 : 0, wb = b[0] ? vecWidth(VF_OUTFIT, b, h) : 0;
+  if (draw) {
+    vecText(VF_OUTFIT, x, y, h, a, c, bg);
+    if (b[0]) {
+      G->fillCircle(x + wa + dot / 2, y + h - h / 8, h / 14 + 1, c);
+      vecText(VF_OUTFIT, x + wa + dot, y, h, b, c, bg);
+    }
+  }
+  return wa + dot + wb;
+}
+static int rainChanceToday(const UiState &s) {
+  int c = s.wx.nd && s.wx.d[0].rain != 255 ? s.wx.d[0].rain : 0;
+  for (int i = 0; i < s.wx.nh; i++)
+    if (s.wx.hp[i] != 255) c = imax(c, s.wx.hp[i]);
+  return c;
+}
+static const int RD_X = 8, RD_Y = 28, RD_W = 72, RD_H = 70;  // the drops' box inside the today card
+static void rainDrops(const UiState &s, int chance) {
+  if (chance < 30) return;
+  const int n = chance >= 70 ? 9 : chance >= 50 ? 6 : 4;
+  for (int i = 0; i < n; i++) {
+    const int lane = 14 + (i * 37) % (RD_W - 16), speed = 3 + i % 3, len = 6 + i % 3;
+    const int y = RD_Y + 6 + (int)((s.ms / 40 * speed + i * 23) % (RD_H - 14));
+    G->drawFastVLine(RD_X + lane, y, len, RAIN);
+    G->drawFastVLine(RD_X + lane + 1, y + 1, len - 2, mix16(CARD, RAIN, 8));
+  }
+}
+static void paintRainDrops(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(RD_X, RD_Y, RD_W, RD_H, CARD);
+  weatherIcon(RD_X + RD_W / 2, RD_Y + RD_H / 2 - 4, 0.8f, rainChanceToday(s) >= 30 ? 61 : s.wx.code, s.wx.day, CARD);
+  rainDrops(s, rainChanceToday(s));
+}
+
+static void paintRain(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(0, 24, 240, 216, BG);
+  if (noWeather(s)) return;
+  const int chance = rainChanceToday(s);
+  const uint16_t today = s.wx.nd ? s.wx.d[0].mm10 : 0;
+  // today card
+  G->fillRoundRect(8, 28, 224, 70, 14, CARD);
+  paintRainDrops(c);
+  text(90, 34, 1, MUTED, tr("CHUVA HOJE", "RAIN TODAY", "LLUVIA HOY"));
+  char v[12];
+  snprintf(v, sizeof v, "%d", chance);
+  const uint16_t cc = chance >= 70 ? RAIN : chance >= 30 ? uiRgb(150, 200, 255) : MUTED;
+  vecText(VF_OUTFIT, 90, 48, 30, v, cc, CARD);
+  int x = 90 + vecWidth(VF_OUTFIT, v, 30) + 2;
+  text(x, 66, 1, cc, "%");
+  char l[24];
+  const int mw = mmBig(0, 0, 26, today, TEXT, CARD, false), mx = 214 - mw;  // right-aligned, "mm" after it
+  mmBig(mx, 52, 26, today, TEXT, CARD);
+  text(mx + mw + 2, 70, 1, MUTED, "mm");
+  if (s.wx.rainIn) snprintf(l, sizeof l, "%s", rainSoonText(s.wx.rainIn));
+  else snprintf(l, sizeof l, "%s", tr("chance  /  esperado", "chance  /  expected", "prob.  /  esperado"));
+  text(90, 86, 1, s.wx.rainIn ? RAIN : MUTED, l);
+  // next 12 hours: bars for the chance, mm above when there's any
+  const int n = s.wx.nh;
+  text(10, 106, 1, MUTED, tr("PROXIMAS 12 HORAS", "NEXT 12 HOURS", "PROXIMAS 12 HORAS"));
+  int tot = 0, top = -1;
+  for (int i = 0; i < n; i++) {
+    tot += s.wx.hmm[i];
+    if (s.wx.hmm[i] && (top < 0 || s.wx.hmm[i] > s.wx.hmm[top])) top = i;
+  }
+  {
+    char t[16], m[8];
+    mmText((uint16_t)imin(tot, 9999), m, sizeof m);
+    snprintf(t, sizeof t, "%s mm", m);
+    textR(230, 106, 1, tot ? uiRgb(150, 200, 255) : MUTED, t);
+  }
+  if (n >= 2) {
+    const int x0 = 12, bw = 216 / n - 3, by1 = 160, bh = 34;
+    for (int i = 0; i < n; i++) {
+      const int bx = x0 + i * (216 / n), p = s.wx.hp[i] == 255 ? 0 : s.wx.hp[i], h = p * bh / 100;
+      G->fillRect(bx, by1 - bh, bw, bh, DIM);
+      if (h) G->fillRect(bx, by1 - h, bw, h, s.wx.hmm[i] ? RAIN : mix16(DIM, RAIN, 7));
+      if (i == top) {  // the wettest hour gets its mm
+        char m[8];
+        mmText(s.wx.hmm[i], m, sizeof m);
+        const int tw = textW(m, 1);
+        text(iclamp(bx + bw / 2 - tw / 2, 2, 238 - tw), by1 - h - 10, 1, TEXT, m);
+      }
+      if (i % 3 == 0) {
+        char hl[8];
+        const int hh = (s.wx.h0 + i) % 24;
+        if (i == 0) snprintf(hl, sizeof hl, "%s", tr("agora", "now", "ahora"));
+        else if (s.hour12) snprintf(hl, sizeof hl, "%d%s", hh % 12 ? hh % 12 : 12, hh < 12 ? "a" : "p");
+        else snprintf(hl, sizeof hl, "%02d", hh);
+        text(bx, by1 + 3, 1, i == 0 ? SUN : MUTED, hl);
+      }
+    }
+  }
+  // the coming days
+  const int nd = s.wx.nd > 1 ? imin(s.wx.nd - 1, 4) : 0;
+  for (int k = 0; k < nd; k++) {
+    const UiDay &d = s.wx.d[k + 1];
+    const int cx = 8 + k * 57, cw = 52;
+    G->fillRoundRect(cx, 176, cw, 58, 8, CARD);
+    const int wd = s.timeOk ? (s.now.tm_wday + k + 1) % 7 : k;
+    textC(cx + cw / 2, 181, 1, MUTED, WD[wd]);
+    char p[8];
+    if (d.rain == 255) snprintf(p, sizeof p, "--");
+    else snprintf(p, sizeof p, "%d%%", d.rain);
+    textC(cx + cw / 2, 195, 2, d.rain != 255 && d.rain >= 50 ? RAIN : TEXT, p);
+    char m[10], mm2[14];
+    mmText(d.mm10, m, sizeof m);
+    snprintf(mm2, sizeof mm2, "%smm", m);
+    textC(cx + cw / 2, 218, 1, d.mm10 ? uiRgb(150, 200, 255) : MUTED, mm2);
+  }
+}
+
+void themeRain(const UiState &s, bool full) {
+  topBar(s, full);
+  if (bodyDue(s, full, 60)) {
+    uiPaint(full, 0, 24, 240, 216, paintRain, (void *)&s);
+    return;
+  }
+  static uint32_t lastAnim = 0;  // weatherbox: drops fall in the today card (and the icon moves)
+  if (s.weatherOn && s.wx.ok && s.ms - lastAnim >= 100) {
+    lastAnim = s.ms;
+    uiPaint(false, RD_X + 2, RD_Y + 2, RD_W - 2, RD_H - 4, paintRainDrops, (void *)&s);
+  }
+}

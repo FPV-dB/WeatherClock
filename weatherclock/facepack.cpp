@@ -434,6 +434,11 @@ static void variable(const char *k, const UiState &s, char *v, size_t n) {
     uint16_t m = k[3] == '5' ? s.wx.pm25 : s.wx.pm10;
     wx && m != 0xFFFF ? snprintf_P(v, n, PSTR("%u"), (m + 5) / 10) : snprintf_P(v, n, PSTR("--"));
   }
+  else if (!strcmp_P(k, PSTR("RAINMM"))) {  // today's expected rain, mm
+    uint16_t m = wx && s.wx.nd ? s.wx.d[0].mm10 : 0;
+    wx ? (m % 10 && m < 100 ? snprintf_P(v, n, PSTR("%u.%u"), m / 10, m % 10) : snprintf_P(v, n, PSTR("%u"), (m + 5) / 10)) : snprintf_P(v, n, PSTR("--"));
+  }
+  else if (!strcmp_P(k, PSTR("RAINPC"))) wx && s.wx.nd && s.wx.d[0].rain != 255 ? snprintf_P(v, n, PSTR("%u"), s.wx.d[0].rain) : snprintf_P(v, n, PSTR("--"));
   else if (!strcmp_P(k, PSTR("UVMAX"))) wx && s.wx.uvMax10 != 255 ? snprintf_P(v, n, PSTR("%d"), (s.wx.uvMax10 + 5) / 10) : snprintf_P(v, n, PSTR("--"));
   else if (!strcmp_P(k, PSTR("AQI"))) wx && s.wx.aqi != 0xFFFF ? snprintf_P(v, n, PSTR("%u"), s.wx.aqi) : snprintf_P(v, n, PSTR("--"));
   else if (!strcmp_P(k, PSTR("SUNRISE")) || !strcmp_P(k, PSTR("SUNSET"))) {

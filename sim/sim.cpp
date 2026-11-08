@@ -65,6 +65,9 @@ static UiState base(int h, int m, int s) {
     static const uint8_t P[12] = {5, 5, 10, 20, 45, 70, 80, 55, 30, 15, 10, 5};
     st.wx.nh = 12; st.wx.h0 = h;
     memcpy(st.wx.ht, T, 12); memcpy(st.wx.hp, P, 12);
+    static const uint8_t MM[12] = {0, 0, 0, 1, 4, 12, 18, 6, 2, 0, 0, 0};
+    memcpy(st.wx.hmm, MM, 12);
+    st.wx.d[0].mm10 = 43; st.wx.d[1].mm10 = 128; st.wx.d[2].mm10 = 215; st.wx.d[3].mm10 = 6; st.wx.d[4].mm10 = 0;
   }
   st.south = true;
   // weatherbox: Adelaide, and the matching UTC (local time is ACDT, UTC+10:30)
