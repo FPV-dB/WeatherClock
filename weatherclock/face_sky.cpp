@@ -494,3 +494,143 @@ void themeAir(const UiState &s, bool full) {
     if (s.wx.uv10 != 255) uiPaint(false, 14, SC_Y, 214, SC_H, paintScale, (void *)&s);
   }
 }
+
+// ---------- Moon ----------
+// Moon position with the short series (Meeus, low precision): about a degree, plenty for rise/set to a few minutes.
+static void moonPosition(uint32_t utc, float lat, float lon, float &el, float &az, float &km) {
+  const float D2R = K_PI / 180;
+  const double n = utc / 86400.0 - 10957.5;
+  const float L = fmod(218.316 + 13.176396 * n, 360.0) * D2R, M = fmod(134.963 + 13.064993 * n, 360.0) * D2R,
+              F = fmod(93.272 + 13.229350 * n, 360.0) * D2R;
+  const float elon = L + 6.289f * D2R * sinf(M), elat = 5.128f * D2R * sinf(F), eps = (23.439f - 0.0000004f * (float)n) * D2R;
+  km = 385001 - 20905 * cosf(M);
+  const float ra = atan2f(sinf(elon) * cosf(eps) - tanf(elat) * sinf(eps), cosf(elon));
+  const float dec = asinf(sinf(elat) * cosf(eps) + cosf(elat) * sinf(eps) * sinf(elon));
+  const float gmst = fmod(280.46061837 + 360.98564736629 * n, 360.0);
+  const float ha = (gmst + lon) * D2R - ra, la = lat * D2R;
+  el = asinf(sinf(la) * sinf(dec) + cosf(la) * cosf(dec) * cosf(ha)) / D2R;
+  az = atan2f(-sinf(ha), tanf(dec) * cosf(la) - sinf(la) * cosf(ha)) / D2R;
+  if (az < 0) az += 360;
+}
+
+// Worked out when the body is redrawn (every 10 minutes): rise and set within the next 24 h, the dates of the next
+// full and new moon, and where the moon is now.
+static struct { bool ok; float el, az, km, age; int rise, set; uint32_t fullAt, newAt; int32_t off; } moon;
+static void moonUpdate(const UiState &s) {
+  static uint32_t key = 0;  // recomputed once per 10-minute slot (a fresh draw in the same slot shows the same times)
+  const bool ok = s.utc && s.timeOk && (s.lat || s.lon);
+  const uint32_t k = s.utc / 600 + (uint32_t)(s.lat * 100) * 7 + (uint32_t)(s.lon * 100);
+  if (ok && moon.ok && k == key) return;
+  key = k;
+  moon.ok = ok;
+  if (!moon.ok) return;
+  moonPosition(s.utc, s.lat, s.lon, moon.el, moon.az, moon.km);
+  moon.age = moonAge(s.now);
+  // local time offset: local midnight-based seconds vs UTC
+  long y = s.now.tm_year + 1900, m = s.now.tm_mon + 1, d = s.now.tm_mday;
+  if (m < 3) { y--; m += 12; }
+  const long days = 365 * y + y / 4 - y / 100 + y / 400 + (153 * (m - 3) + 2) / 5 + d - 719469;
+  const int64_t local = (int64_t)days * 86400 + s.now.tm_hour * 3600 + s.now.tm_min * 60 + s.now.tm_sec;
+  moon.off = (int32_t)(local - (int64_t)s.utc);
+  moon.rise = moon.set = -1;
+  float prev = moon.el;
+  for (int k = 4; k <= 24 * 60; k += 4) {  // 4-minute steps over the next day
+    float e, a, km;
+    moonPosition(s.utc + k * 60, s.lat, s.lon, e, a, km);
+    const int at = (s.now.tm_hour * 60 + s.now.tm_min + k) % 1440;
+    if (prev < 0 && e >= 0 && moon.rise < 0) moon.rise = at;
+    if (prev >= 0 && e < 0 && moon.set < 0) moon.set = at;
+    prev = e;
+  }
+  const float SYN = 29.530589f;
+  float toFull = SYN / 2 - moon.age, toNew = SYN - moon.age;
+  if (toFull < 0) toFull += SYN;
+  moon.fullAt = s.utc + (uint32_t)(toFull * 86400);
+  moon.newAt = s.utc + (uint32_t)(toNew * 86400);
+}
+
+// "THU 26 NOV" for a UTC time, in local time
+static void dayLabel(uint32_t utc, int32_t off, char *out, size_t n) {
+  const int64_t t = (int64_t)utc + off;
+  long z = (long)(t / 86400) + 719468, era = z / 146097, doe = z - era * 146097;
+  long yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365, doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+  long mp = (5 * doy + 2) / 153, d = doy - (153 * mp + 2) / 5 + 1, m = mp < 10 ? mp + 3 : mp - 9;
+  const int wd = (int)((t / 86400 + 4) % 7);  // 1970-01-01 was a Thursday
+  snprintf(out, n, "%s %ld %s", WD[wd], d, MO[m - 1]);
+}
+
+static void moonCard(int x, int y, const char *label, const char *value, uint16_t vc) {
+  G->fillRoundRect(x, y, 108, 44, 10, CARD);
+  textC(x + 54, y + 7, 1, MUTED, label);
+  const int vh = 20, vw = vecWidth(VF_OUTFIT_TXT, value, vh);
+  if (vw <= 100) vecText(VF_OUTFIT_TXT, x + 54 - vw / 2, y + 19, vh, value, vc, CARD);
+  else textC(x + 54, y + 24, 1, vc, value);
+}
+
+static const int MOON_X = 62, MOON_Y = 80, MOON_R = 40;
+static void paintMoonHalo(const UiState &s) {
+  const int ph = (int)(s.ms / 120 % 20), w = ph < 10 ? ph : 20 - ph;  // ~2.4 s breath
+  for (int i = 0; i < 3; i++)
+    G->drawCircle(MOON_X, MOON_Y, MOON_R + 3 + i * 2 + w / 4, mix16(BG, uiRgb(140, 144, 170), (10 - w) * (3 - i) / 3));
+}
+
+static void paintMoon(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(0, 24, 240, 216, BG);
+  if (!moon.ok) {
+    textC(120, 110, 2, MUTED, tr("Sem hora ou cidade", "No time or city yet", "Sin hora o ciudad"));
+    return;
+  }
+  paintMoonHalo(s);
+  moonDisc(MOON_X, MOON_Y, MOON_R, moon.age, s.south);
+  // name, % lit and age
+  const char *n = moonName(moonPhase(s.now));
+  const int nw = vecWidth(VF_OUTFIT_TXT, n, 18);
+  if (nw <= 120) vecText(VF_OUTFIT_TXT, 116, 36, 18, n, TEXT, BG);
+  else text(116, 40, 1, TEXT, n);
+  const int lit = (int)lroundf((1 - cosf(2 * K_PI * moon.age / 29.530589f)) * 50);
+  char v[8];
+  snprintf(v, sizeof v, "%d", lit);
+  vecText(VF_OUTFIT, 116, 60, 34, v, uiRgb(236, 232, 214), BG);
+  text(116 + vecWidth(VF_OUTFIT, v, 34) + 4, 82, 2, MUTED, "%");
+  text(116, 100, 1, MUTED, tr("iluminada", "lit", "iluminada"));
+  char a[24];
+  snprintf(a, sizeof a, tr("dia %d de 29,5", "day %d of 29.5", "dia %d de 29,5"), (int)moon.age);
+  text(116, 112, 1, MUTED, a);
+  // where it is now and how far
+  char l[40];
+  const int e = (int)lroundf(moon.el);
+  if (e >= 0) snprintf(l, sizeof l, tr("agora %d  %s  %ld km", "now up %d  %s  %ld km", "ahora %d  %s  %ld km"), e, compass16(moon.az), (long)moon.km);
+  else snprintf(l, sizeof l, tr("abaixo do horizonte  %ld km", "below the horizon  %ld km", "bajo el horizonte  %ld km"), (long)moon.km);
+  textC(120, 128, 1, e >= 0 ? TEXT : MUTED, l);
+  // rise, set, next full and new moon
+  char t[16];
+  hhmm(s, moon.rise, t, sizeof t);
+  moonCard(8, 142, tr("NASCE", "MOONRISE", "SALE"), moon.rise >= 0 ? t : "--", TEXT);
+  hhmm(s, moon.set, t, sizeof t);
+  moonCard(124, 142, tr("SE POE", "MOONSET", "SE PONE"), moon.set >= 0 ? t : "--", TEXT);
+  dayLabel(moon.fullAt, moon.off, t, sizeof t);
+  moonCard(8, 190, tr("LUA CHEIA", "FULL MOON", "LUNA LLENA"), t, SUN);
+  dayLabel(moon.newAt, moon.off, t, sizeof t);
+  moonCard(124, 190, tr("LUA NOVA", "NEW MOON", "LUNA NUEVA"), t, uiRgb(150, 160, 210));
+}
+static void paintMoonAnim(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(MOON_X - MOON_R - 12, MOON_Y - MOON_R - 12, 2 * MOON_R + 24, 2 * MOON_R + 24, BG);
+  paintMoonHalo(s);
+  moonDisc(MOON_X, MOON_Y, MOON_R, moon.age, s.south);
+}
+
+void themeMoon(const UiState &s, bool full) {
+  topBar(s, full);
+  if (bodyDue(s, full, 10)) {
+    moonUpdate(s);
+    uiPaint(full, 0, 24, 240, 216, paintMoon, (void *)&s);
+    return;
+  }
+  static uint32_t lastAnim = 0;  // weatherbox: a soft halo breathes around the moon
+  if (moon.ok && s.ms - lastAnim >= 120) {
+    lastAnim = s.ms;
+    uiPaint(false, MOON_X - MOON_R - 12, MOON_Y - MOON_R - 12, 2 * MOON_R + 24, 2 * MOON_R + 24, paintMoonAnim, (void *)&s);
+  }
+}
