@@ -438,17 +438,17 @@ int main() {
   if (const char *l = getenv("SIM_LANG")) uiSetLang(atoi(l));  // 0 = Portuguese, 1 = English, 2 = Spanish
   // ---- clock: themes ----
   UiState s = base(14, 37, 25);
-  s.theme = THEME_MATRIX;              shot("01_matriz", s, false);
-  { UiState t = s; t.weatherOn = false; t.today = 8; t.accent = uiRgb(255, 176, 60); shot("02_matriz_sem_clima_meta", t, false); }
-  s.theme = THEME_TOMATO;              shot("03_tomate_dia", s, false);
-  { UiState t = base(23, 41, 0); t.theme = THEME_TOMATO; t.wx.code = 0; t.wx.day = false; t.wx.t = 17; shot("04_tomate_noite", t, false); }
-  { UiState t = base(17, 52, 0); t.theme = THEME_TOMATO; t.wx.code = 63; t.wx.t = 19; shot("05_tomate_chuva_entardecer", t, false); }
-  { UiState t = base(10, 9, 0); t.theme = THEME_TOMATO; t.wx.code = 71; t.wx.t = -2; shot("05b_tomate_neve", t, false); }
-  { UiState t = base(13, 15, 0); t.theme = THEME_TOMATO; t.wx.code = 0; t.wx.t = 33; shot("05c_tomate_calor", t, false); }
-  { UiState t = base(15, 40, 0); t.theme = THEME_TOMATO; t.wx.code = 1; t.today = 8; shot("05d_tomate_meta", t, false); }
-  { UiState t = base(10, 9, 0); t.theme = THEME_ANALOG; shot("06_analogico", t, false); }
-  { UiState t = base(8, 5, 0); t.theme = THEME_WEATHER; t.wx.code = 61; t.wx.t = 18.2f; shot("07_clima_chuva", t, false); }
-  { UiState t = base(13, 0, 0); t.theme = THEME_WEATHER; t.wx.code = 0; t.wx.t = 31; t.wx.hum = 38; shot("08_clima_sol", t, false); }
+  s.theme = THEME_MATRIX;              shot("01_matrix", s, false);
+  { UiState t = s; t.weatherOn = false; t.today = 8; t.accent = uiRgb(255, 176, 60); shot("02_matrix_no_weather_goal", t, false); }
+  s.theme = THEME_TOMATO;              shot("03_scene_day", s, false);
+  { UiState t = base(23, 41, 0); t.theme = THEME_TOMATO; t.wx.code = 0; t.wx.day = false; t.wx.t = 17; shot("04_scene_night", t, false); }
+  { UiState t = base(17, 52, 0); t.theme = THEME_TOMATO; t.wx.code = 63; t.wx.t = 19; shot("05_scene_rain_dusk", t, false); }
+  { UiState t = base(10, 9, 0); t.theme = THEME_TOMATO; t.wx.code = 71; t.wx.t = -2; shot("05b_scene_snow", t, false); }
+  { UiState t = base(13, 15, 0); t.theme = THEME_TOMATO; t.wx.code = 0; t.wx.t = 33; shot("05c_scene_hot", t, false); }
+  { UiState t = base(15, 40, 0); t.theme = THEME_TOMATO; t.wx.code = 1; t.today = 8; shot("05d_scene_goal", t, false); }
+  { UiState t = base(10, 9, 0); t.theme = THEME_ANALOG; shot("06_analog", t, false); }
+  { UiState t = base(8, 5, 0); t.theme = THEME_WEATHER; t.wx.code = 61; t.wx.t = 18.2f; shot("07_weather_rain", t, false); }
+  { UiState t = base(13, 0, 0); t.theme = THEME_WEATHER; t.wx.code = 0; t.wx.t = 31; t.wx.hum = 38; shot("08_weather_sun", t, false); }
   // °F (the firmware converts in makeState: here the values are already in °F) and rain on the way
   auto fahr = [](UiState t) {
     t.fahr = true;
@@ -456,20 +456,20 @@ int main() {
     for (UiDay &d : t.wx.d) { d.tmin = d.tmin * 9 / 5 + 32; d.tmax = d.tmax * 9 / 5 + 32; }
     return t;
   };
-  { UiState t = base(13, 0, 0); t.theme = THEME_WEATHER; t.wx.code = 0; t.wx.t = 40; t.wx.tmax = 41; shot("08b_clima_fahrenheit_calor", fahr(t), false); }
-  { UiState t = base(16, 20, 0); t.theme = THEME_WEATHER; t.wx.code = 3; t.wx.rainIn = 15; shot("08c_clima_chuva_chegando", t, false); }
-  { UiState t = base(16, 20, 0); t.theme = THEME_TOMATO; t.wx.code = 3; t.wx.rainIn = 30; shot("05e_tomate_chuva_chegando", t, false); }
+  { UiState t = base(13, 0, 0); t.theme = THEME_WEATHER; t.wx.code = 0; t.wx.t = 40; t.wx.tmax = 41; shot("08b_weather_fahrenheit_hot", fahr(t), false); }
+  { UiState t = base(16, 20, 0); t.theme = THEME_WEATHER; t.wx.code = 3; t.wx.rainIn = 15; shot("08c_weather_rain_coming", t, false); }
+  { UiState t = base(16, 20, 0); t.theme = THEME_TOMATO; t.wx.code = 3; t.wx.rainIn = 30; shot("05e_scene_rain_coming", t, false); }
   { UiState t = base(18, 26, 43); t.theme = THEME_LCD; t.wx.t = 39; shot("16b_lcd_fahrenheit", fahr(t), false); }
-  { UiState t = base(9, 0, 0); t.theme = THEME_FORECAST_LCD; t.wx.d[0].tmax = 41; shot("16c_previsao_lcd_fahrenheit", fahr(t), false); }
-  { UiState t = base(9, 0, 0); t.theme = THEME_FORECAST_CARDS; t.wx.d[0].tmax = 41; shot("16d_previsao_cartoes_fahrenheit", fahr(t), false); }
+  { UiState t = base(9, 0, 0); t.theme = THEME_FORECAST_LCD; t.wx.d[0].tmax = 41; shot("16c_forecast_lcd_fahrenheit", fahr(t), false); }
+  { UiState t = base(9, 0, 0); t.theme = THEME_FORECAST_CARDS; t.wx.d[0].tmax = 41; shot("16d_forecast_cards_fahrenheit", fahr(t), false); }
 
   { UiState t = base(14, 37, 24); t.theme = THEME_NEON; shot("14_neon", t, false); }
   { UiState t = base(9, 5, 0); t.theme = THEME_FLIP; shot("15_flip", t, false); }
   { UiState t = base(18, 26, 43); t.theme = THEME_LCD; shot("16_lcd", t, false); }
-  { UiState t = base(14, 31, 0); t.theme = THEME_WORDS; shot("17_palavras_meia", t, false); }
-  { UiState t = base(2, 46, 0); t.theme = THEME_WORDS; shot("18_palavras_para", t, false); }
-  { UiState t = base(11, 58, 0); t.theme = THEME_WORDS; shot("19_palavras_meiodia", t, false); }
-  { UiState t = base(8, 23, 0); t.theme = THEME_WORDS; shot("20_palavras_manha", t, false); }
+  { UiState t = base(14, 31, 0); t.theme = THEME_WORDS; shot("17_words_half", t, false); }
+  { UiState t = base(2, 46, 0); t.theme = THEME_WORDS; shot("18_words_to", t, false); }
+  { UiState t = base(11, 58, 0); t.theme = THEME_WORDS; shot("19_words_noon", t, false); }
+  { UiState t = base(8, 23, 0); t.theme = THEME_WORDS; shot("20_words_morning", t, false); }
 
   // ---- Flip turnover animation: 14:37 -> 14:38 ----
   {
@@ -515,10 +515,10 @@ int main() {
   // ---- Pomodoro ----
   UiState p = base(14, 37, 25);
   p.phase = PH_WORK; p.running = true; p.totalMs = 25 * 60000; p.remainingMs = 10 * 60000 + 12000; p.cycleDone = 2;
-  shot("09_pomo_foco", p, true);
-  { UiState t = p; t.phase = PH_SHORT; t.totalMs = 5 * 60000; t.remainingMs = 3 * 60000 + 40000; t.running = false; t.now.tm_sec = 0; shot("10_pomo_pausa_pausado", t, true); }
-  { UiState t = p; t.phase = PH_LONG; t.totalMs = 15 * 60000; t.remainingMs = 14 * 60000; t.cycleDone = 4; shot("11_pomo_pausa_longa", t, true); }
-  { UiState t = p; t.phase = PH_SHORT; t.totalMs = t.remainingMs = 5 * 60000; t.cycleDone = 3; t.celebrate = true; t.ms = 3 * 160; shot("11b_pomo_fim", t, true); }
+  shot("09_pomo_focus", p, true);
+  { UiState t = p; t.phase = PH_SHORT; t.totalMs = 5 * 60000; t.remainingMs = 3 * 60000 + 40000; t.running = false; t.now.tm_sec = 0; shot("10_pomo_break_paused", t, true); }
+  { UiState t = p; t.phase = PH_LONG; t.totalMs = 15 * 60000; t.remainingMs = 14 * 60000; t.cycleDone = 4; shot("11_pomo_long_break", t, true); }
+  { UiState t = p; t.phase = PH_SHORT; t.totalMs = t.remainingMs = 5 * 60000; t.cycleDone = 3; t.celebrate = true; t.ms = 3 * 160; shot("11b_pomo_end", t, true); }
   for (int a = 0; a < ACT_COUNT; a++) {  // one screen per focus activity
     UiState t = p;
     t.activity = a;
@@ -531,15 +531,15 @@ int main() {
   { Frame *f = new Frame(); uiBegin(f); uiMessage("Set up Wi-Fi", "WeatherClock-Setup", "password: ab12cd34", "http://192.168.4.1"); save(*f, "12_portal"); delete f; }
   { Frame *f = new Frame(); uiBegin(f);  // start-up screen: the Wi-Fi step, the time step and ready
     if (const char *o = getenv("SIM_OWNER")) uiSetOwner(o);  // weatherbox: the clock's name on the start-up screen
-    uiMessage("Weather Clock", "Connecting Wi-Fi", "v1.0", ""); uiBootProgress(300, 0); save(*f, "12b_inicio_wifi");
-    uiMessage("Weather Clock", "Setting the time", "weatherclock.local", "192.168.1.178"); uiBootProgress(900, 1); save(*f, "12c_inicio_hora");
-    uiMessage("Weather Clock", "Connected", "weatherclock.local", "192.168.1.178"); uiBootProgress(900, 2); save(*f, "12d_inicio_pronto"); delete f; }
+    uiMessage("Weather Clock", "Connecting Wi-Fi", "v1.0", ""); uiBootProgress(300, 0); save(*f, "12b_start_wifi");
+    uiMessage("Weather Clock", "Setting the time", "weatherclock.local", "192.168.1.178"); uiBootProgress(900, 1); save(*f, "12c_start_time");
+    uiMessage("Weather Clock", "Connected", "weatherclock.local", "192.168.1.178"); uiBootProgress(900, 2); save(*f, "12d_start_ready"); delete f; }
   { Frame *f = new Frame(); uiBegin(f);  // no time yet: the face with the "syncing" indicator
-    UiState t = base(14, 58, 50); t.timeOk = false; t.theme = 0; uiRenderClock(t); uiSyncHint(400); save(*f, "12e_sem_hora"); delete f; }
+    UiState t = base(14, 58, 50); t.timeOk = false; t.theme = 0; uiRenderClock(t); uiSyncHint(400); save(*f, "12e_no_time"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiSetupWifi("WeatherClock-Setup", "ab12cd34"); save(*f, "14_setup_wifi"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiSetupCity("192.168.1.178", "weatherclock"); save(*f, "14b_setup_city"); delete f; }
-  { Frame *f = new Frame(); uiBegin(f); uiColorTest(); save(*f, "13_teste_cores"); delete f; }
-  { Frame *f = new Frame(); uiBegin(f); uiVcomTest(0x20, true); uiVcomTest(0x1C, false); save(*f, "13b_anti_fantasma"); delete f; }
+  { Frame *f = new Frame(); uiBegin(f); uiColorTest(); save(*f, "13_colour_test"); delete f; }
+  { Frame *f = new Frame(); uiBegin(f); uiVcomTest(0x20, true); uiVcomTest(0x1C, false); save(*f, "13b_anti_ghosting"); delete f; }
 
   assetSheet();
 

@@ -142,11 +142,10 @@ Every pixel art drawing (the tomato and its expressions, the plant stages, the f
    ```
 
    - every pixel row has the same length; `.` is transparent;
-   - `cor <character> #rrggbb` defines a colour (up to 15 per sprite); `paleta tomate` reuses the colours in `assets/palettes/tomate.txt`;
-   - animation: separate frames with a `quadro` line and set each frame's duration with `ms 160`;
-   - `fundo #rrggbb` only changes the sprite's background on the preview sheet.
+   - `color <character> #rrggbb` defines a colour (up to 15 per sprite); `palette tomato` reuses the colours in `assets/palettes/tomato.txt`;
+   - animation: separate frames with a `frame` line and set each frame's duration with `ms 160`;
+   - `background #rrggbb` only changes the sprite's background on the preview sheet.
 
-   (The keywords are Portuguese: `cor` = colour, `paleta` = palette, `quadro` = frame, `fundo` = background.)
 2. Run `sim/build.sh` (or just `node assets/generate.js`). Errors point to the file and line.
 3. Draw it anywhere in `ui.cpp`:
 
@@ -191,11 +190,11 @@ sim/tests.sh  # Linux/WSL (g++-multilib): upload/host/password handlers, history
 
 `sim/build.sh` runs on Windows (Zig) and on Linux (Zig, or `g++ -m32` without it). Every push runs all of the above on GitHub Actions (`.github/workflows/firmware.yml`) and keeps the firmware as an artifact.
 
-**Publishing** a version is one command, `scripts/publicar.sh [--beta] [--publicar]`: it checks the tree, scans the diff for secrets, runs the simulator and the tests, builds, adds only new panel files to the website (never overwriting the ones older firmwares point to), writes `firmware/latest.json` (or `firmware/beta.json` with `--beta`), creates the GitHub release and checks the result online. Without `--publicar` it is a dry run that sends nothing. Release notes live in `notas/<version>.json`.
+**Publishing** a Weather Clock version is one command, `tools/release.sh <version> "note"...` (kept next to the repository with the signing key, not in it): it builds the panel and firmware, signs both with the private key, copies them to the website (`firmware/latest.json`, `panel/`), pushes the site and creates the GitHub release.
 
 The time zone table (`web/tz.json`, IANA name → POSIX rule) is generated from the system tzdata by `web/tzgen.sh` and published like the dictionary.
 
-The panel's English and Spanish texts live in `web/i18n.json`, not in flash: `web/build.js` writes `web/out/i18n-<code>.json`, which is published in the website's `panel/` folder; the panel downloads it once and keeps it in the browser.
+The panel's Portuguese and Spanish texts live in `web/i18n.json`, not in flash: `web/build.js` writes `web/out/i18n-<code>.json`, which is published in the website's `panel/` folder; the panel downloads it once and keeps it in the browser.
 
 `build.sh` builds without newlib's decimal number printf/scanf (`--build-property build.float=`, ~7 KB): the firmware never uses `%f` or parses decimals with it, and `sim/build.sh` rejects code that does.
 

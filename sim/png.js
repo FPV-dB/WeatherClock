@@ -30,7 +30,7 @@ files.forEach((f, k) => {
   const rgb = toRgb(fs.readFileSync(path.join(dir, f)), 1), ox = (k % cols) * cell + pad, oy = (k / cols | 0) * cell + pad;
   for (let y = 0; y < W; y++) rgb.copy(sheet, ((oy + y) * sw + ox) * 3, y * W * 3, (y + 1) * W * 3);
 });
-fs.writeFileSync(path.join(dir, 'folha.png'), png(sw, sh, sheet));
+fs.writeFileSync(path.join(dir, 'sheet.png'), png(sw, sh, sheet));
 console.log(files.map((f, i) => `${i + 1}. ${f.replace('.raw', '')}`).join('\n'));
 // Extra use: node png.js <out.png> <screen1> <screen2> ...  -> sheet with just those screens
 if (process.argv.length > 3) {

@@ -8,8 +8,8 @@ const pnorm=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace
 const ptw=(s,sc)=>pnorm(s).length*6*sc-sc;
 function ptxt(g,s,x,y,sc,col){g.fillStyle=col;for(const ch of pnorm(s)){const k=ch.charCodeAt(0)-32;
  if(k>=0&&k<59)for(let cx=0;cx<5;cx++){const b=parseInt(FONT.substr((k*5+cx)*2,2),16);for(let cy=0;cy<7;cy++)if(b>>cy&1)g.fillRect(x+cx*sc,y+cy*sc,sc,sc)}x+=6*sc}}
-const CARD_SPR = {"p_semente":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["................","................","................","................","................","................","................","................","................","................","................","................","......oooo......",".....oSSsSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]},"p_flor":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["................","......yyy.......",".....yycyy......","......yyy.......",".......gG.......",".......gG.......",".....gGgG.......","....gGGgG.gGg...",".......gGgGGGg..",".......gG.......",".......gG.......",".......gG.......","......oooo......",".....oSSSSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]},"p_verde":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["................",".......gG.......",".....gGgG.......","....gGGgGggg....",".......gGgGGg...",".......gG.vvvv..",".......gGvwvvvV.",".......gGvvvvvV.",".......gGvvvvvV.",".......gG.VVVV..","...gGg.gG.......","....gGGgG.......","......oooo......",".....oSSSSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]},"p_madura":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["................",".......gG.......",".....gGgG.......","....gGGgGggg....",".......gGgGGg...",".......gG.RRRR..",".......gGRwRRRr.",".......gGRRRRRr.",".......gGRRRRRr.",".......gG.rrrr..","...gGg.gG.......","....gGGgG.......","......oooo......",".....oSSSSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]},"p_dourada":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["...w.......w....","..www..gG.www...","...w.gGgG..w....","....gGGgGggg....",".......gGgGGg...",".......gG.DDDD..",".......gGDwDDDd.",".......gGDDDDDd.",".......gGDDDDDd.",".......gG.dddd..","...gGg.gG.......","....gGGgG.......","......oooo......",".....oSSSSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]}};
-const plant = n => CARD_SPR[['p_semente', 0, 'p_flor', 'p_flor', 'p_verde', 'p_verde', 'p_madura'][n] || 'p_dourada'];
+const CARD_SPR = {"p_seed":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["................","................","................","................","................","................","................","................","................","................","................","................","......oooo......",".....oSSsSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]},"p_flower":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["................","......yyy.......",".....yycyy......","......yyy.......",".......gG.......",".......gG.......",".....gGgG.......","....gGGgG.gGg...",".......gGgGGGg..",".......gG.......",".......gG.......",".......gG.......","......oooo......",".....oSSSSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]},"p_green":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["................",".......gG.......",".....gGgG.......","....gGGgGggg....",".......gGgGGg...",".......gG.vvvv..",".......gGvwvvvV.",".......gGvvvvvV.",".......gGvvvvvV.",".......gG.VVVV..","...gGg.gG.......","....gGGgG.......","......oooo......",".....oSSSSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]},"p_ripe":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["................",".......gG.......",".....gGgG.......","....gGGgGggg....",".......gGgGGg...",".......gG.RRRR..",".......gGRwRRRr.",".......gGRRRRRr.",".......gGRRRRRr.",".......gG.rrrr..","...gGg.gG.......","....gGGgG.......","......oooo......",".....oSSSSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]},"p_golden":{"p":"o3d2414 S7a4a2e sf0d58c g2e8034 G60c454 yffd23f cff8c1a v8fd16a V4f9a3a Re8402f ra8261e Dffcc33 dc48a12 wffffff","r":["...w.......w....","..www..gG.www...","...w.gGgG..w....","....gGGgGggg....",".......gGgGGg...",".......gG.DDDD..",".......gGDwDDDd.",".......gGDDDDDd.",".......gGDDDDDd.",".......gG.dddd..","...gGg.gG.......","....gGGgG.......","......oooo......",".....oSSSSo.....","....oSSSSSSo....","...oSSSSSSSSo..."]}};
+const plant = n => CARD_SPR[['p_seed', 0, 'p_flower', 'p_flower', 'p_green', 'p_green', 'p_ripe'][n] || 'p_golden'];
 // pixel-art card: drawn on a 120x150 grid and enlarged 9x (1080x1350, 4:5), with the clock's
 // font and the Scene face. On a phone it opens sharing; on a PC it downloads the PNG.
 const WDN=[['DOM','SEG','TER','QUA','QUI','SEX','SAB'],['SUN','MON','TUE','WED','THU','FRI','SAT'],['DOM','LUN','MAR','MIE','JUE','VIE','SAB']];
@@ -18,7 +18,7 @@ const MINI=['...gGg...','.rRRgRRr.','rRhRRRRRr','rRRRRRRRr','rRRRRRRRr','.rRRRRR
 // o: {spr, SPR, t, LG, today, goal, streak, days}; returns the 1080x1350 canvas
 window.shareCard = function (o) {
  const {spr, SPR, t, LG, today, days} = o, G = o.goal, met = today >= G, sk = o.streak || 0, j = {days};
- const SPRP = n => n == 1 ? SPR.p_broto : plant(n);
+ const SPRP = n => n == 1 ? SPR.p_sprout : plant(n);
  const W=120,H=150,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
  const R=(col,x,y,w,h)=>{g.fillStyle=col;g.fillRect(x,y,w,h)},ctr=(s,y,sc,col)=>ptxt(g,s,Math.round((W-ptw(s,sc))/2),y,sc,col);
  R('#0e0e10',0,0,W,H);
@@ -33,7 +33,7 @@ window.shareCard = function (o) {
  R('#4caf50',sx,sy+30,sw,3);R('#2e7d32',sx,sy+33,sw,1);R('#5c3c2a',sx,sy+34,sw,6);
  for(let i=0;i<9;i++)R('#4a2f21',sx+3+i*11,sy+36+(i*3)%3,2,1);
  for(let i=0;i<8;i++)R('#4caf50',sx+6+i*13,sy+28,1,2);
- spr(g,SPRP(sk),sx+10,sy+1,2);spr(g,met?SPR.t_comemorando:SPR.t_feliz,sx+50,sy+2,2);
+ spr(g,SPRP(sk),sx+10,sy+1,2);spr(g,met?SPR.t_cheering:SPR.t_happy,sx+50,sy+2,2);
  // today's focus sessions in big digits, with the goal beside them
  const n=String(today),gl='/'+G,w1=ptw(n,3),w2=ptw(gl,2),x0=Math.round((W-w1-3-w2)/2);
  ptxt(g,n,x0,78,3,'#ffffff');ptxt(g,gl,x0+w1+3,85,2,'#5a5a66');
@@ -44,7 +44,7 @@ window.shareCard = function (o) {
   MINI.forEach((row,yy)=>[...row].forEach((ch,xx)=>{if(pal[ch])R(pal[ch],x+xx,y+yy,1,1)}));
   ptxt(g,WDN[LG][(wd-6+i+7)%7][0],x+2,126,1,i==6?'#ffffff':'#5a5a66')});
  // streak
- if(sk){const s=sk+' '+t('day streak'),sw2=ptw(s,1)+11,x=Math.round((W-sw2)/2);spr(g,SPR.chama,x,135,1);ptxt(g,s,x+11,138,1,'#ffc83a')}
+ if(sk){const s=sk+' '+t('day streak'),sw2=ptw(s,1)+11,x=Math.round((W-sw2)/2);spr(g,SPR.flame,x,135,1);ptxt(g,s,x+11,138,1,'#ffc83a')}
  const big=document.createElement('canvas');big.width=W*9;big.height=H*9;const bg=big.getContext('2d');bg.imageSmoothingEnabled=false;bg.drawImage(c,0,0,W*9,H*9);
  return big;
 };

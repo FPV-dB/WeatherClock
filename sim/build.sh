@@ -1,5 +1,5 @@
 #!/bin/sh
-# Gera assets.h, compila e roda o simulador; gera out/*.png, out/folha.png e out/assets.png.
+# Gera assets.h, compila e roda o simulador; gera out/*.png, out/sheet.png e out/assets.png.
 # Needs: zig (https://ziglang.org), node and the Adafruit GFX library installed by arduino-cli.
 cd "$(dirname "$0")"
 ZIG=$(command -v zig)
