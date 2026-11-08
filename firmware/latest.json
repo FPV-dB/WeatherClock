@@ -1,23 +1,29 @@
 {
-  "version": "2.0.5",
+  "version": "2.0.6",
   "date": "2026-11-08",
   "file": "weatherclock.bin",
-  "size": 586576,
+  "size": 589584,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 422687,
-  "sig": "NMCblhddLtwT97vj5DnMsjZfcD21tMyrBARcazAoskGWd/MRN+5XADDa07m2Hwaap1b3ihHyfps8elKwaMLrJ1RaAX0S/xQrx0xNeFp6KU1rcbKxiSYMrAjPKlf83d4sC4caIgfq+SlkhlUij6KuH+weqQpVJZgzm21j7G4xDBKEfVsNAnvPHwISLmsEPWKFAoWnB6AieBI6nZzH3mgRGnwiEEAuf+jwsZXB2jOQYrCzz4iBRG693CTzQKuavmoooV8MmOqXKEWn4ZSfVwztSm0Or+8XqJ2hte/eDPN4N8vzxjVwmrSICUJ3sFVJMyzFTuclVj3UFKAIvoUMaMizCA==",
-  "gzsig": "Dc6puxxw9b7GsE02sx7OJTYS89dRDbTF1/Z07+kJOCN1kVA4Cdm1nqJbERq8PT9HeCRnLj99NzvoYBYD4lMjqW0LpP27BTpEpzq2nQicwf+gNYrVYfOLjjraeI9fRcuXxdZfP9D2H74JYZ82EkJwPpDF6SgGwp6IU8UDOs86TTdjOo3ghuXqUXwDnKaon6+iL57cBrtv2JoaC1MqRwNvZFL9s5tJPyD3oywz2qRc1nErXSi82ngh3LWZ55XX4BlWg3O5yUMV4jveAvN7Xm/w6IsSZBHFPNJOmfgvY5b97MEajp6OR3nfCClKsd4J23WmT0qQO5FT5hl2m8o9y6xm3Q==",
-  "panel": "panel-3d08a2106c1b382d7fcc5ef9.html.gz",
-  "psri": "sha256-PQiiEGwbOC1/zF75ePjVZSBzcLGsif9TFBbh5JKZOdk=",
+  "gzsize": 424690,
+  "sig": "elvGVZRCbRkLALBzDzvWcguy19wflY8XzAEECDxj2KaPcUKJVIR9ypFcdS4dz/+4ZfenTj6hMibJyHkXjWzCkDZRl6RUtLwRmqRemC2aTMUWrYN8WvBjZlyQ4JdPgtLcBLfLTVFBPtKwSa6eSmFSQ3IJwDcgfqKKV4AB8sR+R/9WtRxqDQhzaOeAi+tk2hFam1IELVgTTYK4yCdTDO/LI2nBsqrKmjdo0YfaA5P9I8+lOlsVAJ86/DCDrCTlbWBkWQtB70eVZf9/wg9vhEEPxwbyTB5Ohp9UJq051lRpbHkusf0pSXWfRfSj8JZ+A28Wy3UUJTzcdPdKcPDQGOV9PQ==",
+  "gzsig": "eULulk0XMwfptezHKTCa+ZR1vybb7IWN20lisaaGHePciFJ7iBWQVE091ngngo0A4LJO9mmJO9dfjJSsLcIvolag1WrXicBev8bin3Wel44tOdxcPxUHKnCd+ZgkfYL3Pe8ZTuXV7089cEfajmuTdDF+X3RsLI5rHnAbL5aJU+3K3cdHNy4lQCFLeT4vJxVwCIfWjIpUp2qDhAOKqU8uiR8XP37E+jGsgAI7ZNhoKxzdX6NWU4hEftGgqjSZZ6h+X8zTz5fk9Dj2UUr3qJvf7QjvMYbNzWR9mjNM+kVjDhtsvN+UPNnxvlKhJ1hXK1lFDisGYdG23fHcbiVMVC4ZPA==",
+  "panel": "panel-853aaa66456bc7b1f2b23fbb.html.gz",
+  "psri": "sha256-hTqqZkVrx7Hysj+71Yn/uIFzP1AE9B5seYFRRIMs3S8=",
   "notes": {
     "en": [
-      "Fixes weather not loading in 2.0.4"
+      "New Air & UV face: UV index with today's peak, PM2.5 and PM10, animated UV scale",
+      "PM2.5, PM10 and UV peak in the web page and for face packs",
+      "Face pack names and the rest of the code in English"
     ],
     "pt": [
-      "Fixes weather not loading in 2.0.4"
+      "New Air & UV face: UV index with today's peak, PM2.5 and PM10, animated UV scale",
+      "PM2.5, PM10 and UV peak in the web page and for face packs",
+      "Face pack names and the rest of the code in English"
     ],
     "es": [
-      "Fixes weather not loading in 2.0.4"
+      "New Air & UV face: UV index with today's peak, PM2.5 and PM10, animated UV scale",
+      "PM2.5, PM10 and UV peak in the web page and for face packs",
+      "Face pack names and the rest of the code in English"
     ]
   }
 }

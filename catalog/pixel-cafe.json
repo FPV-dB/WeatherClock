@@ -2,8 +2,10 @@
   "format": 1,
   "author": "davicorrea0",
   "id": "pixel-cafe",
-  "name": "Café Pixel",
-  "desc": "Uma mesa de café em pixel art: janela que muda com o dia e o tomate com humor do clima",
+  "name": "Pixel Café",
+  "desc": "A pixel-art café table: a window that changes with the day and a tomato whose mood follows the weather",
+  "name_pt": "Café Pixel",
+  "desc_pt": "Uma mesa de café em pixel art: janela que muda com o dia e o tomate com humor do clima",
   "bg": "#2b1d16",
   "sprites": {
     "cup": {

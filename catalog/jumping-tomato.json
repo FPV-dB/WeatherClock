@@ -2,8 +2,10 @@
   "format": 1,
   "author": "davicorrea0",
   "id": "jumping-tomato",
-  "name": "Tomate Pulando",
-  "desc": "Um tomate em pixel art que pula e pisca ao lado da hora (sprite animado de 6 quadros)",
+  "name": "Jumping Tomato",
+  "desc": "A pixel-art tomato that jumps and blinks next to the time (6-frame animated sprite)",
+  "name_pt": "Tomate Pulando",
+  "desc_pt": "Um tomate em pixel art que pula e pisca ao lado da hora (sprite animado de 6 quadros)",
   "bg": "#1f2a1c",
   "sprites": {
     "tomato": {

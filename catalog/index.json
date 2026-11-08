@@ -3,13 +3,13 @@
   "faces": [
     {
       "id": "jumping-tomato",
-      "name": "Tomate Pulando",
+      "name": "Jumping Tomato",
       "author": "davicorrea0",
-      "desc": "Um tomate em pixel art que pula e pisca ao lado da hora (sprite animado de 6 quadros)",
+      "desc": "A pixel-art tomato that jumps and blinks next to the time (6-frame animated sprite)",
       "file": "jumping-tomato.json",
       "preview": "jumping-tomato.png",
       "anim": "jumping-tomato.gif",
-      "size": 4522,
+      "size": 4653,
       "fw": "2.0.3",
       "tags": [
         "pixel"
@@ -381,12 +381,12 @@
     },
     {
       "id": "giant-bebas",
-      "name": "Bebas Gigante",
+      "name": "Giant Bebas",
       "author": "davicorrea0",
-      "desc": "A hora enorme em Bebas Neue, com clima e barra de focos",
+      "desc": "The time huge in Bebas Neue, with the weather and a focus bar",
       "file": "giant-bebas.json",
       "preview": "giant-bebas.png",
-      "size": 1865,
+      "size": 1971,
       "fw": "2.0.3",
       "tags": [
         "digital"
@@ -396,12 +396,12 @@
     },
     {
       "id": "pixel-cafe",
-      "name": "Café Pixel",
+      "name": "Pixel Café",
       "author": "davicorrea0",
-      "desc": "Uma mesa de café em pixel art: janela que muda com o dia e o tomate com humor do clima",
+      "desc": "A pixel-art café table: a window that changes with the day and a tomato whose mood follows the weather",
       "file": "pixel-cafe.json",
       "preview": "pixel-cafe.png",
-      "size": 2688,
+      "size": 2836,
       "fw": "2.0.3",
       "tags": [
         "pixel"
@@ -411,12 +411,12 @@
     },
     {
       "id": "analog-radar",
-      "name": "Radar",
+      "name": "Analog Radar",
       "author": "davicorrea0",
-      "desc": "Analógico azul-noite com ponteiro de segundos",
+      "desc": "Night-blue analog face with a second hand",
       "file": "analog-radar.json",
       "preview": "analog-radar.png",
-      "size": 3143,
+      "size": 3230,
       "fw": "1.6.0",
       "tags": [
         "analog"
