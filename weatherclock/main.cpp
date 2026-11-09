@@ -1917,6 +1917,8 @@ void stopAlbum() {
 // can no longer find ~24 KB contiguous. In that case the clock restarts by itself, at most once per hour of use.
 uint32_t memRestartAt = 0;
 
+char gifFail[32] = "";   // weatherbox: the last GIF that couldn't get decoder memory, and when (uptime s)
+uint32_t gifFailUp = 0;
 bool showAlbumItem(const String &f) {
   stopAlbum();
   if (!LittleFS.exists(f)) return false;
@@ -1956,9 +1958,13 @@ bool showAlbumItem(const String &f) {
       gif = nullptr;
     }
     if (!gif) {
-      uiError(tr("Sem memoria p/ GIF", "No memory for GIF", "Sin memoria p/ GIF"));
+      // weatherbox: no error screen; skip back to the face, remember which file it was (diag.gif) and restart
+      // later to clean the memory
+      snprintf(gifFail, sizeof gifFail, "%s", f.c_str());
+      gifFailUp = millis() / 1000;
       if (millis() > 3600000UL && !memRestartAt) memRestartAt = millis() | 1;
-      return true;  // keeps the warning screen until the next item
+      stopAlbum();  // back to the face (and its pack)
+      return false;
     }
     if (!gif->open(f.c_str(), mediaOpen, mediaClose, gifRead, gifSeek, gifDraw)) {
       gif->close();
@@ -2178,6 +2184,10 @@ void diagJson(String &j) {
   j += WiFi.isConnected() ? WiFi.RSSI() : 0;
   j += F(",\"minheap\":");
   j += diagMinHeap;
+  j += F(",\"gif\":\"");  // weatherbox: the last GIF skipped for lack of memory, and when
+  jsonEscapeAppend(j, gifFail);
+  j += F("\",\"gifup\":");
+  j += gifFailUp;
   j += F(",\"frag\":");
   j += ESP.getHeapFragmentation();
   j += F(",\"up\":");
