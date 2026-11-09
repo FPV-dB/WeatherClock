@@ -772,3 +772,93 @@ void themeRain(const UiState &s, bool full) {
     uiPaint(false, RD_X + 2, RD_Y + 2, RD_W - 2, RD_H - 4, paintRainDrops, (void *)&s);
   }
 }
+
+// ---------- News ----------
+// Headlines sent by the computer program (radar/news.py, every 10 minutes): the newest one big, the next ones
+// smaller, each with how long ago it was published. A red "live" dot pulses in the header.
+static int wrapText(int x, int y, uint8_t sz, uint16_t c, const char *s, int maxChars, int maxLines) {
+  const int lh = 8 * sz + 3;
+  int lines = 0;
+  while (*s && lines < maxLines) {
+    while (*s == ' ') s++;
+    int len = (int)strlen(s), cut = len;
+    if (len > maxChars) {
+      cut = maxChars;
+      while (cut > 0 && s[cut] != ' ') cut--;
+      if (cut == 0) cut = maxChars;
+    }
+    char line[64];
+    int n = cut < (int)sizeof line - 4 ? cut : (int)sizeof line - 4;
+    memcpy(line, s, n);
+    line[n] = 0;
+    if (lines == maxLines - 1 && len > cut) {  // last line and more text: ellipsis
+      while (n > 0 && n + 3 > maxChars) line[--n] = 0;
+      strcat(line, "...");
+    }
+    text(x, y, sz, c, line);
+    y += lh;
+    s += cut;
+    lines++;
+  }
+  return y;
+}
+static void agoText(uint16_t mins, char *out, size_t n) {
+  if (mins < 1) snprintf(out, n, "%s", tr("agora", "just now", "ahora"));
+  else if (mins < 60) snprintf(out, n, tr("ha %u min", "%u min ago", "hace %u min"), mins);
+  else snprintf(out, n, tr("ha %u h", "%u h ago", "hace %u h"), mins / 60);
+}
+static const uint16_t NEWS_RED = uiRgb(220, 50, 45);
+static void newsDot(const UiState &s) {
+  const int ph = (int)(s.ms / 100 % 14), w = ph < 7 ? ph : 14 - ph;
+  G->fillCircle(18, 37, 6, NEWS_RED);
+  G->fillCircle(18, 37, 2 + w / 2, mix16(NEWS_RED, uiRgb(255, 255, 255), 6 + w));
+}
+static void paintNewsDot(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(10, 29, 17, 17, NEWS_RED);
+  newsDot(s);
+}
+static void paintNews(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(0, 24, 240, 216, BG);
+  G->fillRect(0, 28, 240, 19, NEWS_RED);
+  newsDot(s);
+  text(30, 33, 2, TEXT, tr("NOTICIAS", "NEWS", "NOTICIAS"));
+  const UiNews *nw = s.news;
+  if (nw && nw->src[0]) textR(232, 34, 1, uiRgb(255, 220, 215), nw->src);
+  if (!nw || !nw->n) {
+    textC(120, 100, 2, MUTED, tr("Sem noticias", "No news yet", "Sin noticias"));
+    textC(120, 126, 1, MUTED, tr("precisa do programa do radar", "needs the radar program", "necesita el programa del radar"));
+    textC(120, 138, 1, MUTED, tr("num computador", "on a computer", "en un ordenador"));
+    return;
+  }
+  const uint16_t since = (uint16_t)((s.ms - nw->at) / 60000);
+  int y = 54;
+  char a[24];
+  for (int i = 0; i < nw->n && y < 220; i++) {
+    const bool top = i == 0;
+    y = wrapText(8, y, top ? 2 : 1, top ? TEXT : uiRgb(205, 205, 212), nw->t[i], top ? 19 : 37, top ? 4 : 2);
+    agoText(nw->ago[i] + since, a, sizeof a);
+    if (y > 230) break;
+    text(8, y, 1, top ? NEWS_RED : MUTED, a);
+    y += 13;
+    if (i + 1 < nw->n && y < 220) G->drawFastHLine(8, y - 3, 224, CARD2);
+    y += 3;
+  }
+}
+
+void themeNews(const UiState &s, bool full) {
+  topBar(s, full);
+  static uint16_t lastNews = 0xFFFF;
+  const uint16_t v = s.news ? s.news->version : 0;
+  if (bodyDue(s, full, 1) || v != lastNews) {  // the minute counts ("12 min ago") move on
+    lastNews = v;
+    uiPaint(full, 0, 24, 240, 216, paintNews, (void *)&s);
+    return;
+  }
+  static uint32_t lastAnim = 0;
+  if (s.ms - lastAnim >= 100) {
+    lastAnim = s.ms;
+    uiPaint(false, 10, 29, 17, 17, paintNewsDot, (void *)&s);
+  }
+}

@@ -70,6 +70,14 @@ static UiState base(int h, int m, int s) {
     st.wx.d[0].mm10 = 43; st.wx.d[1].mm10 = 128; st.wx.d[2].mm10 = 215; st.wx.d[3].mm10 = 6; st.wx.d[4].mm10 = 0;
   }
   st.south = true;
+  {
+    static UiNews nw = {4, "ABC Just In", {"Arena 'electric' as 36ers debutant hits buzzer beater",
+                                            "Two survivors of fatal helicopter crash in Indonesia named",
+                                            "Labuschagne axed from Aussie squad for New Zealand Tests",
+                                            "Trump says he was 'kidding' about offering Dana White press secretary job"},
+                        {42, 44, 72, 135}, 0, 1};
+    st.news = &nw;
+  }
   // weatherbox: Adelaide, and the matching UTC (local time is ACDT, UTC+10:30)
   st.lat = -34.85f; st.lon = 138.54f;
   {

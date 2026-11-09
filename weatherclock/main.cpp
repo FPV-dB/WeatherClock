@@ -833,6 +833,9 @@ void sendHueDescription() {
   server.send(200, "text/xml", x);
 }
 
+// ---------- weatherbox: headlines from the computer program (radar/news.py posts them to /api/news) ----------
+UiNews news = {};
+
 // ---------- weather (Open-Meteo, no API key) ----------
 struct Weather {
   bool ok = false;
@@ -1255,7 +1258,8 @@ UiState makeState() {
   s.south = cfg.lat < 0;
   s.lat = cfg.lat;
   s.lon = cfg.lon;
-  s.utc = s.timeOk ? (uint32_t)time(nullptr) : 0;  // a phase just finished: end animation on the Pomodoro
+  s.utc = s.timeOk ? (uint32_t)time(nullptr) : 0;
+  s.news = &news;  // a phase just finished: end animation on the Pomodoro
   return s;
 }
 
@@ -2795,7 +2799,7 @@ void setupWeb() {
       f.print(hookWork + "\n" + hookBreak + "\n");
       f.close();
     }
-    server.send(f ? 200 : 500, "text/plain", f ? "ok" : "falhou");
+    server.send(f ? 200 : 500, "text/plain", f ? "ok" : "failed");
   });
   // weatherbox: radar chosen in the panel (BoM radar id, 0 = the nearest; range in km). The clock only
   // stores the choice: a program on a computer (radar/refresh.sh) downloads the radar and sends the picture
@@ -2811,6 +2815,30 @@ void setupWeb() {
     char j[48];
     snprintf(j, sizeof j, "{\"id\":%d,\"km\":%d}", id, km);
     server.send(200, "application/json", j);
+  });
+  // weatherbox: headlines for the News face: src, h0..h3 (text), a0..a3 (minutes since published)
+  server.on("/api/news", HTTP_POST, [] {
+    if (!guard()) return;
+    UiNews nw = {};
+    for (int i = 0; i < UI_NEWS; i++) {
+      char k[4] = {'h', (char)('0' + i), 0, 0};
+      const String &h = server.arg(k);
+      if (!h.length()) break;
+      size_t o = 0;
+      for (char c : h)  // printable ASCII only: the screen font has nothing else, and the panel shows it in JSON
+        if (o + 1 < sizeof nw.t[0]) nw.t[i][o++] = (c >= 0x20 && c < 0x7F && c != '"' && c != '\\') ? c : ' ';
+      nw.t[i][o] = 0;
+      k[0] = 'a';
+      nw.ago[i] = (uint16_t)constrain(server.arg(k).toInt(), 0, 60000);
+      nw.n = i + 1;
+    }
+    size_t o = 0;
+    for (char c : server.arg("src"))
+      if (o + 1 < sizeof nw.src && c >= 0x20 && c < 0x7F && c != '"' && c != '\\') nw.src[o++] = c;
+    nw.at = millis();
+    nw.version = news.version + 1;
+    news = nw;
+    server.send(200, "text/plain", "ok");
   });
   server.on("/api/radar", HTTP_POST, [] {
     if (!guard()) return;

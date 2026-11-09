@@ -54,6 +54,17 @@ struct UiWeather {
 };
 static const int UI_HOURS = 12;
 
+// weatherbox: headlines sent by the computer program (/api/news); ASCII only (the pixel font)
+static const int UI_NEWS = 4;
+struct UiNews {
+  uint8_t n;               // headlines in t[] (0 = none yet)
+  char src[20];            // e.g. "ABC Just In"
+  char t[UI_NEWS][100];
+  uint16_t ago[UI_NEWS];   // minutes since published, when received
+  uint32_t at;             // millis() when received
+  uint16_t version;
+};
+
 struct UiState {
   bool timeOk;
   struct tm now;
@@ -82,6 +93,7 @@ struct UiState {
   bool south;      // weatherbox: southern hemisphere (the moon's lit side is mirrored)
   float lat, lon;  // weatherbox: the clock's place (for the sun's position)
   uint32_t utc;    // weatherbox: seconds since 1970, UTC (0 = unknown)
+  const UiNews *news;  // weatherbox: latest headlines (never null on the clock)
 };
 
 constexpr uint16_t uiRgb(uint8_t r, uint8_t g, uint8_t b) {

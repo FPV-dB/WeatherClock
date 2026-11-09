@@ -397,7 +397,7 @@ function tab(i){if(i==1)i=0;curTab=i;document.querySelectorAll('.tab').forEach((
  try{localStorage.tab=i}catch(e){}if(i==2){files();radarLoad()}if(i==3)hooksLoad();if(i==1&&!STATS)loadStats();window.scrollTo(0,0)}
 const fkey=f=>f.pkg?'p:'+f.pkg:'t:'+f.t;  // built-in "t:N" or pack "p:id"
 const curKey=s=>s.cfg.theme==200?'p:'+s.cfg.pkg:'t:'+s.cfg.theme;
-const ANIMF=[3,8,9,10,11,12,13,14,15,16,17];  // weatherbox: animated faces have a GIF preview
+const ANIMF=[3,8,9,10,11,12,13,14,15,16,17,18];  // weatherbox: animated faces have a GIF preview
 const faceSrc=f=>f.src||(f.pkg?'/face?pkg='+encodeURIComponent(f.pkg):SITE+'img/faces/face-'+f.t+(ANIMF.includes(f.t)?'.gif':'.png'));  // built-in: preview on the site (takes no flash)
 // no preview stored on the clock: try the site's (same id); if there isn't one, show the name
 // Queue for the clock's images: the ESP8266 server handles one connection at a time and drops some
