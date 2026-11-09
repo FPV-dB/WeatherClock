@@ -1,23 +1,23 @@
 {
-  "version": "2.0.10",
+  "version": "2.0.11",
   "date": "2026-11-09",
   "file": "weatherclock.bin",
-  "size": 603968,
+  "size": 603984,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 435205,
-  "sig": "IM7yCpxqayp+X8XkkPSMGUjOd0RwI4OwfUCXPbbQ/hhJR1hUbOcp91YlxggvhUQRWG/ynielOq5ZewH+bCfYPORpLGOTxlZwqKyAMKPf367IXoxvB4P4KU0ipctXFaIVkAbEGLqkPYGWAFntZPpwRrMBZLqaW0i3ZHyrvt0i79Fwzf80rkJzqrVORhtR0nLiu760A4FDmBsAV7SH5lN1oTx8tJOfiYhhETFjXXtQGYEhE3EdCsdVFYh5sObYzUnlWD+NaTCo89jDHg4wN0S3KnSvGYZ2tHH3d0ByNNFqSMHRHh6r+vJAh0OGBhX3NGspRK7+Y2HGXaxREOTq7QgVMA==",
-  "gzsig": "M7FaynVYiVWpMLxCwIxrYFV7vbBfBOjGYiEyr/vhy+o7G9B2m2vsPv7d4A9EdGpLXommNV/3Is7nZE3yECz4cx8BOnviD1eC7Cj8XUfr+jWDrx0A3N3iX7NqYhtkPMA9+C/DAkgNiXMmfrbzSKFFF1OIgB8WRt2PMuqy2uqrQQ5c/skIKKU+MYi8kRKo1Zp74b/8GZtuYq6ePzhht0+Pu5XjMhUCSV2UgY52rJlGOw6CRl7Ds3CbQv9S8oTCJy8NA1dY0jEsRBK5uYBG15KKCpB4L7zgqTgWlKO8u8peNAxKCupaKYYRcd5SkN2Gv1uW3SsZpR5grcANZ+GaMJOBoA==",
+  "gzsize": 435240,
+  "sig": "N++FrdoCrBqDJltB3P/K8Y7IpxsYITZYl5Yb9l03P9y8vWwCHmJZOQfylWoSlbGIa/rec2l9Lcs7TYtuwFU4uO9ULvatd3wrEp0wlfDwGU4xK43sb8fSBw7q2gHVupEbSTItb1XPWCZE/cB4ORmt2pqSgdjMEWpH1rdAfYkoKdxr5bbsL0aLSNuhK1TSrjcMDbTz34glUEwwrKNwhPsdlSdDV91B7SbC3rIEMJeqsgZsDazpk4Uu6XRw+GFQwPN6jC7sZ3G9DWzqb1YPEI9yYiJhSNenAlVYVZeb8hZcENEWVa53NU4UjjyNHJGFX1cz3+nyyh+xG580Kp1lgHikdw==",
+  "gzsig": "kKDVlsYu8s0FiXZb51inaMtmJyq8ZUMijvMv7fV/yyk8rOPgS0vQcFBO3jqOz5kqcraFttQBKzR+7T5lVNepyfUzhuWzEYAuPaYuko4DYtL2EIzp6UdMj+9hSzw8SNpR7FJiqeAiipTCwls3kRwhYseYMqPSEUCxBrnUKFB3R88kzCLHg4271uxHYfrkXyeDpDTCuHhf23wDa1vXB0QCU3mIl1cBXRLoefQyOJX1qYtRoqXGF76CMgFSIDGlapCC0NOmHUVOX+BMckH2nhxBQjajVR827IZCSZ3sDywUVX1ZSQPtm3Wu5c94gFN35u09AKxegFgPtztJVcm5WoOk1Q==",
   "panel": "panel-45f2b9e057e861128b72020b.html.gz",
   "psri": "sha256-RfK54FfoYRKLcgILhMM1ldqojVD7l2HzNJcbut2X2fs=",
   "notes": {
     "en": [
-      "New Rain face: chance of rain and millimetres for today, the next 12 hours and the coming days"
+      "The clock skips a GIF it can't fit in memory instead of showing an error, and records which file it was"
     ],
     "pt": [
-      "New Rain face: chance of rain and millimetres for today, the next 12 hours and the coming days"
+      "The clock skips a GIF it can't fit in memory instead of showing an error, and records which file it was"
     ],
     "es": [
-      "New Rain face: chance of rain and millimetres for today, the next 12 hours and the coming days"
+      "The clock skips a GIF it can't fit in memory instead of showing an error, and records which file it was"
     ]
   }
 }
