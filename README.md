@@ -248,3 +248,9 @@ Third-party parts keep their own licenses (copies in [`licenses/`](licenses)):
 - uzlib (`weatherclock/src/uzlib/`) is under the zlib license.
 - JPEGDEC (`weatherclock/src/JPEGDEC/`) is under the Apache License 2.0.
 - AnimatedGIF (`weatherclock/src/AnimatedGIF/`) is under the Apache License 2.0. Local changes are described in `docs/GIF-SECURITY.md`.
+
+### Readable setup and full-screen QR codes
+
+Wi-Fi setup alternates every 10 seconds between numbered instructions and a full-screen QR code that joins `WeatherClock-Setup`. The network name, password and `192.168.4.1` address remain available on the instruction page for manual setup. After connecting, the city-selection screen alternates with a QR code for the clock's current web address.
+
+QR codes use whole-pixel squares and a four-module white border on the 240×240 display. The QR version is selected to fit the complete payload before encoding. Setup starts with instructions; this change does not reset existing Wi-Fi or city settings.

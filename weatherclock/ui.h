@@ -124,8 +124,8 @@ extern void (*uiFrameHook)();
 void uiCornerClock(const char *hm);
 // weatherbox: first-install screens, with a QR code for the phone
 void uiSetOwner(const char *name);  // weatherbox: the clock's name, shown on the start-up screen ("" = none)
-void uiSetupWifi(const char *ssid, const char *pass);     // join the clock's network
-void uiSetupCity(const char *ip, const char *host);       // open the panel and choose the city  // weatherbox: current time in the bottom corner, on top of the radar
+void uiSetupWifi(const char *ssid, const char *pass, bool qr = false);     // join the clock's network
+void uiSetupCity(const char *ip, const char *host, bool qr = false);       // open the panel and choose the city  // weatherbox: current time in the bottom corner, on top of the radar
 // Clock in ms for time-driven animations (firmware: millis). Without it, 20 ms steps.
 extern uint32_t (*uiMillis)();
 // Sends a block of RGB565 pixels to the screen. The firmware points this at the display's fast

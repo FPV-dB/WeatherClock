@@ -1276,11 +1276,14 @@ struct DrawProbe {
 void renderClock() {
   DrawProbe probe;
   // weatherbox: first install, already on Wi-Fi but with no city: a screen with a QR code to open the panel
-  static bool citySetup = false;
+  static bool citySetup = false, cityQr = false;
+  static uint32_t cityPageAt = 0;
   if (WiFi.status() == WL_CONNECTED && !cfg.city[0]) {
-    if (!citySetup) {
+    if (!citySetup || millis() - cityPageAt >= 10000) {
+      cityQr = citySetup ? !cityQr : false;
       citySetup = true;
-      uiSetupCity(WiFi.localIP().toString().c_str(), lanName[0] ? lanName : netName);
+      cityPageAt = millis();
+      uiSetupCity(WiFi.localIP().toString().c_str(), lanName[0] ? lanName : netName, cityQr);
     }
     return;
   }
@@ -3863,7 +3866,7 @@ void startPortal() {
   WiFi.softAP(AP_NAME, cfg.apPass);
   dns.start(53, "*", WiFi.softAPIP());
   String pw = String(tr("senha: ", "password: ", "clave: ")) + cfg.apPass;
-  uiSetupWifi(AP_NAME, cfg.apPass);  // weatherbox: steps and a QR code to join the network from a phone
+  uiSetupWifi(AP_NAME, cfg.apPass);  // weatherbox: instructions alternate with a full-screen Wi-Fi QR every 10 seconds
   server.on("/", HTTP_GET, [] {
     int n = WiFi.scanNetworks();
     String opts;
@@ -4023,6 +4026,13 @@ void loop() {
     return;
   }
   if (portalMode) {
+    static uint32_t setupPageAt = millis();
+    static bool setupQr = false;
+    if (millis() - setupPageAt >= 10000) {
+      setupPageAt = millis();
+      setupQr = !setupQr;
+      uiSetupWifi(AP_NAME, cfg.apPass, setupQr);
+    }
     dns.processNextRequest();
     server.handleClient();
     // no setup within 5 min (e.g. the router was off): restart and try the saved network again

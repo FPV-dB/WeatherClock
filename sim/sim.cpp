@@ -555,6 +555,8 @@ int main() {
     uiMessage("Weather Clock", "Connected", "weatherclock.local", "192.168.1.178"); uiBootProgress(900, 2); save(*f, "12d_start_ready"); delete f; }
   { Frame *f = new Frame(); uiBegin(f);  // no time yet: the face with the "syncing" indicator
     UiState t = base(14, 58, 50); t.timeOk = false; t.theme = 0; uiRenderClock(t); uiSyncHint(400); save(*f, "12e_no_time"); delete f; }
+  { Frame *f = new Frame(); uiBegin(f); uiSetupWifi("WeatherClock-Setup", "ab12cd34", true); save(*f, "14c_setup_wifi_qr"); delete f; }
+  { Frame *f = new Frame(); uiBegin(f); uiSetupCity("192.168.1.44", "weatherclock", true); save(*f, "14d_setup_city_qr"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiSetupWifi("WeatherClock-Setup", "ab12cd34"); save(*f, "14_setup_wifi"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiSetupCity("192.168.1.178", "weatherclock"); save(*f, "14b_setup_city"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiColorTest(); save(*f, "13_colour_test"); delete f; }
