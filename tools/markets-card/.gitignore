@@ -1,0 +1,5 @@
+.venv/
+clock-ip
+markets.log
+markets.wcr
+__pycache__/
