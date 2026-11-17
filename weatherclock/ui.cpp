@@ -976,7 +976,7 @@ void uiSetupCity(const char *ip, const char *host, bool qr) {
 }
 
 // weatherbox: Identify: the clock's number huge (or "?" with none set), its name and IP underneath
-void uiIdentify(int num, const char *name, const char *ip) {
+void uiIdentify(int num, int pos, const char *name, const char *ip) {
   uiScrollEnd();
   screen = SCR_MSG;
   G->fillScreen(BG);
@@ -993,6 +993,16 @@ void uiIdentify(int num, const char *name, const char *ip) {
   } else {
     textC(120, 70, 6, SUN, "?");
     textC(120, 130, 1, MUTED, tr("Sem numero: defina no painel", "No number: set one in the panel", "Sin numero: ponlo en el panel"));
+  }
+  if (pos >= 1 && pos <= 6) {  // where it sits: an arrow-like label in the matching corner of the frame
+    static const char *const P[3][6] = {{"ESQUERDA", "CENTRO", "DIREITA", "EM CIMA", "MEIO", "EMBAIXO"},
+                                        {"LEFT", "CENTRE", "RIGHT", "TOP", "MIDDLE", "BOTTOM"},
+                                        {"IZQUIERDA", "CENTRO", "DERECHA", "ARRIBA", "MEDIO", "ABAJO"}};
+    const char *t = P[uiLang < 3 ? uiLang : 1][pos - 1];
+    const int tw = (int)strlen(t) * 12 + 12;
+    const int x = pos == 1 ? 14 : pos == 3 ? 226 - tw : 120 - tw / 2, y = 14;
+    G->fillRoundRect(x, y, tw, 22, 6, SUN);
+    text(x + 6, y + 4, 2, BG, t);
   }
   textC(120, 188, 2, TEXT, name && *name ? name : "Weather Clock");
   textC(120, 212, 1, MUTED, ip);

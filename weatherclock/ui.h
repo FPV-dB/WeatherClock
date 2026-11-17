@@ -211,7 +211,7 @@ void uiRenderPomodoro(const UiState &s);     // Pomodoro progress ring
 void uiMessage(const char *title, const char *l1, const char *l2, const char *l3);
 void uiMessageLine(const char *l1);              // changes only the highlighted line of the message on screen
 void uiBootProgress(uint32_t ms, uint8_t done);  // bar and steps of the start-up screen (only with uiMessage on screen)
-void uiIdentify(int num, const char *name, const char *ip);  // weatherbox: big clock number, name and IP
+void uiIdentify(int num, int pos, const char *name, const char *ip);  // weatherbox: big clock number, name and IP
 void uiSyncHint(uint32_t ms);                    // "syncing" over the face, while there's no time
 void uiColorTest();                          // R/G/B/white bars to tune the panel
 // default VCOM: 0x1E = 0.850 V (with 0.900 V, the chip's reset value, the SmallTV Ultra showed ghosting)

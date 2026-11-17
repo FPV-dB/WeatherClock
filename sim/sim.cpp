@@ -602,9 +602,9 @@ int main() {
   { Frame *f = new Frame(); uiBegin(f); uiSetupCity("192.168.1.44", "weatherclock", true); save(*f, "14d_setup_city_qr"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiSetupWifi("WeatherClock-Setup", "ab12cd34"); save(*f, "14_setup_wifi"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiSetupCity("192.168.1.178", "weatherclock"); save(*f, "14b_setup_city"); delete f; }
-  { Frame *f = new Frame(); uiBegin(f); uiIdentify(1, "Kitchen clock", "192.168.1.44"); save(*f, "15_identify"); delete f; }  // weatherbox
-  { Frame *f = new Frame(); uiBegin(f); uiIdentify(12, "Office", "192.168.1.103"); save(*f, "15b_identify_2digits"); delete f; }
-  { Frame *f = new Frame(); uiBegin(f); uiIdentify(0, "", "192.168.1.182"); save(*f, "15c_identify_no_number"); delete f; }
+  { Frame *f = new Frame(); uiBegin(f); uiIdentify(1, 1, "Kitchen clock", "192.168.1.44"); save(*f, "15_identify"); delete f; }  // weatherbox
+  { Frame *f = new Frame(); uiBegin(f); uiIdentify(12, 6, "Office", "192.168.1.103"); save(*f, "15b_identify_2digits"); delete f; }
+  { Frame *f = new Frame(); uiBegin(f); uiIdentify(0, 0, "", "192.168.1.182"); save(*f, "15c_identify_no_number"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiColorTest(); save(*f, "13_colour_test"); delete f; }
   { Frame *f = new Frame(); uiBegin(f); uiVcomTest(0x20, true); uiVcomTest(0x1C, false); save(*f, "13b_anti_ghosting"); delete f; }
 

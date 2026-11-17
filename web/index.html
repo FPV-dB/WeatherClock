@@ -314,6 +314,7 @@ nav button[hidden],[hidden]{display:none!important}
   <label>Clock name<input data-k="name" type="text" maxlength="23" placeholder="e.g. Mum's clock" spellcheck="false"></label>
   <small>Shown at the top of this page and on the clock's start-up screen. Handy when you give clocks away.</small>
   <label>Clock number<input data-k="num" type="number" min="0" max="99" placeholder="0 = none"></label>
+  <label>Position<select data-k="pos"><option value="0">Not set</option><option value="1">Left</option><option value="2">Centre</option><option value="3">Right</option><option value="4">Top</option><option value="5">Middle</option><option value="6">Bottom</option></select></label>
   <small>With several clocks, give each one a number. Identify shows it big on the screen for 10 seconds.</small>
   <p><button class="btn" onclick="identify()">Identify this clock</button></p>
   <form id="op">
@@ -446,10 +447,15 @@ function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.o
 const hm=m=>{let h=Math.floor(m/60);const ap=st&&st.cfg.h12;if(ap)h=h%12||12;return h+':'+String(m%60).padStart(2,'0')};
 function identify(ip){(ip?post('/api/peeridentify',new URLSearchParams({ip})):post('/api/identify')).then(r=>{if(!r.ok)throw 0;toast(t('Look at the clock: it shows its number for 10 seconds'))}).catch(()=>toast(t('Failed')))}
 function peerRow(c,me){const d=el('div','row');d.style.cssText='align-items:center;margin:6px 0;gap:8px';const f=FACES.find(x=>x.t===c.theme),b=el('b');b.textContent=(c.num?'#'+c.num+' ':'')+(c.name||'Weather Clock')+(me?' ('+t('this one')+')':'');
- const sm=el('small');sm.textContent=c.ip+' · '+c.ver+(f?' · '+f.n:'');const w=el('div');w.style.flex='1';w.append(b,el('br'),sm);d.append(w);
+ const sm=el('small');sm.textContent=(c.pos?t(POSN[c.pos])+' · ':'')+c.ip+' · '+c.ver+(f?' · '+f.n:'');const w=el('div');w.style.flex='1';w.append(b,el('br'),sm);d.append(w);
  const i=el('button','btn');i.textContent=t('Identify');i.onclick=()=>identify(me?null:c.ip);d.append(i);
  if(!me){const o=el('button','btn');o.textContent=t('Open');o.onclick=()=>window.open('http://'+c.ip+'/','_blank');d.append(o)}return d}
-function peers(){const box=$('peers');const show=j=>{box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));all.forEach(c=>box.append(peerRow(c,c.me)));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
+const POSN=['','Left','Centre','Right','Top','Middle','Bottom'];
+function peerMap(all){const w=el('div');w.style.cssText='display:flex;gap:18px;align-items:center;justify-content:center;margin:8px 0 12px;flex-wrap:wrap';
+ [[1,2,3],[4,5,6]].forEach((g,k)=>{const cs=g.map(p=>all.find(c=>c.pos==p)).filter(Boolean);if(!cs.length)return;const d=el('div');d.style.cssText='display:flex;gap:6px;flex-direction:'+(k?'column':'row');
+  cs.forEach(c=>{const b=el('div');b.style.cssText='width:64px;height:64px;border:2px solid '+(c.me?'var(--accent,#ffc23a)':'#666')+';border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;text-align:center;overflow:hidden';
+   const n=el('b');n.style.fontSize='22px';n.textContent=c.num?c.num:'?';const m=el('span');m.textContent=(c.name||'').slice(0,10);b.append(n,m);b.title=c.ip;d.append(b)});w.append(d)});return w.childNodes.length?w:null}
+function peers(){const box=$('peers');const show=j=>{box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.pos||9)-(b.pos||9)||(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));const m=peerMap(all);if(m)box.append(m);all.forEach(c=>box.append(peerRow(c,c.me)));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
  fetch('/api/peers').then(r=>r.json()).then(j=>{show(j);setTimeout(()=>fetch('/api/peers').then(r=>r.json()).then(show).catch(()=>{}),1500)}).catch(()=>{box.innerHTML='';const s=el('small');s.textContent=t('Failed');box.append(s)})}
 function giftReset(){if(!confirm(t('Prepare this clock as a gift? Everything except the firmware is erased: Wi-Fi, city, name, password, photos and faces. This cannot be undone.')))return;post('/api/giftreset').then(()=>toast(t('Erased. The clock is restarting with the first-install help.'))).catch(()=>toast(t('Failed')))}
 // weatherbox: chosen radar (the program on the computer reads /api/radar and sends /image/radar.wcr)
@@ -648,7 +654,7 @@ function diagShow(s){const d=s.diag,c=$('diag'),q=d.rssi>=-60?'good':d.rssi>=-72
  const k=s.crash;if(k){const r=el('div'),b=el('button','btn',t('Clear'));b.style.cssText='padding:4px 12px;min-height:0;margin-left:8px';b.onclick=()=>post('/api/crash').then(x=>{if(!x.ok)throw 0;delete st.crash;diagShow(s);toast(t('Record cleared'))}).catch(()=>toast(t('Failed: ')));
   r.append(el('b',null,t('Last crash')),el('span',null,'#'+k.n+' · '+t(RST[k.r]||'?',k.x,'0x'+k.epc)+' · v'+k.ver+(k.up?' · '+t('after {0} up',dur(k.up)):'')+' '),b);c.appendChild(r)}}
 // data-neg: ticked switch = 0. "Invert colors" is relative to normal (the IPS panel already starts with INVON)
-document.querySelectorAll('[data-k]').forEach(e=>{e.onchange=()=>{const v=e.type=='checkbox'?(e.checked!=e.hasAttribute('data-neg')?1:0):e.value;save({[e.dataset.k]:v}).then(()=>{toast(t('Saved'));if(e.dataset.k=='beta')checkUpdate()})}});
+document.querySelectorAll('[data-k]').forEach(e=>{e.onchange=()=>{const v=e.type=='checkbox'?(e.checked!=e.hasAttribute('data-neg')?1:0):e.value;save({[e.dataset.k]:v}).then(()=>{toast(t('Saved'));if(e.dataset.k=='beta')checkUpdate();if(e.dataset.k=='num'||e.dataset.k=='pos')peers()})}});
 // ---------- state ----------
 function beep(){try{actx=actx||new AudioContext();[0,.25,.5].forEach(d=>{const o=actx.createOscillator(),g=actx.createGain();
  o.frequency.value=880;g.gain.setValueAtTime(.2,actx.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d+.2);
