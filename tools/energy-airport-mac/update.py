@@ -11,6 +11,7 @@ import subprocess
 import sys
 import urllib.parse
 from datetime import datetime
+import time
 
 HERE = pathlib.Path(__file__).resolve().parent
 CONFIG = json.loads((HERE / "config.json").read_text())
@@ -147,7 +148,15 @@ def energy_payload(source):
 
 
 def flight_payload():
+    if not FLIGHT_STATE.exists():
+        raise RuntimeError(f"airport feed state is missing: {FLIGHT_STATE}")
+    age = time.time() - FLIGHT_STATE.stat().st_mtime
+    if age > 30 * 60:
+        raise RuntimeError(f"airport feed state is stale ({int(age // 60)} minutes old): {FLIGHT_STATE}")
     state = json.loads(FLIGHT_STATE.read_text())
+    today = datetime.now().astimezone().date().isoformat()
+    if state.get("date") != today:
+        raise RuntimeError(f"airport feed date is {state.get('date')!r}, expected {today!r}")
     counts = state.get("counts", {})
     payload = {
         "date": state["date"], "city": state["city"],

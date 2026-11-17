@@ -72,6 +72,7 @@ struct UiFlightStats {
   bool partial;
   uint8_t n;
   struct { char code[9]; uint16_t off, on; } rows[UI_FLIGHT_ROWS];
+  uint32_t at;             // millis() when received; stale/missing/empty data is not shown in rotation
   uint16_t version;
 };
 

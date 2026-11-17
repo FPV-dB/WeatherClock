@@ -35,6 +35,7 @@ extern "C" uint32_t _FS_start;
 #include "src/AnimatedGIF/AnimatedGIF.h"
 #include "gifcheck.h"
 #include "security.h"
+#include <algorithm>
 #include <new>
 #include <vector>
 #include <time.h>
@@ -46,7 +47,7 @@ extern "C" uint32_t _FS_start;
 
 void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h);  // ui.cpp: clips to the dirty area; off-screen, it lands in the strip
 
-#define FW_VERSION "2.0.16"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
+#define FW_VERSION "2.0.17"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
 #define HOSTNAME   "weatherclock"
 #define AP_NAME    "WeatherClock-Setup"
 
@@ -938,6 +939,13 @@ UiNews news = {};
 UiFlightStats flightStats = {};
 UiEnergy energy = {};
 
+// The companion posts every 15 minutes. No update for 45 minutes means the feed failed; zero movements means
+// there is nothing useful to show. In both cases rotation skips Airport Traffic instead of displaying an empty panel.
+static bool flightStatsUsable() {
+  return flightStats.at && millis() - flightStats.at < 45UL * 60000UL &&
+         flightStats.date[0] && (flightStats.off || flightStats.on);
+}
+
 // weatherbox: when rain reaches home, worked out from the radar by the computer program (/api/rainsoon):
 // minutes (0 = raining now, -1 = none on the way) and when it was received. Fresh for 20 minutes.
 int16_t radarEta = -1;
@@ -1365,6 +1373,7 @@ UiState makeState() {
   }
   s.city = cfg.city;
   s.theme = previewActive() ? previewTheme : cfg.theme;
+  if (s.theme == THEME_FLIGHT_STATS && !flightStatsUsable()) s.theme = THEME_WEATHER;
   s.accent = clockColor();
   strlcpy(ipText, WiFi.localIP().toString().c_str(), sizeof ipText);
   s.ip = ipText;
@@ -1851,6 +1860,9 @@ void rebuildAlbum() {
       if ((isJpg(n) || isGif(n) || isWcr(n)) && d.fileName() != "boot.gif" && d.fileName() != "boot.jpg") album.push_back(n);
     }
   }
+  // Every clock must see the same ordering for clock numbers to be usable as album offsets. LittleFS directory
+  // order depends on upload history, so it is not stable across otherwise identical clocks.
+  std::sort(album.begin(), album.end());
 }
 
 // File callbacks shared by the GIF and JPEG decoders (same author, same API).
@@ -2164,13 +2176,36 @@ void albumLoop() {
   }
 }
 
+// With numbered clocks, use a shared wall-clock slot and the clock number as an offset. Clocks #1, #2 and #3
+// therefore show three different album items even when they boot at different times. This is deliberately local:
+// no coordinator or internet service is needed, only the SNTP time the weather clock already maintains.
+size_t albumItemIndex() {
+  if (cfg.devNum && timeValid() && cfg.albumDelay && !album.empty()) {
+    const uint32_t slot = (uint32_t)time(nullptr) / cfg.albumDelay;
+    return (slot + cfg.devNum - 1) % album.size();
+  }
+  return albumIdx++ % album.size();
+}
+
+// Milliseconds until the next shared album boundary. Aligning the redraws as well as the selected item avoids one
+// clock retaining the preceding item for most of the next slot because its old millis()-based timer began later.
+uint32_t albumSlotDelayMs() {
+  if (!cfg.devNum || !timeValid() || !cfg.albumDelay) return cfg.albumDelay * 1000UL;
+  timeval tv;
+  gettimeofday(&tv, nullptr);
+  const uint32_t period = cfg.albumDelay * 1000UL;
+  const uint32_t inSlot = ((uint32_t)(tv.tv_sec % cfg.albumDelay) * 1000UL + tv.tv_usec / 1000UL) % period;
+  const uint32_t left = period - inSlot;
+  return left < 50 ? 50 : left;
+}
+
 // Decides what to show when there's no Pomodoro: the clock or an album item.
 void scheduleView() {
   uint32_t now = millis();
   if (viewUntil && (int32_t)(now - viewUntil) < 0) return;
   bool wantAlbum = !album.empty() && (cfg.mode == 1 || (cfg.mode == 2 && !inAlbum));
   if (wantAlbum) {
-    const String &next = album[albumIdx++ % album.size()];
+    const String &next = album[albumItemIndex()];
     // with a single item, don't redraw the same photo (avoids flicker and restarting the GIF)
     if (!(inAlbum && next == curFile)) {
       fadeOutNow();
@@ -2186,7 +2221,7 @@ void scheduleView() {
     rotLoop();
     rotStepNow = false;
   }
-  viewUntil = now + cfg.albumDelay * 1000UL;
+  viewUntil = now + albumSlotDelayMs();
   if (!viewUntil) viewUntil = 1;
 }
 
@@ -3004,6 +3039,7 @@ void setupWeb() {
       next.rows[i].on = (uint16_t)constrain(server.arg("l" + String(i)).toInt(), 0, 65535);
       next.n++;
     }
+    next.at = millis();
     next.version = flightStats.version + 1;
     flightStats = next;
     server.send(200, "text/plain", "ok");
@@ -3974,6 +4010,7 @@ void rotLoop() {
     if (it.startsWith("t:")) {
       int t = it.substring(2).toInt();
       if (t < 0 || t >= THEME_COUNT) continue;
+      if (t == THEME_FLIGHT_STATS && !flightStatsUsable()) continue;
       cfg.theme = t;  // weatherbox: the rotation's pack stays loaded (reloading it on every pass fragments memory)
     } else if (it.startsWith("p:") && (it.substring(2) == facePackId() || loadPack(it.substring(2)))) {
       cfg.theme = THEME_PACK;
