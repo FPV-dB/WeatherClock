@@ -1,0 +1,6 @@
+{
+  "clock_ip": "192.168.1.100",
+  "expected_mac": "aa:bb:cc:dd:ee:ff",
+  "flight_state": "~/Library/Application Support/WeatherClockServices/cards-44/flight-stats-state.json",
+  "source_repository": "FPV-dB/WorldWarE"
+}

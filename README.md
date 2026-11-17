@@ -258,3 +258,7 @@ QR codes use whole-pixel squares and a four-module white border on the 240×240 
 ### Markets card
 
 The optional [Markets card](tools/markets-card/) shows AAPL, MSFT and NVDA on one page, then gold, silver, copper and Bitcoin on a second page. A companion Mac updater creates `markets.wcr` and refreshes the delayed USD prices every 15 minutes. It is an album card, so it can coexist with radar and aircraft cards without adding quote-networking code to the ESP8266 firmware.
+
+### Energy War and Airport Traffic companion
+
+The [macOS companion updater](tools/energy-airport-mac/) feeds the built-in Energy War and Airport Traffic faces added in 2.0.15. It verifies the clock's IP/MAC identity and firmware before every write, refreshes Energy War from the configured source repository, and reuses the flight updater's observed takeoff/landing state. It is intended to run through launchd every 15 minutes.
