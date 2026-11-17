@@ -452,9 +452,14 @@ function peerRow(c,me){const d=el('div','row');d.style.cssText='align-items:cent
  if(!me){const o=el('button','btn');o.textContent=t('Open');o.onclick=()=>window.open('http://'+c.ip+'/','_blank');d.append(o)}return d}
 const POSN=['','Left','Centre','Right','Top','Middle','Bottom'];
 function peerMap(all){const w=el('div');w.style.cssText='display:flex;gap:18px;align-items:center;justify-content:center;margin:8px 0 12px;flex-wrap:wrap';
- [[1,2,3],[4,5,6]].forEach((g,k)=>{const cs=g.map(p=>all.find(c=>c.pos==p)).filter(Boolean);if(!cs.length)return;const d=el('div');d.style.cssText='display:flex;gap:6px;flex-direction:'+(k?'column':'row');
-  cs.forEach(c=>{const b=el('div');b.style.cssText='width:64px;height:64px;border:2px solid '+(c.me?'var(--accent,#ffc23a)':'#666')+';border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;text-align:center;overflow:hidden';
-   const n=el('b');n.style.fontSize='22px';n.textContent=c.num?c.num:'?';const m=el('span');m.textContent=(c.name||'').slice(0,10);b.append(n,m);b.title=c.ip;d.append(b)});w.append(d)});return w.childNodes.length?w:null}
+ const placed=all.some(c=>c.pos),groups=placed?[[1,2,3],[4,5,6]]:[[0]];
+ groups.forEach((g,k)=>{const cs=g.map(p=>all.filter(c=>(c.pos||0)==p)).flat();if(!cs.length)return;const d=el('div');d.style.cssText='display:flex;gap:6px;flex-direction:'+(k?'column':'row');
+  cs.forEach(c=>{const f=FACES.find(x=>x.t===c.theme),b=el('div');b.style.cssText='position:relative;width:100px;text-align:center;font-size:12px';b.title=c.ip+(f?' · '+f.n:'');
+   const sc=el('div');sc.style.cssText='width:96px;height:96px;margin:0 auto;background:#000;border:4px solid '+(c.me?'var(--accent,#ffc23a)':'#2a2a2a')+';border-radius:6px;overflow:hidden';
+   if(f){const i=el('img');i.src=faceSrc(f);i.alt='';i.style.cssText='width:100%;height:100%;image-rendering:pixelated';sc.append(i)}
+   const n=el('b');n.textContent=c.num||'?';n.style.cssText='position:absolute;top:-6px;left:-4px;min-width:22px;padding:0 4px;border-radius:11px;background:#ffc23a;color:#000;font-size:14px';
+   const m=el('div');m.textContent=c.name||'Weather Clock';m.style.cssText='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px';
+   b.append(sc,n,m);b.style.cursor='pointer';b.onclick=()=>identify(c.me?null:c.ip);d.append(b)});w.append(d)});return w.childNodes.length?w:null}
 function peers(){const box=$('peers');const show=j=>{box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.pos||9)-(b.pos||9)||(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));const m=peerMap(all);if(m)box.append(m);all.forEach(c=>box.append(peerRow(c,c.me)));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
  fetch('/api/peers').then(r=>r.json()).then(j=>{show(j);setTimeout(()=>fetch('/api/peers').then(r=>r.json()).then(show).catch(()=>{}),1500)}).catch(()=>{box.innerHTML='';const s=el('small');s.textContent=t('Failed');box.append(s)})}
 function giftReset(){if(!confirm(t('Prepare this clock as a gift? Everything except the firmware is erased: Wi-Fi, city, name, password, photos and faces. This cannot be undone.')))return;post('/api/giftreset').then(()=>toast(t('Erased. The clock is restarting with the first-install help.'))).catch(()=>toast(t('Failed')))}
