@@ -44,8 +44,8 @@ def verify_target():
     actual = ":".join(part.zfill(2) for part in match.group(1).split(":")) if match else ""
     if actual != EXPECTED_MAC:
         raise RuntimeError(f"target MAC mismatch: expected {EXPECTED_MAC}, got {actual or 'unknown'}")
-    if state.get("ver") != "2.0.15":
-        raise RuntimeError(f"target firmware is {state.get('ver')!r}, expected '2.0.15'")
+    if state.get("ver") not in ("2.0.15", "2.0.16"):
+        raise RuntimeError(f"target firmware is {state.get('ver')!r}, expected '2.0.15' or '2.0.16'")
 
 
 def refresh_source():

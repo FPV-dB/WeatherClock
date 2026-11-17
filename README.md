@@ -4,6 +4,7 @@ A weather-focused firmware for the **GeekMagic SmallTV-Ultra** (ESP8266, 240×24
 [davicorrea0/smalltv-pomodoro](https://github.com/davicorrea0/smalltv-pomodoro) (GPL-3.0).
 
 Changes in this fork:
+- **Android Partner:** local tablet dashboard at [weather-clock-Android-partner](https://github.com/FPV-dB/weather-clock-Android-partner). Firmware 2.0.16 supports saved screen numbers and authenticated temporary identification without changing saved faces or albums.
 - Renamed to **Weather Clock**: Wi-Fi setup `WeatherClock-Setup`, recovery `WeatherClock-Recovery`, `http://weatherclock.local`.
 - **Pomodoro timer removed** from the screen and the web panel; English by default; Alexa timer off.
 - **Wind** speed, gusts and direction from Open-Meteo; face-pack variables `{WIND}`, `{GUST}`, `{WDIR}`.
