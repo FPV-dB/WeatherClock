@@ -144,7 +144,7 @@ struct Settings {
   uint8_t beta;         // 1 = the panel also offers the test versions (firmware/beta.json); garbage becomes 0
   uint8_t spi80;        // reserved: was a test's 80 MHz option (the ST7789 can't keep up and the picture turns to garbage); always 0
   char devName[24];     // weatherbox: the clock's name ("Mum's clock"), shown on the start-up screen and the panel; garbage becomes ""
-  uint8_t devPos;       // weatherbox: where it sits among the others: 0 none, 1 left, 2 centre, 3 right, 4 top, 5 middle, 6 bottom
+  uint8_t devPos;       // weatherbox: where it sits among the others, a grid of up to 10x10: 0 none, else (row-1)*10 + col (1..100)
   uint8_t devNum;       // weatherbox: the clock's number among several (1..99, 0 = none), shown by Identify; garbage becomes 0
 };
 const uint32_t SETTINGS_MAGIC = 0x504F4D34;     // "POM4"
@@ -275,7 +275,7 @@ void loadSettings() {
     if (!ok) cfg.devName[0] = 0;
   }
   if (cfg.devNum > 99) cfg.devNum = 0;
-  if (cfg.devPos > 6) cfg.devPos = 0;
+  if (cfg.devPos > 100) cfg.devPos = 0;
   if (!(fabsf(cfg.lat) <= 90 && fabsf(cfg.lon) <= 180)) cfg.lat = cfg.lon = 0;  // garbage or NaN would overflow String(float)
   // password for the clock's networks: 8 letters/digits without the easily confused ones, drawn by the chip's generator
   // the first time (or if the memory holds garbage) and shown on screen while the network is up
@@ -800,7 +800,7 @@ struct Peer {
   uint8_t num, theme, pos;
   char ver[12], name[24];
 };
-Peer peers[8];
+Peer peers[12];  // up to 10 clocks together, with room for spares
 uint32_t peerBeaconAt = 0, peerReplyAt = 0;
 
 void peerSend(IPAddress to, bool ask) {
@@ -856,13 +856,13 @@ void peerLoop() {
   q.theme = (uint8_t)atoi(f[1]);
   strlcpy(q.ver, f[2], sizeof q.ver);
   strlcpy(q.name, f[3], sizeof q.name);
-  q.pos = f[4] ? (uint8_t)constrain(atoi(f[4]), 0, 6) : 0;
+  q.pos = f[4] ? (uint8_t)constrain(atoi(f[4]), 0, 100) : 0;
   for (char *c = q.name; *c; c++)
     if (*c < 0x20 || *c >= 0x7F || *c == '"' || *c == '\\') *c = ' ';
   for (char *c = q.ver; *c; c++)
     if (*c < 0x20 || *c >= 0x7F || *c == '"' || *c == '\\') *c = ' ';
   int slot = -1, old = 0;
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 12; i++) {
     if (peers[i].ip == q.ip || !peers[i].ip) { slot = i; break; }
     if ((int32_t)(peers[i].seen - peers[old].seen) < 0) old = i;
   }
@@ -3327,7 +3327,7 @@ void setupWeb() {
         uiSetOwner(cfg.devName);
       }
     }
-    if (server.hasArg("pos")) cfg.devPos = (uint8_t)constrain(server.arg("pos").toInt(), 0, 6);  // weatherbox
+    if (server.hasArg("pos")) cfg.devPos = (uint8_t)constrain(server.arg("pos").toInt(), 0, 100);  // weatherbox
     if (server.hasArg("num")) cfg.devNum = (uint8_t)constrain(server.arg("num").toInt(), 0, 99);  // weatherbox
     String tz = server.arg("tz");
     tz.trim();

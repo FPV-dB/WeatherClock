@@ -984,7 +984,7 @@ void uiIdentify(int num, int pos, const char *name, const char *ip) {
   if (num > 0) {
     const float sc = num > 9 ? 10.0f : 12.0f;  // digit: 6*sc wide, 10*sc tall
     const int w = (int)(6 * sc), gap = num > 9 ? 10 : 0, tot = num > 9 ? 2 * w + gap : w;
-    int x = 120 - tot / 2, y = 102 - (int)(5 * sc);
+    int x = 120 - tot / 2, y = 102 + (pos > 0 ? 8 : 0) - (int)(5 * sc);
     if (num > 9) {
       geoDigit(x, y, num / 10, sc, 9, SUN);
       x += w + gap;
@@ -994,15 +994,13 @@ void uiIdentify(int num, int pos, const char *name, const char *ip) {
     textC(120, 70, 6, SUN, "?");
     textC(120, 130, 1, MUTED, tr("Sem numero: defina no painel", "No number: set one in the panel", "Sin numero: ponlo en el panel"));
   }
-  if (pos >= 1 && pos <= 6) {  // where it sits: an arrow-like label in the matching corner of the frame
-    static const char *const P[3][6] = {{"ESQUERDA", "CENTRO", "DIREITA", "EM CIMA", "MEIO", "EMBAIXO"},
-                                        {"LEFT", "CENTRE", "RIGHT", "TOP", "MIDDLE", "BOTTOM"},
-                                        {"IZQUIERDA", "CENTRO", "DERECHA", "ARRIBA", "MEDIO", "ABAJO"}};
-    const char *t = P[uiLang < 3 ? uiLang : 1][pos - 1];
+  if (pos >= 1 && pos <= 100) {  // where it sits in the group: row and column
+    static const char *const R[3] = {"LINHA %d  COL %d", "ROW %d  COL %d", "FILA %d  COL %d"};
+    char t[24];
+    snprintf(t, sizeof t, R[uiLang < 3 ? uiLang : 1], (pos - 1) / 10 + 1, (pos - 1) % 10 + 1);
     const int tw = (int)strlen(t) * 12 + 12;
-    const int x = pos == 1 ? 14 : pos == 3 ? 226 - tw : 120 - tw / 2, y = 14;
-    G->fillRoundRect(x, y, tw, 22, 6, SUN);
-    text(x + 6, y + 4, 2, BG, t);
+    G->fillRoundRect(120 - tw / 2, 14, tw, 22, 6, SUN);
+    text(120 - tw / 2 + 6, 18, 2, BG, t);
   }
   textC(120, 188, 2, TEXT, name && *name ? name : "Weather Clock");
   textC(120, 212, 1, MUTED, ip);

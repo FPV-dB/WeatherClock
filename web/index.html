@@ -314,7 +314,8 @@ nav button[hidden],[hidden]{display:none!important}
   <label>Clock name<input data-k="name" type="text" maxlength="23" placeholder="e.g. Mum's clock" spellcheck="false"></label>
   <small>Shown at the top of this page and on the clock's start-up screen. Handy when you give clocks away.</small>
   <label>Clock number<input data-k="num" type="number" min="0" max="99" placeholder="0 = none"></label>
-  <label>Position<select data-k="pos"><option value="0">Not set</option><option value="1">Left</option><option value="2">Centre</option><option value="3">Right</option><option value="4">Top</option><option value="5">Middle</option><option value="6">Bottom</option></select></label>
+  <div class="row"><label>Row<select id="prow"><option value="0">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></label><label>Column<select id="pcol"><option value="0">-</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></label></div>
+  <small>Where this clock sits in the group (up to 10 clocks). Side by side: same row, columns 1, 2, 3… Stacked: same column, rows 1, 2, 3…</small>
   <small>With several clocks, give each one a number. Identify shows it big on the screen for 10 seconds.</small>
   <p><button class="btn" onclick="identify()">Identify this clock</button></p>
   <form id="op">
@@ -447,19 +448,24 @@ function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.o
 const hm=m=>{let h=Math.floor(m/60);const ap=st&&st.cfg.h12;if(ap)h=h%12||12;return h+':'+String(m%60).padStart(2,'0')};
 function identify(ip){(ip?post('/api/peeridentify',new URLSearchParams({ip})):post('/api/identify')).then(r=>{if(!r.ok)throw 0;toast(t('Look at the clock: it shows its number for 10 seconds'))}).catch(()=>toast(t('Failed')))}
 function peerRow(c,me){const d=el('div','row');d.style.cssText='align-items:center;margin:6px 0;gap:8px';const f=FACES.find(x=>x.t===c.theme),b=el('b');b.textContent=(c.num?'#'+c.num+' ':'')+(c.name||'Weather Clock')+(me?' ('+t('this one')+')':'');
- const sm=el('small');sm.textContent=(c.pos?t(POSN[c.pos])+' · ':'')+c.ip+' · '+c.ver+(f?' · '+f.n:'');const w=el('div');w.style.flex='1';w.append(b,el('br'),sm);d.append(w);
+ const sm=el('small');sm.textContent=(c.pos?t('Row {0}, column {1}',rowOf(c.pos),colOf(c.pos))+' · ':'')+c.ip+' · '+c.ver+(f?' · '+f.n:'');const w=el('div');w.style.flex='1';w.append(b,el('br'),sm);d.append(w);
  const i=el('button','btn');i.textContent=t('Identify');i.onclick=()=>identify(me?null:c.ip);d.append(i);
  if(!me){const o=el('button','btn');o.textContent=t('Open');o.onclick=()=>window.open('http://'+c.ip+'/','_blank');d.append(o)}return d}
-const POSN=['','Left','Centre','Right','Top','Middle','Bottom'];
-function peerMap(all){const w=el('div');w.style.cssText='display:flex;gap:18px;align-items:center;justify-content:center;margin:8px 0 12px;flex-wrap:wrap';
- const placed=all.some(c=>c.pos),groups=placed?[[1,2,3],[4,5,6]]:[[0]];
- groups.forEach((g,k)=>{const cs=g.map(p=>all.filter(c=>(c.pos||0)==p)).flat();if(!cs.length)return;const d=el('div');d.style.cssText='display:flex;gap:6px;flex-direction:'+(k?'column':'row');
-  cs.forEach(c=>{const f=FACES.find(x=>x.t===c.theme),b=el('div');b.style.cssText='position:relative;width:100px;text-align:center;font-size:12px';b.title=c.ip+(f?' · '+f.n:'');
-   const sc=el('div');sc.style.cssText='width:96px;height:96px;margin:0 auto;background:#000;border:4px solid '+(c.me?'var(--accent,#ffc23a)':'#2a2a2a')+';border-radius:6px;overflow:hidden';
-   if(f){const i=el('img');i.src=faceSrc(f);i.alt='';i.style.cssText='width:100%;height:100%;image-rendering:pixelated';sc.append(i)}
-   const n=el('b');n.textContent=c.num||'?';n.style.cssText='position:absolute;top:-6px;left:-4px;min-width:22px;padding:0 4px;border-radius:11px;background:#ffc23a;color:#000;font-size:14px';
-   const m=el('div');m.textContent=c.name||'Weather Clock';m.style.cssText='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px';
-   b.append(sc,n,m);b.style.cursor='pointer';b.onclick=()=>identify(c.me?null:c.ip);d.append(b)});w.append(d)});return w.childNodes.length?w:null}
+const rowOf=p=>p?((p-1)/10|0)+1:0,colOf=p=>p?(p-1)%10+1:0;
+function posSave(){const r=+$('prow').value,c=+$('pcol').value;save({pos:r&&c?(r-1)*10+c:0}).then(()=>{toast(t('Saved'));peers()})}
+function peerMap(all){const w=el('div');w.style.cssText='display:flex;flex-direction:column;gap:14px;align-items:center;margin:8px 0 12px;overflow-x:auto';
+ const box=c=>{const f=FACES.find(x=>x.t===c.theme),b=el('div');b.style.cssText='position:relative;width:76px;text-align:center;font-size:11px;cursor:pointer';b.title=c.ip+(f?' · '+f.n:'');
+   const sc=el('div');sc.style.cssText='width:72px;height:72px;margin:0 auto;background:#000;border:3px solid '+(c.me?'var(--accent,#ffc23a)':'#2a2a2a')+';border-radius:5px;overflow:hidden';
+   if(f){const i=el('img');i.src=faceSrc(f);i.alt='';i.style.cssText='width:100%;height:100%';sc.append(i)}
+   const n=el('b');n.textContent=c.num||'?';n.style.cssText='position:absolute;top:-6px;left:-4px;min-width:20px;padding:0 4px;border-radius:10px;background:#ffc23a;color:#000;font-size:13px';
+   const m=el('div');m.textContent=c.name||'Weather Clock';m.style.cssText='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px';
+   b.append(sc,n,m);b.onclick=()=>identify(c.me?null:c.ip);return b};
+ const placed=all.filter(c=>c.pos),loose=all.filter(c=>!c.pos);
+ if(placed.length){const g=el('div'),rs=placed.map(c=>rowOf(c.pos)),cs=placed.map(c=>colOf(c.pos)),r0=Math.min(...rs),c0=Math.min(...cs);
+  g.style.cssText='display:grid;gap:6px;grid-template-columns:repeat('+(Math.max(...cs)-c0+1)+',76px)';
+  placed.forEach(c=>{const b=box(c);b.style.gridRow=rowOf(c.pos)-r0+1;b.style.gridColumn=colOf(c.pos)-c0+1;g.append(b)});w.append(g)}
+ if(loose.length){const d=el('div');d.style.cssText='display:flex;gap:6px;flex-wrap:wrap;justify-content:center';if(placed.length){const s=el('small');s.textContent=t('No position set:');s.style.width='100%';s.style.textAlign='center';d.append(s)}loose.forEach(c=>d.append(box(c)));w.append(d)}
+ return w}
 function peers(){const box=$('peers');const show=j=>{box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.pos||9)-(b.pos||9)||(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));const m=peerMap(all);if(m)box.append(m);all.forEach(c=>box.append(peerRow(c,c.me)));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
  fetch('/api/peers').then(r=>r.json()).then(j=>{show(j);setTimeout(()=>fetch('/api/peers').then(r=>r.json()).then(show).catch(()=>{}),1500)}).catch(()=>{box.innerHTML='';const s=el('small');s.textContent=t('Failed');box.append(s)})}
 function giftReset(){if(!confirm(t('Prepare this clock as a gift? Everything except the firmware is erased: Wi-Fi, city, name, password, photos and faces. This cannot be undone.')))return;post('/api/giftreset').then(()=>toast(t('Erased. The clock is restarting with the first-install help.'))).catch(()=>toast(t('Failed')))}
@@ -659,7 +665,7 @@ function diagShow(s){const d=s.diag,c=$('diag'),q=d.rssi>=-60?'good':d.rssi>=-72
  const k=s.crash;if(k){const r=el('div'),b=el('button','btn',t('Clear'));b.style.cssText='padding:4px 12px;min-height:0;margin-left:8px';b.onclick=()=>post('/api/crash').then(x=>{if(!x.ok)throw 0;delete st.crash;diagShow(s);toast(t('Record cleared'))}).catch(()=>toast(t('Failed: ')));
   r.append(el('b',null,t('Last crash')),el('span',null,'#'+k.n+' · '+t(RST[k.r]||'?',k.x,'0x'+k.epc)+' · v'+k.ver+(k.up?' · '+t('after {0} up',dur(k.up)):'')+' '),b);c.appendChild(r)}}
 // data-neg: ticked switch = 0. "Invert colors" is relative to normal (the IPS panel already starts with INVON)
-document.querySelectorAll('[data-k]').forEach(e=>{e.onchange=()=>{const v=e.type=='checkbox'?(e.checked!=e.hasAttribute('data-neg')?1:0):e.value;save({[e.dataset.k]:v}).then(()=>{toast(t('Saved'));if(e.dataset.k=='beta')checkUpdate();if(e.dataset.k=='num'||e.dataset.k=='pos')peers()})}});
+document.querySelectorAll('[data-k]').forEach(e=>{e.onchange=()=>{const v=e.type=='checkbox'?(e.checked!=e.hasAttribute('data-neg')?1:0):e.value;save({[e.dataset.k]:v}).then(()=>{toast(t('Saved'));if(e.dataset.k=='beta')checkUpdate();if(e.dataset.k=='num')peers()})}});
 // ---------- state ----------
 function beep(){try{actx=actx||new AudioContext();[0,.25,.5].forEach(d=>{const o=actx.createOscillator(),g=actx.createGain();
  o.frequency.value=880;g.gain.setValueAtTime(.2,actx.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d+.2);
@@ -716,7 +722,7 @@ function load(s){{const n=s.cfg.name||'Weather Clock';if($('hname').textContent!
  $('fsinfo').textContent=s.fs.ok?t('{0} used of {1}',kb(s.fs.used),kb(s.fs.total)):t('File storage unavailable');
  $('fsbar').style.width=(s.fs.total?s.fs.used/s.fs.total*100:0)+'%';$('fmt').hidden=!!s.fs.ok;$('mig').classList.toggle('v',!!s.fs.mig);
  document.querySelectorAll('#grid div').forEach(e=>e.classList.toggle('on',e.dataset.n==s.showing));
- if(!filled){filled=true;document.querySelectorAll('[data-k]').forEach(e=>{const v=s.cfg[e.dataset.k];if(v===undefined)return;if(e.type=='checkbox')e.checked=!!v!=e.hasAttribute('data-neg');else e.value=v})}
+ if(!filled){filled=true;$('prow').value=rowOf(s.cfg.pos||0);$('pcol').value=colOf(s.cfg.pos||0);document.querySelectorAll('[data-k]').forEach(e=>{const v=s.cfg[e.dataset.k];if(v===undefined)return;if(e.type=='checkbox')e.checked=!!v!=e.hasAttribute('data-neg');else e.value=v})}
  draw()}
 // the panel's ring being drawn in ms; with wait, it only finishes on the clock's notice (or after 4 s, if it doesn't come)
 function ringDraw(ms,rem,wait){holding=true;holdRem=rem;const r=document.querySelector('.ring');r.style.setProperty('--pd',ms+'ms');
@@ -781,5 +787,5 @@ $('up').onchange=async e=>{const fs=[...e.target.files];e.target.value='';let ok
 $('op').onsubmit=e=>{e.preventDefault();const o=e.target;post('/api/otapass',new URLSearchParams(new FormData(o))).then(r=>r.text()).then(x=>{toast(t(x));o.reset()})};
 document.onkeydown=e=>{if(e.code=='Space'&&curTab==1&&!/INPUT|BUTTON|SELECT/.test(e.target.tagName)){e.preventDefault();cmd('toggle')}};
 function poll(){if(updating)return setTimeout(poll,1000);fetch('/api/state').then(r=>r.json()).then(load).catch(()=>$('net').className='off').finally(()=>setTimeout(poll,1000))}
-i18n();loadI18n();loadFaces().then(peers,peers);let t0=0;try{t0=+localStorage.tab||0}catch(e){}tab(t0);poll();
+$('prow').onchange=$('pcol').onchange=posSave;i18n();loadI18n();loadFaces().then(peers,peers);let t0=0;try{t0=+localStorage.tab||0}catch(e){}tab(t0);poll();
 </script></body></html>
