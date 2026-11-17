@@ -1,29 +1,32 @@
 {
-  "version": "2.0.15",
+  "version": "2.0.16",
   "date": "2026-11-17",
   "file": "weatherclock.bin",
-  "size": 612608,
+  "size": 616544,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 441442,
-  "sig": "EVl3oKHxBjTG0KpylO2nyMOz2j8eHuvnKsDzdLW0EU+3wEukjtgQctL9ZMgZOsmunpmieopdhNWu7h/sxqpUG8qNttCw4YWT8OOWABGjNSlwZlE/IYQtIAz0HhW8qdAu1pcT8IFAUGm0Y9PRZTV6qZUQxDgXP01DVcSPUWut9PQLVqZKDE7zGjivOTdnrZJq8Vk8P5bnI0nJPiP/ya9ndr3hHrTkuQ7RJMXcTvzeHA+dRH91QQj38L5tS8fgi3ggBE+0L2iXw8UsfFnfNIHp5k97GaKOXpaACMomvb7+qUxkZJi2ANRGEmk6Wcob0kwHaUymrmGB5YrhR2iXjigciw==",
-  "gzsig": "KfLJwPLkuJC4UaIewggFA9y41lArYhlh1eXyn1V319nokVN2M4Yf/WhyFL9qtRGn63KhHRL2De3kQLy+QA7F/EraFeFo/ok2QKooB0iWMCgQQ4qBDmswYyxA0fqz7PWgCVe1683wRD002quFvf3W36EXDW7kXIxMtOVY8SJan5IhWV+3zmzUiVIrO10bHP7pIof+YGDffONU8G4QJVZ1ENhhJscwYXPu4kFQ3Kz5nTbYz+0T0uYWJGDud/9d3McJxD0MQ4HXAuvB+CjuHUJ9Ul8PH3KIQ9T1Wb1tIx+bOhYIhM13DqEAI/fl06DJrxOvnPn2kCMTdp3WfHfzovzTwA==",
-  "panel": "panel-6264d30c8472f6db7635e744.html.gz",
-  "psri": "sha256-YmTTDIRy9tt2NedEGpdYpZI9w1ttZyGowk0qztwmxBk=",
+  "gzsize": 444072,
+  "sig": "fW+JehSZu0Di6LIkyK4RirZcuaatHveB+lfGwgZvKbB0koG4TWJWInoHmLCOOem64w9cCkPky+9AquDpOyDJXeiKJXtbm1WsOEFFHLDDnmPdeQJicxe9t9IDG2k2LM+atY/8UxDM1fIUBH9X2DWThxLHylcphyJDcq8sQG1MZ6La0HvAPPwTpN2TWNehtP5X36Ph0DCaL3JdbkDSkGdeosgxvJTT4H/iOvlyuvNhg6V2xt83QsCRxNCttwZ0YUh9uiNj/LqMACub7+ipJNb1EZ96EGPKAwyuNpwUhoGYyLbg+2N1Qaf4CPTJAGR4DkYontBaU0QeHFPx6Dn3twFrJQ==",
+  "gzsig": "PlKFyfJSMUjcnsRJcn3Lm7FOIN1hyw/DcHcIB1Nt4/8QzQYK9omyMmvQI6WAaZnYfYQwrm9x/OYmnTavm9a6NOOfFExBL/d1S/0aiuFKcAJkvNPhNr3iReHA7C4zVC1EWUA4DdoBVbqPTinr0+A/be8WgHtqAGnEPRzwQ0TlmAznY3VYYci6LoMVKKwVS0o/GH74rvvBKu7iDMUBv/iyUq2OvtvjqQotNiWGxLypTpy4n4UfZnbzAGRpBv7qHS9JFVs4nmubt1HgHpV0MG6NarO5/2fbmaChOgb2L19n1RtU0+tDQh8/NbgW/5NZ/S9A+dTcWeA1GGbm4GpOgt1GnQ==",
+  "panel": "panel-d31bf670f011700d30e47d5c.html.gz",
+  "psri": "sha256-0xv2cPARcA0w5H1cDvJkDq0LEmAfUwl9aL71xsd0RbM=",
   "notes": {
     "en": [
-      "New Energy War face: latest attacks on energy infrastructure from EnergyWar.net and the total (needs the companion program on a computer)",
-      "Airport Traffic face (renamed from SA flights)",
-      "Rain arrival from the radar: rain in N minutes and a Rain face pop-up (needs the companion program)"
+      "Several clocks together: give each a number and a place on a grid, and see them all in the panel's new My clocks section",
+      "Drag clocks around the grid to set where each one sits (up to 10 clocks)",
+      "Identify: a clock shows its number, row and column, name and IP for 10 seconds",
+      "Airport Traffic: heading centred"
     ],
     "pt": [
-      "New Energy War face: latest attacks on energy infrastructure from EnergyWar.net and the total (needs the companion program on a computer)",
-      "Airport Traffic face (renamed from SA flights)",
-      "Rain arrival from the radar: rain in N minutes and a Rain face pop-up (needs the companion program)"
+      "Several clocks together: give each a number and a place on a grid, and see them all in the panel's new My clocks section",
+      "Drag clocks around the grid to set where each one sits (up to 10 clocks)",
+      "Identify: a clock shows its number, row and column, name and IP for 10 seconds",
+      "Airport Traffic: heading centred"
     ],
     "es": [
-      "New Energy War face: latest attacks on energy infrastructure from EnergyWar.net and the total (needs the companion program on a computer)",
-      "Airport Traffic face (renamed from SA flights)",
-      "Rain arrival from the radar: rain in N minutes and a Rain face pop-up (needs the companion program)"
+      "Several clocks together: give each a number and a place on a grid, and see them all in the panel's new My clocks section",
+      "Drag clocks around the grid to set where each one sits (up to 10 clocks)",
+      "Identify: a clock shows its number, row and column, name and IP for 10 seconds",
+      "Airport Traffic: heading centred"
     ]
   }
 }
