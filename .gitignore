@@ -24,3 +24,4 @@ build/testes/
 *private*.pem
 sim/sim-mac
 sim/*.o
+sim/sim-native

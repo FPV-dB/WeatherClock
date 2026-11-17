@@ -217,6 +217,9 @@ static void paintSky(void *c) {
       for (char *p = l; *p; p++) *p = (char)tolower((unsigned char)*p);
       textC(120, 110, 1, mix16(BG, lightColor(light.next), 12), l);
     }
+    // Approximate colour appearance of this face's warm yellow palette, not a
+    // measurement of the sky or the display's physical white point.
+    textC(120, 122, 1, MUTED, tr("cor ~2800 K", "colour ~2800 K", "color ~2800 K"));
   }
   // sunrise and sunset under the horizon
   char t[12];
@@ -818,14 +821,20 @@ static void paintNewsDot(void *c) {
   G->fillRect(10, 29, 17, 17, NEWS_RED);
   newsDot(s);
 }
-static void paintNews(void *c) {
+static void paintNewsHeader(void *c) {
   const UiState &s = *(const UiState *)c;
-  G->fillRect(0, 24, 240, 216, BG);
+  G->fillRect(0, 24, 240, 26, BG);
   G->fillRect(0, 28, 240, 19, NEWS_RED);
   newsDot(s);
   text(30, 33, 2, TEXT, tr("NOTICIAS", "NEWS", "NOTICIAS"));
+  if (s.news && s.news->src[0]) textR(232, 34, 1, uiRgb(255, 220, 215), s.news->src);
+}
+struct NewsBody { const UiState *s; int offset; };
+static void paintNewsBody(void *c) {
+  const NewsBody &b = *(const NewsBody *)c;
+  const UiState &s = *b.s;
+  G->fillRect(0, 50, 240, 190, BG);
   const UiNews *nw = s.news;
-  if (nw && nw->src[0]) textR(232, 34, 1, uiRgb(255, 220, 215), nw->src);
   if (!nw || !nw->n) {
     textC(120, 100, 2, MUTED, tr("Sem noticias", "No news yet", "Sin noticias"));
     textC(120, 126, 1, MUTED, tr("precisa do programa do radar", "needs the radar program", "necesita el programa del radar"));
@@ -833,32 +842,130 @@ static void paintNews(void *c) {
     return;
   }
   const uint16_t since = (uint16_t)((s.ms - nw->at) / 60000);
-  int y = 54;
-  char a[24];
-  for (int i = 0; i < nw->n && y < 220; i++) {
-    const bool top = i == 0;
-    y = wrapText(8, y, top ? 2 : 1, top ? TEXT : uiRgb(205, 205, 212), nw->t[i], top ? 19 : 37, top ? 4 : 2);
-    agoText(nw->ago[i] + since, a, sizeof a);
-    if (y > 230) break;
-    text(8, y, 1, top ? NEWS_RED : MUTED, a);
-    y += 13;
-    if (i + 1 < nw->n && y < 220) G->drawFastHLine(8, y - 3, 224, CARD2);
-    y += 3;
+  for (int i = 0; i < nw->n; i++) {
+    const int y = 54 + i * 90 - b.offset;
+    if (y < -40 || y > 240) continue;
+    wrapText(8, y, 2, TEXT, nw->t[i], 19, 3);
+    char age[24];
+    agoText(nw->ago[i] + since, age, sizeof age);
+    text(8, y + 61, 1, NEWS_RED, age);
+    G->drawFastHLine(8, y + 79, 224, CARD2);
   }
 }
 
 void themeNews(const UiState &s, bool full) {
   topBar(s, full);
   static uint16_t lastNews = 0xFFFF;
-  const uint16_t v = s.news ? s.news->version : 0;
-  if (bodyDue(s, full, 1) || v != lastNews) {  // the minute counts ("12 min ago") move on
-    lastNews = v;
-    uiPaint(full, 0, 24, 240, 216, paintNews, (void *)&s);
-    return;
+  static uint32_t scrollStart = 0, lastBody = 0, lastAnim = 0;
+  const uint16_t version = s.news ? s.news->version : 0;
+  const bool reset = full || version != lastNews;
+  if (reset) {
+    lastNews = version;
+    scrollStart = s.ms;
+    uiPaint(full, 0, 24, 240, 26, paintNewsHeader, (void *)&s);
   }
-  static uint32_t lastAnim = 0;
+  const int total = s.news ? s.news->n * 90 : 0;
+  const int maxScroll = total > 186 ? total - 186 : 0;
+  uint32_t elapsed = s.ms - scrollStart;
+  const int offset = elapsed < 1000 ? 0 : elapsed >= 9000 ? maxScroll : (uint32_t)maxScroll * (elapsed - 1000) / 8000;
+  if (reset || s.ms - lastBody >= 350) {
+    lastBody = s.ms;
+    NewsBody b = {&s, offset};
+    uiPaint(false, 0, 50, 240, 190, paintNewsBody, &b);
+  }
   if (s.ms - lastAnim >= 100) {
     lastAnim = s.ms;
     uiPaint(false, 10, 29, 17, 17, paintNewsDot, (void *)&s);
+  }
+}
+
+// ---------- Energy War ----------
+// EnergyWar.net (sent by the computer program): the number of incident records and the five newest incidents,
+// each with its date, place, what was hit (coloured by type) and how certain the report is.
+static uint16_t kindColor(const char *k) {
+  if (strstr(k, "Grid")) return uiRgb(255, 210, 60);
+  if (strstr(k, "Refinery")) return uiRgb(255, 140, 40);
+  if (strstr(k, "Oil") && !strstr(k, "tanker")) return uiRgb(240, 100, 60);
+  if (strstr(k, "tanker") || strstr(k, "Port")) return uiRgb(90, 170, 255);
+  if (strstr(k, "Pipeline")) return uiRgb(190, 120, 255);
+  if (strstr(k, "Nuclear")) return uiRgb(80, 220, 120);
+  return uiRgb(170, 170, 180);
+}
+static uint16_t statusColor(char s) { return s == 'D' ? uiRgb(80, 210, 120) : s == 'R' ? uiRgb(255, 180, 60) : MUTED; }
+static const uint16_t EW_ORANGE = uiRgb(230, 100, 20);
+// a number with thin gaps between thousands (the number font has no comma)
+static int groupedNum(int x, int y, int h, uint32_t v, uint16_t c, uint16_t bg, bool draw) {
+  char d[12];
+  snprintf(d, sizeof d, "%lu", (unsigned long)v);
+  const int n = strlen(d), gap = h / 5;
+  int w = 0;
+  for (int i = 0; i < n; i++) {
+    char one[2] = {d[i], 0};
+    if (draw) vecText(VF_OUTFIT, x + w, y, h, one, c, bg);
+    w += vecWidth(VF_OUTFIT, one, h);
+    if ((n - 1 - i) % 3 == 0 && i < n - 1) w += gap;
+  }
+  return w;
+}
+static const int EW_DX = 226, EW_DY = 66;  // the "live" dot, right of the total
+static void ewDot(const UiState &s) {
+  const int ph = (int)(s.ms / 100 % 14), w = ph < 7 ? ph : 14 - ph;
+  G->fillCircle(EW_DX, EW_DY, 4, mix16(BG, uiRgb(255, 90, 40), 8 + w));
+}
+static void paintEwDot(void *c) {
+  G->fillRect(EW_DX - 6, EW_DY - 6, 13, 13, BG);
+  ewDot(*(const UiState *)c);
+}
+static void paintEnergy(void *c) {
+  const UiState &s = *(const UiState *)c;
+  G->fillRect(0, 24, 240, 216, BG);
+  G->fillRect(0, 28, 240, 19, EW_ORANGE);
+  text(8, 33, 2, TEXT, "ENERGY WAR");
+  textR(232, 34, 1, uiRgb(255, 225, 200), "energywar.net");
+  const UiEnergy *e = s.energy;
+  if (!e || !e->n) {
+    textC(120, 100, 2, MUTED, tr("Sem dados", "No data yet", "Sin datos"));
+    textC(120, 126, 1, MUTED, tr("precisa do programa do radar", "needs the radar program", "necesita el programa del radar"));
+    textC(120, 138, 1, MUTED, tr("num computador", "on a computer", "en un ordenador"));
+    return;
+  }
+  // the total
+  const int tw = groupedNum(0, 0, 28, e->total, TEXT, BG, false);
+  groupedNum(8, 52, 28, e->total, TEXT, BG, true);
+  text(8 + tw + 8, 56, 1, MUTED, tr("incidentes", "incidents", "incidentes"));
+  text(8 + tw + 8, 68, 1, MUTED, tr("registrados", "on record", "registrados"));
+  // the newest five
+  int y = 90;
+  for (int i = 0; i < e->n && y < 230; i++) {
+    char l[44];
+    snprintf(l, sizeof l, "%-6s %.30s", e->date[i], e->place[i]);
+    text(8, y, 1, i == 0 ? TEXT : uiRgb(215, 215, 222), l);
+    // what was hit, in its colour, then the evidence status as a dot
+    const uint16_t kc = kindColor(e->kind[i]);
+    snprintf(l, sizeof l, "%.22s", e->kind[i]);
+    text(50, y + 11, 1, kc, l);
+    G->fillCircle(44, y + 14, 2, statusColor(e->status[i]));
+    const char *st = e->status[i] == 'D' ? tr("documentado", "documented", "documentado")
+                   : e->status[i] == 'R' ? tr("relatado", "reported", "reportado")
+                   : e->status[i] == 'U' ? tr("nao confirmado", "unconfirmed", "sin confirmar") : "";
+    const int kx = 50 + textW(l, 1) + 6;
+    if (st[0] && kx + textW(st, 1) <= 234) text(kx, y + 11, 1, MUTED, st);
+    y += 28;
+  }
+  ewDot(s);
+}
+void themeEnergy(const UiState &s, bool full) {
+  topBar(s, full);
+  static uint16_t lastV = 0xFFFF;
+  const uint16_t v = s.energy ? s.energy->version : 0;
+  if (bodyDue(s, full, 30) || v != lastV) {
+    lastV = v;
+    uiPaint(full, 0, 24, 240, 216, paintEnergy, (void *)&s);
+    return;
+  }
+  static uint32_t lastAnim = 0;  // weatherbox: a "live" dot pulses beside the newest incident
+  if (s.energy && s.energy->n && s.ms - lastAnim >= 100) {
+    lastAnim = s.ms;
+    uiPaint(false, EW_DX - 6, EW_DY - 6, 13, 13, paintEwDot, (void *)&s);
   }
 }

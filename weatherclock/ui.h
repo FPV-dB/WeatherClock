@@ -55,12 +55,33 @@ struct UiWeather {
 static const int UI_HOURS = 12;
 
 // weatherbox: headlines sent by the computer program (/api/news); ASCII only (the pixel font)
-static const int UI_NEWS = 4;
+static const int UI_NEWS = 8;
 struct UiNews {
   uint8_t n;               // headlines in t[] (0 = none yet)
   char src[20];            // e.g. "ABC Just In"
   char t[UI_NEWS][100];
   uint16_t ago[UI_NEWS];   // minutes since published, when received
+  uint32_t at;             // millis() when received
+  uint16_t version;
+};
+
+static const int UI_FLIGHT_ROWS = 32;
+struct UiFlightStats {
+  char date[11];
+  uint16_t off, on;
+  bool partial;
+  uint8_t n;
+  struct { char code[9]; uint16_t off, on; } rows[UI_FLIGHT_ROWS];
+  uint16_t version;
+};
+
+// weatherbox: energy-infrastructure incidents from EnergyWar.net, sent by the computer program (/api/energy)
+static const int UI_ENERGY = 5;
+struct UiEnergy {
+  uint8_t n;
+  uint32_t total;          // incident records on the site
+  char place[UI_ENERGY][46], what[UI_ENERGY][92], kind[UI_ENERGY][24], date[UI_ENERGY][8];
+  char status[UI_ENERGY];  // 'D' documented, 'R' reported/attributed, 'U' unconfirmed
   uint32_t at;             // millis() when received
   uint16_t version;
 };
@@ -94,6 +115,8 @@ struct UiState {
   float lat, lon;  // weatherbox: the clock's place (for the sun's position)
   uint32_t utc;    // weatherbox: seconds since 1970, UTC (0 = unknown)
   const UiNews *news;  // weatherbox: latest headlines (never null on the clock)
+  const UiFlightStats *flights;
+  const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
 };
 
 constexpr uint16_t uiRgb(uint8_t r, uint8_t g, uint8_t b) {

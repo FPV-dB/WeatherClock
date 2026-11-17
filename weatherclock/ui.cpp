@@ -298,8 +298,8 @@ void weatherIcon(int cx, int cy, float s, int c, bool day, uint16_t bg, uint32_t
 const char *rainSoonText(uint8_t m) {
   static char b[20];
   if (!m) return "";
-  if (m < 15) return tr("chuva logo", "rain soon", "lluvia ya");
-  snprintf(b, sizeof b, tr("chuva %u min", "rain %u min", "lluvia %u min"), m);  // short: fits beside the tomato
+  if (m <= 2) return tr("chuva ja", "rain any minute", "lluvia ya");
+  snprintf(b, sizeof b, tr("chuva em %u min", "rain in %u min", "lluvia en %u min"), m);
   return b;
 }
 

@@ -71,12 +71,34 @@ static UiState base(int h, int m, int s) {
   }
   st.south = true;
   {
-    static UiNews nw = {4, "ABC Just In", {"Arena 'electric' as 36ers debutant hits buzzer beater",
-                                            "Two survivors of fatal helicopter crash in Indonesia named",
-                                            "Labuschagne axed from Aussie squad for New Zealand Tests",
-                                            "Trump says he was 'kidding' about offering Dana White press secretary job"},
-                        {42, 44, 72, 135}, 0, 1};
+    static UiNews nw = {8, "BBC World", {
+      "World leaders meet for urgent climate and energy talks",
+      "International aid reaches communities after major flooding",
+      "Peace negotiations resume as diplomats seek an agreement",
+      "Researchers report a new milestone in medical science",
+      "Markets react to changes in global trade policy",
+      "Space agency prepares mission to explore the Moon",
+      "New conservation plan aims to protect ocean wildlife",
+      "Technology firms announce international safety standards"},
+      {4, 12, 29, 48, 63, 95, 142, 201}, 0, 1};
     st.news = &nw;
+    static UiFlightStats fs = {};
+    strcpy(fs.date, "2026-10-20");
+    fs.off = 100; fs.on = 92; fs.partial = false; fs.n = 8; fs.version = 1;
+    const char *codes[8] = {"YPAD", "YPPF", "YPED", "YPLC", "YMTG", "YPAG", "YKSC", "YWHY"};
+    for (int i = 0; i < 8; i++) {
+      strcpy(fs.rows[i].code, codes[i]);
+      fs.rows[i].off = 60 - i * 5;
+      fs.rows[i].on = 54 - i * 4;
+    }
+    st.flights = &fs;
+    static UiEnergy en = {5, 1807,
+      {"Ilsky Oil Refinery", "Azov oil depots (Flash Energy, Yug-Impex)", "Dnipro", "Pervomaiskyi district, Mykolaiv region", "DTEK production site, northern Odesa region"},
+      {"Ukraine says drones hit crude units and gasoline complex", "drone attack, fires at four industrial sites",
+       "Russian attack on regional energy facilities", "drone strike cuts power to 76 settlements", "Russian strike cuts power to 52,200 households"},
+      {"Refinery", "Oil or fuel facility", "Power Grid", "Power Grid", "Power Grid"},
+      {"16 NOV", "16 NOV", "16 NOV", "16 NOV", "15 NOV"}, {'R', 'R', 'R', 'D', 'U'}, 0, 1};
+    st.energy = &en;
   }
   // weatherbox: Adelaide, and the matching UTC (local time is ACDT, UTC+10:30)
   st.lat = -34.85f; st.lon = 138.54f;
@@ -529,6 +551,23 @@ int main() {
     char n[16];
     snprintf(n, sizeof n, "face-%d", t);
     shot(n, g, false);
+  }
+
+  // News and flight-statistics gallery animations: the same render path as firmware.
+  for (int theme : {THEME_NEWS, THEME_FLIGHT_STATS}) {
+    Frame *f = new Frame();
+    uiBegin(f);
+    UiState t = base(14, 37, 24);
+    t.theme = theme;
+    t.ms = 0;
+    for (int i = 0; i < 20; i++) {
+      t.ms = i * 450;
+      uiRenderClock(t);
+      char n[32];
+      snprintf(n, sizeof n, "face-%d-anim-%02d", theme, i);
+      save(*f, n);
+    }
+    delete f;
   }
 
   // ---- Pomodoro ----

@@ -46,7 +46,7 @@ extern "C" uint32_t _FS_start;
 
 void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h);  // ui.cpp: clips to the dirty area; off-screen, it lands in the strip
 
-#define FW_VERSION "2.0.11"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
+#define FW_VERSION "2.0.14"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
 #define HOSTNAME   "weatherclock"
 #define AP_NAME    "WeatherClock-Setup"
 
@@ -377,7 +377,7 @@ void applyTimezone(uint8_t rot = 0) {
 // 20 kHz PWM (outside the audible and flicker range) with 1023 steps; inverted pin (0 = fully lit).
 // Gamma 2.2 curve (perceptual) over the cfg's 0-100; 1 % already gives ~1 % duty, so it doesn't go dark.
 const uint16_t BL_RANGE = 1023;
-const uint32_t BL_HZ = 20000;
+const uint32_t BL_HZ = 1000;  // keep the tested whole-screen flicker fix
 const uint16_t BL_MIN = 10;      // minimum duty for any brightness > 0
 const uint16_t BL_FADE_MS = 400;  // ramp between two levels (day/night, slider)
 int curBri = -1;
@@ -835,6 +835,21 @@ void sendHueDescription() {
 
 // ---------- weatherbox: headlines from the computer program (radar/news.py posts them to /api/news) ----------
 UiNews news = {};
+UiFlightStats flightStats = {};
+UiEnergy energy = {};
+
+// weatherbox: when rain reaches home, worked out from the radar by the computer program (/api/rainsoon):
+// minutes (0 = raining now, -1 = none on the way) and when it was received. Fresh for 20 minutes.
+int16_t radarEta = -1;
+uint32_t radarEtaAt = 0;
+bool radarAlerted = false;  // the Rain face already popped up for this rain
+static bool radarEtaFresh() { return radarEtaAt && millis() - radarEtaAt < 20UL * 60000UL; }
+static uint8_t rainInNow(uint8_t fromForecast) {
+  if (!radarEtaFresh()) return fromForecast;
+  if (radarEta <= 0) return 0;  // raining now (the weather says so) or nothing on the way
+  const long left = radarEta - (long)((millis() - radarEtaAt) / 60000);
+  return (uint8_t)constrain(left, 1, 120);
+}
 
 // ---------- weather (Open-Meteo, no API key) ----------
 struct Weather {
@@ -1220,7 +1235,7 @@ UiState makeState() {
   s.streak = statsStreak;
   s.best = statsBest;
   s.weatherOn = cfg.weatherOn && cfg.city[0];
-  s.wx = {wx.ok, wx.t, wx.tmin, wx.tmax, wx.hum, wx.code, wx.day, wx.version, wx.nd, {}, (uint8_t)(cfg.rainAlert ? wx.rainIn : 0), wx.wind, wx.gust, wx.wdir};
+  s.wx = {wx.ok, wx.t, wx.tmin, wx.tmax, wx.hum, wx.code, wx.day, wx.version, wx.nd, {}, (uint8_t)(cfg.rainAlert ? rainInNow(wx.rainIn) : 0), wx.wind, wx.gust, wx.wdir};
   memcpy(s.wx.d, wx.d, sizeof wx.d);
   s.wx.feels = wx.feels;
   s.wx.uv10 = wx.uv10;
@@ -1260,6 +1275,8 @@ UiState makeState() {
   s.lon = cfg.lon;
   s.utc = s.timeOk ? (uint32_t)time(nullptr) : 0;
   s.news = &news;  // a phase just finished: end animation on the Pomodoro
+  s.flights = &flightStats;
+  s.energy = &energy;
   return s;
 }
 
@@ -2285,6 +2302,9 @@ void sendState() {
   j += wx.uv10 == 255 ? -1 : (int)wx.uv10;
   j += F(",\"aqi\":");
   j += wx.aqi == 0xFFFF ? -1 : (int)wx.aqi;
+  j += F(",\"reta\":");
+  // weatherbox: rain arrival from the radar, minutes (-1 = none or no radar program)
+  j += radarEtaFresh() ? radarEta : -1;
   j += F(",\"mm\":");  // today's expected rain, mm x 10
   j += wx.nd ? (int)wx.d[0].mm10 : -1;
   j += F(",\"pop\":");  // today's chance of rain, %
@@ -2841,6 +2861,75 @@ void setupWeb() {
     nw.at = millis();
     nw.version = news.version + 1;
     news = nw;
+    server.send(200, "text/plain", "ok");
+  });
+  // Observed SA airport movements from the local ADSB.lol collector.
+  server.on("/api/flightstats", HTTP_POST, [] {
+    if (!guard()) return;
+    UiFlightStats next = {};
+    String date = server.arg("date");
+    if (date.length() != 10 || date[4] != '-' || date[7] != '-') {
+      server.send(400, "text/plain", "Invalid date"); return;
+    }
+    strlcpy(next.date, date.c_str(), sizeof next.date);
+    next.off = (uint16_t)constrain(server.arg("off").toInt(), 0, 65535);
+    next.on = (uint16_t)constrain(server.arg("on").toInt(), 0, 65535);
+    next.partial = server.arg("partial") == "1";
+    for (int i = 0; i < UI_FLIGHT_ROWS; i++) {
+      String code = server.arg("c" + String(i));
+      if (code.length() < 3 || code.length() > 8) break;
+      bool valid = true;
+      for (char ch : code) valid &= (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '-';
+      if (!valid) break;
+      strlcpy(next.rows[i].code, code.c_str(), sizeof next.rows[i].code);
+      next.rows[i].off = (uint16_t)constrain(server.arg("o" + String(i)).toInt(), 0, 65535);
+      next.rows[i].on = (uint16_t)constrain(server.arg("l" + String(i)).toInt(), 0, 65535);
+      next.n++;
+    }
+    next.version = flightStats.version + 1;
+    flightStats = next;
+    server.send(200, "text/plain", "ok");
+  });
+  // weatherbox: rain arrival from the radar (minutes; 0 = raining now; -1 = none). Rain within 15 minutes pops up
+  // the Rain face for 20 seconds, once per shower.
+  // weatherbox: EnergyWar.net incidents for the Energy War face: total, p0..p4 place, w0.. what, k0.. kind,
+  // s0.. status letter, d0.. date ("16 NOV")
+  server.on("/api/energy", HTTP_POST, [] {
+    if (!guard()) return;
+    UiEnergy e = {};
+    auto copy = [](char *dst, size_t n, const String &v) {
+      size_t o = 0;
+      for (char c : v)  // printable ASCII only (the pixel font, and the state JSON)
+        if (o + 1 < n) dst[o++] = (c >= 0x20 && c < 0x7F && c != '"' && c != '\\') ? c : ' ';
+      dst[o] = 0;
+    };
+    for (int i = 0; i < UI_ENERGY; i++) {
+      char k[3] = {'p', (char)('0' + i), 0};
+      if (!server.hasArg(k)) break;
+      copy(e.place[i], sizeof e.place[i], server.arg(k));
+      k[0] = 'w'; copy(e.what[i], sizeof e.what[i], server.arg(k));
+      k[0] = 'k'; copy(e.kind[i], sizeof e.kind[i], server.arg(k));
+      k[0] = 'd'; copy(e.date[i], sizeof e.date[i], server.arg(k));
+      k[0] = 's'; e.status[i] = server.arg(k).length() ? server.arg(k)[0] : '-';
+      e.n = i + 1;
+    }
+    e.total = (uint32_t)server.arg("total").toInt();
+    e.at = millis();
+    e.version = energy.version + 1;
+    energy = e;
+    server.send(200, "text/plain", "ok");
+  });
+  server.on("/api/rainsoon", HTTP_POST, [] {
+    if (!guard()) return;
+    radarEta = (int16_t)constrain(server.arg("min").toInt(), -1, 120);
+    radarEtaAt = millis();
+    if (radarEta < 0) radarAlerted = false;
+    else if (radarEta > 0 && radarEta <= 15 && !radarAlerted && cfg.rainAlert && cfg.weatherOn && phase == IDLE) {
+      radarAlerted = true;
+      previewTheme = THEME_RAIN;
+      previewUntil = millis() + 20000;
+      viewUntil = millis() + 20000;
+    }
     server.send(200, "text/plain", "ok");
   });
   server.on("/api/radar", HTTP_POST, [] {
