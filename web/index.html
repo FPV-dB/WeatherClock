@@ -453,20 +453,29 @@ function peerRow(c,me){const d=el('div','row');d.style.cssText='align-items:cent
  if(!me){const o=el('button','btn');o.textContent=t('Open');o.onclick=()=>window.open('http://'+c.ip+'/','_blank');d.append(o)}return d}
 const rowOf=p=>p?((p-1)/10|0)+1:0,colOf=p=>p?(p-1)%10+1:0;
 function posSave(){const r=+$('prow').value,c=+$('pcol').value;save({pos:r&&c?(r-1)*10+c:0}).then(()=>{toast(t('Saved'));peers()})}
-function peerMap(all){const w=el('div');w.style.cssText='display:flex;flex-direction:column;gap:14px;align-items:center;margin:8px 0 12px;overflow-x:auto';
- const box=c=>{const f=FACES.find(x=>x.t===c.theme),b=el('div');b.style.cssText='position:relative;width:76px;text-align:center;font-size:11px;cursor:pointer';b.title=c.ip+(f?' · '+f.n:'');
-   const sc=el('div');sc.style.cssText='width:72px;height:72px;margin:0 auto;background:#000;border:3px solid '+(c.me?'var(--accent,#ffc23a)':'#2a2a2a')+';border-radius:5px;overflow:hidden';
-   if(f){const i=el('img');i.src=faceSrc(f);i.alt='';i.style.cssText='width:100%;height:100%';sc.append(i)}
-   const n=el('b');n.textContent=c.num||'?';n.style.cssText='position:absolute;top:-6px;left:-4px;min-width:20px;padding:0 4px;border-radius:10px;background:#ffc23a;color:#000;font-size:13px';
-   const m=el('div');m.textContent=c.name||'Weather Clock';m.style.cssText='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px';
-   b.append(sc,n,m);b.onclick=()=>identify(c.me?null:c.ip);return b};
- const placed=all.filter(c=>c.pos),loose=all.filter(c=>!c.pos);
- if(placed.length){const g=el('div'),rs=placed.map(c=>rowOf(c.pos)),cs=placed.map(c=>colOf(c.pos)),r0=Math.min(...rs),c0=Math.min(...cs);
-  g.style.cssText='display:grid;gap:6px;grid-template-columns:repeat('+(Math.max(...cs)-c0+1)+',76px)';
-  placed.forEach(c=>{const b=box(c);b.style.gridRow=rowOf(c.pos)-r0+1;b.style.gridColumn=colOf(c.pos)-c0+1;g.append(b)});w.append(g)}
- if(loose.length){const d=el('div');d.style.cssText='display:flex;gap:6px;flex-wrap:wrap;justify-content:center';if(placed.length){const s=el('small');s.textContent=t('No position set:');s.style.width='100%';s.style.textAlign='center';d.append(s)}loose.forEach(c=>d.append(box(c)));w.append(d)}
- return w}
-function peers(){const box=$('peers');const show=j=>{box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.pos||9)-(b.pos||9)||(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));const m=peerMap(all);if(m)box.append(m);all.forEach(c=>box.append(peerRow(c,c.me)));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
+let PEERS=[];
+function movePeer(c,pos){if(c.pos==pos)return Promise.resolve();c.pos=pos;if(c.me){$('prow').value=rowOf(pos);$('pcol').value=colOf(pos)}return (c.me?save({pos}):post('/api/peerpos',new URLSearchParams({ip:c.ip,pos}))).then(r=>{if(r&&r.ok===false)throw 0}).catch(()=>toast(t('Failed')))}
+function peerMap(all){PEERS=all;const w=el('div');w.style.cssText='margin:8px 0 12px';
+ const placed=all.filter(c=>c.pos),mr=Math.max(0,...placed.map(c=>rowOf(c.pos))),mc=Math.max(0,...placed.map(c=>colOf(c.pos)));
+ const R=Math.min(10,Math.max(2,mr+1)),C=Math.min(10,Math.max(4,mc+1)),Z=58;
+ const box=c=>{const f=FACES.find(x=>x.t===c.theme),b=el('div');b.style.cssText='position:relative;width:'+(Z-6)+'px;height:'+(Z-6)+'px;background:#000;border:3px solid '+(c.me?'var(--accent,#ffc23a)':'#555')+';border-radius:5px;overflow:visible;touch-action:none;cursor:grab;user-select:none';b.title=(c.name||'Weather Clock')+' · '+c.ip+(f?' · '+f.n:'');
+   if(f){const i=el('img');i.src=faceSrc(f);i.alt='';i.draggable=false;i.style.cssText='width:100%;height:100%;border-radius:2px;pointer-events:none';b.append(i)}
+   const n=el('b');n.textContent=c.num||'?';n.style.cssText='position:absolute;top:-8px;left:-6px;min-width:18px;padding:0 4px;border-radius:9px;background:#ffc23a;color:#000;font-size:12px;text-align:center;pointer-events:none';b.append(n);
+   b.onpointerdown=e=>{e.preventDefault();const sx=e.clientX,sy=e.clientY,r=b.getBoundingClientRect();let moved=false,g=null;
+    const mv=ev=>{if(!moved&&Math.hypot(ev.clientX-sx,ev.clientY-sy)<6)return;if(!moved){moved=true;g=b.cloneNode(true);g.style.cssText+=';position:fixed;z-index:99;opacity:.85;pointer-events:none;cursor:grabbing';document.body.append(g);b.style.opacity=.3}
+     g.style.left=(ev.clientX-(sx-r.left))+'px';g.style.top=(ev.clientY-(sy-r.top))+'px'};
+    const up=ev=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(!moved)return identify(c.me?null:c.ip);g.remove();b.style.opacity=1;
+     const tgt=document.elementFromPoint(ev.clientX,ev.clientY),cell=tgt&&tgt.closest('[data-cell]');if(!cell)return;const pos=+cell.dataset.cell,other=pos&&PEERS.find(o=>o!==c&&o.pos==pos);
+     const old=c.pos;Promise.all([movePeer(c,pos),other?movePeer(other,old||0):0]).then(()=>{$('peers').replaceChildren(...peerView(PEERS));toast(t('Saved'))})};
+    addEventListener('pointermove',mv);addEventListener('pointerup',up)};return b};
+ const g=el('div');g.style.cssText='display:grid;gap:4px;justify-content:center;overflow-x:auto;padding:8px 2px;grid-template-columns:repeat('+C+','+Z+'px)';
+ for(let r=1;r<=R;r++)for(let k=1;k<=C;k++){const pos=(r-1)*10+k,cell=el('div');cell.dataset.cell=pos;cell.style.cssText='width:'+Z+'px;height:'+Z+'px;border:1px dashed #444;border-radius:6px;display:flex;align-items:center;justify-content:center';const c=all.find(x=>x.pos==pos);if(c)cell.append(box(c));g.append(cell)}
+ const tray=el('div');tray.dataset.cell=0;tray.style.cssText='display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:'+(Z+8)+'px;border:1px dashed #444;border-radius:8px;padding:8px;margin-top:8px';
+ const tl=el('small');tl.textContent=t('Not placed: drag a clock onto the grid');tl.style.width='100%';tl.style.textAlign='center';tray.append(tl);all.filter(c=>!c.pos).forEach(c=>tray.append(box(c)));
+ const hint=el('small');hint.textContent=t('Drag each clock to where it sits. Tap a clock to make it show its number. The grid grows as you use it (up to 10 x 10).');
+ w.append(g,tray,hint);return w}
+function peerView(all){const out=[peerMap(all)];all.forEach(c=>out.push(peerRow(c,c.me)));return out}
+function peers(){const box=$('peers');const show=j=>{box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.pos||9)-(b.pos||9)||(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));box.append(...peerView(all));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
  fetch('/api/peers').then(r=>r.json()).then(j=>{show(j);setTimeout(()=>fetch('/api/peers').then(r=>r.json()).then(show).catch(()=>{}),1500)}).catch(()=>{box.innerHTML='';const s=el('small');s.textContent=t('Failed');box.append(s)})}
 function giftReset(){if(!confirm(t('Prepare this clock as a gift? Everything except the firmware is erased: Wi-Fi, city, name, password, photos and faces. This cannot be undone.')))return;post('/api/giftreset').then(()=>toast(t('Erased. The clock is restarting with the first-install help.'))).catch(()=>toast(t('Failed')))}
 // weatherbox: chosen radar (the program on the computer reads /api/radar and sends /image/radar.wcr)

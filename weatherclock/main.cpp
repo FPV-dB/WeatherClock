@@ -834,6 +834,15 @@ void peerLoop() {
   b[n < 0 ? 0 : n] = 0;
   IPAddress from = peerUdp.remoteIP();
   if (from == WiFi.localIP() || strncmp(b, "WCLK1", 5) != 0) return;
+  if (b[5] == '@') {  // new grid position, dragged in another clock's panel (only the position: harmless)
+    int pos = atoi(b + 6);
+    if (pos >= 0 && pos <= 100 && pos != cfg.devPos) {
+      cfg.devPos = (uint8_t)pos;
+      saveSettings();
+    }
+    peerBeaconAt = millis() - 60000;  // tell everyone right away
+    return;
+  }
   if (b[5] == '!') {  // Identify, asked by another clock's panel
     identUntil = (millis() + 10000) | 1;
     viewUntil = identUntil;
@@ -3065,6 +3074,28 @@ void setupWeb() {
     }
     j += F("]}");
     server.send(200, "application/json", j);
+  });
+  server.on("/api/peerpos", HTTP_POST, [] {  // weatherbox: move another clock in the grid (by its IP, from the list)
+    if (!guard()) return;
+    IPAddress ip;
+    const int pos = server.arg("pos").toInt();
+    Peer *pe = nullptr;
+    if (peerUp && ip.fromString(server.arg("ip")) && pos >= 0 && pos <= 100)
+      for (Peer &p : peers)
+        if (p.ip == (uint32_t)ip) pe = &p;
+    if (!pe) {
+      server.send_P(400, PSTR("text/plain"), PSTR("invalid clock"));
+      return;
+    }
+    char m[12];
+    int n = snprintf(m, sizeof m, "WCLK1@%d", pos);
+    for (int k = 0; k < 2; k++) {  // UDP can drop a packet: twice is cheap
+      peerUdp.beginPacket(ip, PEER_PORT);
+      peerUdp.write((const uint8_t *)m, n);
+      peerUdp.endPacket();
+    }
+    pe->pos = (uint8_t)pos;
+    server.send(200, "text/plain", "ok");
   });
   server.on("/api/peeridentify", HTTP_POST, [] {  // weatherbox: Identify on another clock (by its IP, from the list)
     if (!guard()) return;
