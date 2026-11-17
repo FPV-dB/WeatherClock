@@ -144,6 +144,7 @@ struct Settings {
   uint8_t beta;         // 1 = the panel also offers the test versions (firmware/beta.json); garbage becomes 0
   uint8_t spi80;        // reserved: was a test's 80 MHz option (the ST7789 can't keep up and the picture turns to garbage); always 0
   char devName[24];     // weatherbox: the clock's name ("Mum's clock"), shown on the start-up screen and the panel; garbage becomes ""
+  uint8_t devNum;       // weatherbox: the clock's number among several (1..99, 0 = none), shown by Identify; garbage becomes 0
 };
 const uint32_t SETTINGS_MAGIC = 0x504F4D34;     // "POM4"
 const uint32_t SETTINGS_MAGIC_V3 = 0x504F4D33;  // "POM3": same fields, without the v4 ones
@@ -272,6 +273,7 @@ void loadSettings() {
     for (const char *c = cfg.devName; ok && *c; c++) ok = *c >= 0x20 && *c < 0x7F && *c != '"' && *c != '\\';
     if (!ok) cfg.devName[0] = 0;
   }
+  if (cfg.devNum > 99) cfg.devNum = 0;
   if (!(fabsf(cfg.lat) <= 90 && fabsf(cfg.lon) <= 180)) cfg.lat = cfg.lon = 0;  // garbage or NaN would overflow String(float)
   // password for the clock's networks: 8 letters/digits without the easily confused ones, drawn by the chip's generator
   // the first time (or if the memory holds garbage) and shown on screen while the network is up
@@ -530,6 +532,7 @@ bool colorTestRequested = false;  // handled in the loop (needs the screen)
 
 // Face preview requested by the panel: shows another theme for a few seconds without saving.
 uint8_t previewTheme = 0;
+uint32_t identUntil = 0;  // weatherbox: Identify screen until this millis() (0 = off)
 uint32_t previewUntil = 0;
 bool previewActive() { return previewUntil && (int32_t)(millis() - previewUntil) < 0; }
 
@@ -780,6 +783,91 @@ void alexaBegin() {
   mac.toLowerCase();
   strlcpy(hueMac, mac.c_str(), sizeof hueMac);
   alexaUp = hueUdp.beginMulticast(WiFi.localIP(), IPAddress(239, 255, 255, 250), 1900);
+}
+
+// ---------- weatherbox: other Weather Clocks on the same Wi-Fi ----------
+// Each clock broadcasts a small beacon on UDP 47811 every minute ("WCLK1|num|theme|ver|name") and remembers the
+// others it hears, for the panel's "My clocks" list. "WCLK1?" also asks the others to answer now; "WCLK1!" (sent
+// to one clock) makes it show Identify. Nothing private goes out: number, face, version and name only.
+const uint16_t PEER_PORT = 47811;
+extern uint32_t viewUntil;
+WiFiUDP peerUdp;
+bool peerUp = false;
+struct Peer {
+  uint32_t ip, seen;
+  uint8_t num, theme;
+  char ver[12], name[24];
+};
+Peer peers[8];
+uint32_t peerBeaconAt = 0, peerReplyAt = 0;
+
+void peerSend(IPAddress to, bool ask) {
+  char b[80];
+  int n = snprintf(b, sizeof b, "WCLK1%s|%u|%u|%s|%s", ask ? "?" : "", cfg.devNum, cfg.theme, FW_VERSION, cfg.devName);
+  peerUdp.beginPacket(to, PEER_PORT);
+  peerUdp.write((const uint8_t *)b, min(n, (int)sizeof b - 1));
+  peerUdp.endPacket();
+}
+
+void peerLoop() {
+  if (WiFi.status() != WL_CONNECTED) {
+    if (peerUp) peerUdp.stop();
+    peerUp = false;
+    return;
+  }
+  if (!peerUp) {
+    peerUp = peerUdp.begin(PEER_PORT);
+    peerBeaconAt = millis() - 55000;  // first beacon a few seconds after joining
+    if (!peerUp) return;
+  }
+  const IPAddress bc(255, 255, 255, 255);
+  if (millis() - peerBeaconAt >= 60000) {
+    peerBeaconAt = millis();
+    peerSend(bc, false);
+  }
+  int len = peerUdp.parsePacket();
+  if (len <= 0) return;
+  char b[96];
+  int n = peerUdp.read(b, sizeof b - 1);
+  b[n < 0 ? 0 : n] = 0;
+  IPAddress from = peerUdp.remoteIP();
+  if (from == WiFi.localIP() || strncmp(b, "WCLK1", 5) != 0) return;
+  if (b[5] == '!') {  // Identify, asked by another clock's panel
+    identUntil = (millis() + 10000) | 1;
+    viewUntil = identUntil;
+    return;
+  }
+  bool ask = b[5] == '?';
+  char *p = b + (ask ? 6 : 5);
+  if (*p != '|') return;
+  Peer q{};
+  q.ip = (uint32_t)from;
+  q.seen = millis();
+  char *f[4] = {};
+  for (int i = 0; i < 4 && p; i++) {
+    *p++ = 0;
+    f[i] = p;
+    p = strchr(p, '|');
+  }
+  if (!f[3]) return;
+  q.num = (uint8_t)constrain(atoi(f[0]), 0, 99);
+  q.theme = (uint8_t)atoi(f[1]);
+  strlcpy(q.ver, f[2], sizeof q.ver);
+  strlcpy(q.name, f[3], sizeof q.name);
+  for (char *c = q.name; *c; c++)
+    if (*c < 0x20 || *c >= 0x7F || *c == '"' || *c == '\\') *c = ' ';
+  for (char *c = q.ver; *c; c++)
+    if (*c < 0x20 || *c >= 0x7F || *c == '"' || *c == '\\') *c = ' ';
+  int slot = -1, old = 0;
+  for (int i = 0; i < 8; i++) {
+    if (peers[i].ip == q.ip || !peers[i].ip) { slot = i; break; }
+    if ((int32_t)(peers[i].seen - peers[old].seen) < 0) old = i;
+  }
+  peers[slot < 0 ? old : slot] = q;
+  if (ask && millis() - peerReplyAt > 1000) {
+    peerReplyAt = millis();
+    peerSend(from, false);
+  }
 }
 
 // answers the Echo's SSDP searches, pointing to /description.xml
@@ -1292,6 +1380,20 @@ struct DrawProbe {
 
 void renderClock() {
   DrawProbe probe;
+  // weatherbox: Identify (from the panel): the clock's number, name and IP, then back to the face
+  static bool identShown = false;
+  if (identUntil && (int32_t)(millis() - identUntil) < 0) {
+    if (!identShown) {
+      identShown = true;
+      uiIdentify(cfg.devNum, cfg.devName, WiFi.localIP().toString().c_str());
+    }
+    return;
+  }
+  if (identShown) {
+    identShown = false;
+    identUntil = 0;
+    uiInvalidate();
+  }
   // weatherbox: first install, already on Wi-Fi but with no city: a screen with a QR code to open the panel
   static bool citySetup = false, cityQr = false;
   static uint32_t cityPageAt = 0;
@@ -2391,7 +2493,9 @@ void sendState() {
   jsonEscapeAppend(j, cfg.city);
   j += F("\",\"name\":\"");
   jsonEscapeAppend(j, cfg.devName);
-  j += F("\",\"bgr\":");
+  j += F("\",\"num\":");
+  j += cfg.devNum;
+  j += F(",\"bgr\":");
   j += cfg.bgr;
   j += F(",\"inv\":");
   j += cfg.invert;
@@ -2919,6 +3023,66 @@ void setupWeb() {
     energy = e;
     server.send(200, "text/plain", "ok");
   });
+  server.on("/api/peers", HTTP_GET, [] {  // weatherbox: other clocks heard on this Wi-Fi in the last 5 minutes
+    if (!readOk()) return;
+    if (peerUp) peerSend(IPAddress(255, 255, 255, 255), true);  // the panel asks again a moment later for the answers
+    String j = F("{\"me\":{\"num\":");
+    j += cfg.devNum;
+    j += F(",\"name\":\"");
+    jsonEscapeAppend(j, cfg.devName);
+    j += F("\",\"ip\":\"");
+    j += WiFi.localIP().toString();
+    j += F("\",\"ver\":\"" FW_VERSION "\",\"theme\":");
+    j += cfg.theme;
+    j += F("},\"peers\":[");
+    bool first = true;
+    for (Peer &p : peers) {
+      if (!p.ip || millis() - p.seen > 300000) continue;
+      if (!first) j += ',';
+      first = false;
+      j += F("{\"ip\":\"");
+      j += IPAddress(p.ip).toString();
+      j += F("\",\"num\":");
+      j += p.num;
+      j += F(",\"theme\":");
+      j += p.theme;
+      j += F(",\"ver\":\"");
+      j += p.ver;
+      j += F("\",\"name\":\"");
+      j += p.name;
+      j += F("\",\"ago\":");
+      j += (millis() - p.seen) / 1000;
+      j += '}';
+    }
+    j += F("]}");
+    server.send(200, "application/json", j);
+  });
+  server.on("/api/peeridentify", HTTP_POST, [] {  // weatherbox: Identify on another clock (by its IP, from the list)
+    if (!guard()) return;
+    IPAddress ip;
+    if (!peerUp || !ip.fromString(server.arg("ip"))) {
+      server.send_P(400, PSTR("text/plain"), PSTR("invalid clock"));
+      return;
+    }
+    bool known = false;
+    for (Peer &p : peers) known = known || p.ip == (uint32_t)ip;
+    if (!known) {
+      server.send_P(400, PSTR("text/plain"), PSTR("invalid clock"));
+      return;
+    }
+    const char m[] = "WCLK1!";
+    peerUdp.beginPacket(ip, PEER_PORT);
+    peerUdp.write((const uint8_t *)m, sizeof m - 1);
+    peerUdp.endPacket();
+    server.send(200, "text/plain", "ok");
+  });
+  server.on("/api/identify", HTTP_POST, [] {  // weatherbox: big number, name and IP for 10 s, to tell clocks apart
+    if (!guard()) return;
+    identUntil = (millis() + 10000) | 1;
+    if (inAlbum) stopAlbum();  // a photo or card on screen: the clock draws Identify instead
+    viewUntil = identUntil;    // and the album/rotation waits until it ends
+    server.send(200, "text/plain", "ok");
+  });
   server.on("/api/rainsoon", HTTP_POST, [] {
     if (!guard()) return;
     radarEta = (int16_t)constrain(server.arg("min").toInt(), -1, 120);
@@ -3154,6 +3318,7 @@ void setupWeb() {
         uiSetOwner(cfg.devName);
       }
     }
+    if (server.hasArg("num")) cfg.devNum = (uint8_t)constrain(server.arg("num").toInt(), 0, 99);  // weatherbox
     String tz = server.arg("tz");
     tz.trim();
     if (tz.length() > 0 && safeText(tz)) {
@@ -4133,6 +4298,7 @@ void loop() {
   statsFlush();
   wifiGuardLoop();
   alexaLoop();
+  peerLoop();
   tickPomodoro();
   weatherLoop();
   rotLoop();
@@ -4217,6 +4383,7 @@ void loop() {
     if ((int32_t)(now - alertUntil) < 0) renderAlert();
     else { alertUntil = 0; tft.invertDisplay(cfg.invert); }  // back to the panel tweak
   }
+  if (identUntil && inAlbum) stopAlbum();  // weatherbox: Identify asked by another clock while a photo is on screen
   if (phase != IDLE) renderPomodoro();
   else {
     pomoShown = false;  // on the next entry the Pomodoro screen is drawn in full again

@@ -975,6 +975,29 @@ void uiSetupCity(const char *ip, const char *host, bool qr) {
   textC(120, 196, 1, MUTED, tr("para ver o tempo local", "to show your local weather", "para ver el tiempo local"));
 }
 
+// weatherbox: Identify: the clock's number huge (or "?" with none set), its name and IP underneath
+void uiIdentify(int num, const char *name, const char *ip) {
+  uiScrollEnd();
+  screen = SCR_MSG;
+  G->fillScreen(BG);
+  G->drawRoundRect(6, 6, 228, 228, 14, SUN);
+  if (num > 0) {
+    const float sc = num > 9 ? 10.0f : 12.0f;  // digit: 6*sc wide, 10*sc tall
+    const int w = (int)(6 * sc), gap = num > 9 ? 10 : 0, tot = num > 9 ? 2 * w + gap : w;
+    int x = 120 - tot / 2, y = 102 - (int)(5 * sc);
+    if (num > 9) {
+      geoDigit(x, y, num / 10, sc, 9, SUN);
+      x += w + gap;
+    }
+    geoDigit(x, y, num % 10, sc, 9, SUN);
+  } else {
+    textC(120, 70, 6, SUN, "?");
+    textC(120, 130, 1, MUTED, tr("Sem numero: defina no painel", "No number: set one in the panel", "Sin numero: ponlo en el panel"));
+  }
+  textC(120, 188, 2, TEXT, name && *name ? name : "Weather Clock");
+  textC(120, 212, 1, MUTED, ip);
+}
+
 // While the clock has no time: four little dots at the top, one lit that moves back and forth, over the face
 void uiSyncHint(uint32_t ms) {
   int p = ms / 200 % 6, on = p < 4 ? p : 6 - p;
