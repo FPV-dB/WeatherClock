@@ -86,6 +86,8 @@ static UiState base(int h, int m, int s) {
     strcpy(fs.date, "2026-10-20");
     fs.off = 100; fs.on = 92; fs.partial = false; fs.n = 8; fs.version = 1;
     const char *codes[8] = {"YPAD", "YPPF", "YPED", "YPLC", "YMTG", "YPAG", "YKSC", "YWHY"};
+    const char *act[8] = {"YSCB", "YSWG", "YGLB", "YMER", "YSHL", "YCOM", "YYNG", "YBTH"};  // showcase: Canberra area
+    if (getenv("SIM_SHOWCASE")) for (int i = 0; i < 8; i++) codes[i] = act[i];
     for (int i = 0; i < 8; i++) {
       strcpy(fs.rows[i].code, codes[i]);
       fs.rows[i].off = 60 - i * 5;
@@ -100,13 +102,15 @@ static UiState base(int h, int m, int s) {
       {"16 NOV", "16 NOV", "16 NOV", "16 NOV", "15 NOV"}, {'R', 'R', 'R', 'D', 'U'}, 0, 1};
     st.energy = &en;
   }
-  // weatherbox: Adelaide, and the matching UTC (local time is ACDT, UTC+10:30)
-  st.lat = -34.85f; st.lon = 138.54f;
+  // weatherbox: the place and the matching UTC (local time is AEDT, UTC+11)
+  st.lat = -35.28f; st.lon = 149.13f;  // Canberra (any place works; the sun and moon faces need one)
+  long utcOff = 39600L;  // AEDT
+  if (getenv("SIM_SHOWCASE")) { st.lat = -35.28f; st.lon = 149.13f; utcOff = 39600L; }  // Canberra, AEDT
   {
     int y = st.now.tm_year + 1900, mo = st.now.tm_mon + 1, d = st.now.tm_mday;
     if (mo < 3) { y--; mo += 12; }
     long days = 365L * y + y / 4 - y / 100 + y / 400 + (153 * (mo - 3) + 2) / 5 + d - 719469;
-    st.utc = (uint32_t)(days * 86400L + h * 3600L + m * 60L + s - 37800L);
+    st.utc = (uint32_t)(days * 86400L + h * 3600L + m * 60L + s - utcOff);
   }
   st.city = getenv("SIM_CITY") ? getenv("SIM_CITY") : "Florianopolis";
   st.accent = uiRgb(242, 242, 242);
