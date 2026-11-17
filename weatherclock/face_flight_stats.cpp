@@ -10,7 +10,7 @@ static void paintFlightStats(void *ctx) {
   const UiFlightStats *f = s.flights;
   G->fillRect(0, 24, 240, 216, BG);
   G->fillRect(0, 28, 240, 25, uiRgb(31, 83, 123));
-  text(10, 34, 2, TEXT, "AIRPORT TRAFFIC");
+  textC(120, 34, 2, TEXT, "AIRPORT TRAFFIC");
   if (!f || !f->date[0]) {
     textC(120, 105, 1, MUTED, "Waiting for ADSB.lol data");
     return;
