@@ -1,23 +1,29 @@
 {
-  "version": "2.0.11",
-  "date": "2026-11-09",
+  "version": "2.0.15",
+  "date": "2026-11-17",
   "file": "weatherclock.bin",
-  "size": 603984,
+  "size": 612608,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 435240,
-  "sig": "N++FrdoCrBqDJltB3P/K8Y7IpxsYITZYl5Yb9l03P9y8vWwCHmJZOQfylWoSlbGIa/rec2l9Lcs7TYtuwFU4uO9ULvatd3wrEp0wlfDwGU4xK43sb8fSBw7q2gHVupEbSTItb1XPWCZE/cB4ORmt2pqSgdjMEWpH1rdAfYkoKdxr5bbsL0aLSNuhK1TSrjcMDbTz34glUEwwrKNwhPsdlSdDV91B7SbC3rIEMJeqsgZsDazpk4Uu6XRw+GFQwPN6jC7sZ3G9DWzqb1YPEI9yYiJhSNenAlVYVZeb8hZcENEWVa53NU4UjjyNHJGFX1cz3+nyyh+xG580Kp1lgHikdw==",
-  "gzsig": "kKDVlsYu8s0FiXZb51inaMtmJyq8ZUMijvMv7fV/yyk8rOPgS0vQcFBO3jqOz5kqcraFttQBKzR+7T5lVNepyfUzhuWzEYAuPaYuko4DYtL2EIzp6UdMj+9hSzw8SNpR7FJiqeAiipTCwls3kRwhYseYMqPSEUCxBrnUKFB3R88kzCLHg4271uxHYfrkXyeDpDTCuHhf23wDa1vXB0QCU3mIl1cBXRLoefQyOJX1qYtRoqXGF76CMgFSIDGlapCC0NOmHUVOX+BMckH2nhxBQjajVR827IZCSZ3sDywUVX1ZSQPtm3Wu5c94gFN35u09AKxegFgPtztJVcm5WoOk1Q==",
-  "panel": "panel-45f2b9e057e861128b72020b.html.gz",
-  "psri": "sha256-RfK54FfoYRKLcgILhMM1ldqojVD7l2HzNJcbut2X2fs=",
+  "gzsize": 441442,
+  "sig": "EVl3oKHxBjTG0KpylO2nyMOz2j8eHuvnKsDzdLW0EU+3wEukjtgQctL9ZMgZOsmunpmieopdhNWu7h/sxqpUG8qNttCw4YWT8OOWABGjNSlwZlE/IYQtIAz0HhW8qdAu1pcT8IFAUGm0Y9PRZTV6qZUQxDgXP01DVcSPUWut9PQLVqZKDE7zGjivOTdnrZJq8Vk8P5bnI0nJPiP/ya9ndr3hHrTkuQ7RJMXcTvzeHA+dRH91QQj38L5tS8fgi3ggBE+0L2iXw8UsfFnfNIHp5k97GaKOXpaACMomvb7+qUxkZJi2ANRGEmk6Wcob0kwHaUymrmGB5YrhR2iXjigciw==",
+  "gzsig": "KfLJwPLkuJC4UaIewggFA9y41lArYhlh1eXyn1V319nokVN2M4Yf/WhyFL9qtRGn63KhHRL2De3kQLy+QA7F/EraFeFo/ok2QKooB0iWMCgQQ4qBDmswYyxA0fqz7PWgCVe1683wRD002quFvf3W36EXDW7kXIxMtOVY8SJan5IhWV+3zmzUiVIrO10bHP7pIof+YGDffONU8G4QJVZ1ENhhJscwYXPu4kFQ3Kz5nTbYz+0T0uYWJGDud/9d3McJxD0MQ4HXAuvB+CjuHUJ9Ul8PH3KIQ9T1Wb1tIx+bOhYIhM13DqEAI/fl06DJrxOvnPn2kCMTdp3WfHfzovzTwA==",
+  "panel": "panel-6264d30c8472f6db7635e744.html.gz",
+  "psri": "sha256-YmTTDIRy9tt2NedEGpdYpZI9w1ttZyGowk0qztwmxBk=",
   "notes": {
     "en": [
-      "The clock skips a GIF it can't fit in memory instead of showing an error, and records which file it was"
+      "New Energy War face: latest attacks on energy infrastructure from EnergyWar.net and the total (needs the companion program on a computer)",
+      "Airport Traffic face (renamed from SA flights)",
+      "Rain arrival from the radar: rain in N minutes and a Rain face pop-up (needs the companion program)"
     ],
     "pt": [
-      "The clock skips a GIF it can't fit in memory instead of showing an error, and records which file it was"
+      "New Energy War face: latest attacks on energy infrastructure from EnergyWar.net and the total (needs the companion program on a computer)",
+      "Airport Traffic face (renamed from SA flights)",
+      "Rain arrival from the radar: rain in N minutes and a Rain face pop-up (needs the companion program)"
     ],
     "es": [
-      "The clock skips a GIF it can't fit in memory instead of showing an error, and records which file it was"
+      "New Energy War face: latest attacks on energy infrastructure from EnergyWar.net and the total (needs the companion program on a computer)",
+      "Airport Traffic face (renamed from SA flights)",
+      "Rain arrival from the radar: rain in N minutes and a Rain face pop-up (needs the companion program)"
     ]
   }
 }
