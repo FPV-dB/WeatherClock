@@ -1,6 +1,6 @@
 <h1 align="center">Weather Clock</h1>
 
-<p align="center"><b>Decent alternative firmware for $5 ESP32-based weather gadget with 240x240 LCD screen</b></p>
+<p align="center"><b>Fairly Decent alternative firmware for $5 ESP32-based weather gadget with 240x240 LCD screen</b></p>
 
 <p align="center"><img src="docs/readme/art2.jpg" width="640" alt="Artistic sketch of a white GeekMagic SmallTV-Ultra"></p>
 
