@@ -5,6 +5,7 @@
 // no computer program is needed.
 // Registered in faces_list.h; uses the drawing kit in ui_kit.h.
 #include "ui_kit.h"
+#include "drone_policy.h"
 
 enum Cond : uint8_t { C_GOOD, C_CAUTION, C_WARNING, C_ALERT };
 static const uint16_t ORANGE = uiRgb(255, 140, 40);
@@ -37,18 +38,14 @@ static Verdict verdict(const UiState &s, const Profile &p) {
   Verdict v;
   v.windPct = (uint8_t)(s.wx.wind * 100 / p.wind > 250 ? 250 : s.wx.wind * 100 / p.wind);
   v.gustPct = (uint8_t)(s.wx.gust * 100 / p.gust > 250 ? 250 : s.wx.gust * 100 / p.gust);
-  const uint8_t a = condFor(v.windPct), b = condFor(v.gustPct);
-  v.cond = a > b ? a : b;
   v.rain = rainCode(s.wx.code);
-  if (v.rain && v.cond < C_WARNING) v.cond = C_WARNING;
+  v.cond = droneCondition(s.wx.wind, s.wx.gust, p.wind, p.gust, v.rain);
   return v;
 }
 
 static uint8_t hourCond(const UiState &s, const Profile &p, int i) {
-  const uint8_t a = condFor(s.wx.hw[i] * 100 / p.wind), b = condFor(s.wx.hg[i] * 100 / p.gust);
-  uint8_t c = a > b ? a : b;
-  if (s.wx.hmm[i] >= 2 && c < C_WARNING) c = C_WARNING;  // 0.2 mm of rain or more in that hour
-  return c;
+  if (!(s.wx.droneHours & (1U << i))) return C_ALERT;
+  return droneCondition(s.wx.hw[i], s.wx.hg[i], p.wind, p.gust, s.wx.hmm[i] >= 2);
 }
 
 // ---------- the animated drone (top area, y 24..105) ----------
@@ -212,7 +209,7 @@ static void paintHours(void *ctx) {
   }
   for (int i = 0; i < n; i++) {
     const int x = 8 + i * 224 / 12, w = 224 / 12 - 2;
-    G->fillRoundRect(x, 219, w, 9, 2, condColor(hourCond(s, p, i)));
+    G->fillRoundRect(x, 219, w, 9, 2, (s.wx.droneHours & (1U << i)) ? condColor(hourCond(s, p, i)) : MUTED);
     if (i % 3 == 0) {
       snprintf(b, sizeof b, "%02d", (s.wx.h0 + i) % 24);
       text(x, 231, 1, MUTED, b);
@@ -233,7 +230,7 @@ void themeDrone(const UiState &s, bool full) {
   dateLabel(s, l, sizeof l);
   if (changed(cStatL, l)) uiTextBox(0, 4, 140, 10, BG, 10, 7, 1, MUTED, l, 'l');
   if (changed(cC, hm)) uiTextBox(150, 0, 90, 22, BG, 230, 4, 2, s.accent, hm, 'r');
-  const bool ok = s.weatherOn && s.wx.ok;
+  const bool ok = s.weatherOn && s.wx.ok && s.wx.droneValid;
   // redraw everything when the weather or the drone changes
   char key[40];
   const UiDrone *d = s.drone;
@@ -244,7 +241,7 @@ void themeDrone(const UiState &s, bool full) {
     lastAnim = s.ms;
     if (!ok) {
       G->fillRect(0, 24, 240, 216, BG);
-      textC(120, 110, 1, MUTED, "set the city in the panel");
+      textC(120, 110, 1, MUTED, s.weatherOn ? "Waiting for fresh wind data" : "set the city in the panel");
       return;
     }
     uiPaint(full, 0, 24, 240, 216, paintAll, (void *)&s);

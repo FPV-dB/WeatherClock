@@ -51,6 +51,8 @@ struct UiWeather {
   uint8_t hmm[12];     // weatherbox: rain per hour, mm x 10 (capped at 25.5 mm)
   uint8_t uvMax10;     // today's highest UV index x 10 (255 = no data)
   uint16_t pm25, pm10; // particulate matter, µg/m³ x 10 (0xFFFF = no data)
+  bool droneValid; // current wind data is complete and fresh
+  uint16_t droneHours; // one validity bit per forecast hour
   uint8_t hw[12], hg[12];  // weatherbox: wind and gusts per hour, km/h (same hours as ht)
 };
 static const int UI_HOURS = 12;
