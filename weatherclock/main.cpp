@@ -952,6 +952,14 @@ static bool lightningActive() {
   return lightning.nearKm >= 0 && lightning.ago + (millis() - lightning.at) / 1000 < 30UL * 60;
 }
 
+UiAiUsage aiUsage = {};  // weatherbox: Claude / Codex limits from the Mac program (/api/aiusage)
+
+// The Mac program posts every 5 minutes. Older than 45 minutes means the feed stopped: the face then says
+// "No data yet" instead of showing old numbers, and rotation skips it.
+static bool aiUsageUsable() {
+  return aiUsage.at && millis() - aiUsage.at < 45UL * 60000UL && (aiUsage.svc[0].ok || aiUsage.svc[1].ok);
+}
+
 // The companion posts every 15 minutes. No update for 45 minutes means the feed failed; zero movements means
 // there is nothing useful to show. In both cases rotation skips Airport Traffic instead of displaying an empty panel.
 static bool flightStatsUsable() {
@@ -1252,6 +1260,216 @@ void weatherLoop() {
   }
 }
 
+// ---------- weatherbox: World clock and World weather ----------
+// The panel picks up to 6 cities for each face (/api/world). They live in /world.txt, one per line:
+//   c|Name|lat|lon|POSIX TZ   (World clock)       w|Name|lat|lon   (World weather)
+// The clock works out each clock city's offset from its POSIX rule at the start of every minute (so daylight
+// saving changes on time, with no internet needed), and fetches the weather for all the weather cities in one
+// Open-Meteo request every 20 minutes.
+UiWorld world = {};
+char worldTz[UI_WORLD][48];
+float worldLat[2][UI_WORLD], worldLon[2][UI_WORLD];  // [0] clock cities, [1] weather cities
+uint32_t worldWxNext = 0, worldMinute = 0;
+float parseDec(const String &s);
+int32_t localOffset();
+extern bool fsOk;
+
+static bool worldNameOk(const String &n) {
+  if (!n.length() || n.length() > 15) return false;
+  for (char c : n)
+    if (c < 0x20 || c > 0x7E || c == '"' || c == '\\' || c == '|') return false;
+  return true;
+}
+static bool worldTzOk(const String &z) {
+  if (!z.length() || z.length() >= sizeof worldTz[0]) return false;
+  for (char c : z)
+    if (!isalnum((unsigned char)c) && !strchr("<>+-,.:/", c)) return false;
+  return true;
+}
+
+// One list ("Name|lat|lon[|tz]" lines) into world.c (clock) or world.w (weather). Bad lines are skipped.
+static void worldParse(const String &src, bool clock) {
+  uint8_t &n = clock ? world.nc : world.nw;
+  UiWorldCity *list = clock ? world.c : world.w;
+  n = 0;
+  int at = 0;
+  while (at < (int)src.length() && n < UI_WORLD) {
+    int e = src.indexOf('\n', at);
+    if (e < 0) e = src.length();
+    String line = src.substring(at, e);
+    at = e + 1;
+    line.trim();
+    String f[4];
+    int k = 0, p = 0;
+    for (; k < 4; k++) {
+      int q = line.indexOf('|', p);
+      f[k] = line.substring(p, q < 0 ? line.length() : q);
+      if (q < 0) break;
+      p = q + 1;
+    }
+    if (k < (clock ? 3 : 2) || !worldNameOk(f[0])) continue;
+    float la = parseDec(f[1]), lo = parseDec(f[2]);
+    if (!(fabsf(la) <= 90 && fabsf(lo) <= 180)) continue;
+    if (clock && !worldTzOk(f[3])) continue;
+    UiWorldCity &c = list[n];
+    c = UiWorldCity{};
+    strlcpy(c.name, f[0].c_str(), sizeof c.name);
+    c.rain = 255;
+    worldLat[clock ? 0 : 1][n] = la;
+    worldLon[clock ? 0 : 1][n] = lo;
+    if (clock) strlcpy(worldTz[n], f[3].c_str(), sizeof worldTz[n]);
+    n++;
+  }
+}
+
+static void worldList(String &out, bool clock, char sep) {
+  const uint8_t n = clock ? world.nc : world.nw;
+  for (int i = 0; i < n; i++) {
+    out += clock ? world.c[i].name : world.w[i].name;
+    out += sep;
+    appendFixed(out, worldLat[clock ? 0 : 1][i], 4);
+    out += sep;
+    appendFixed(out, worldLon[clock ? 0 : 1][i], 4);
+    if (clock) {
+      out += sep;
+      out += worldTz[i];
+    }
+    out += '\n';
+  }
+}
+
+void worldSave() {
+  if (!fsOk) return;
+  if (!world.nc && !world.nw) {
+    LittleFS.remove("/world.txt");
+    return;
+  }
+  String a, b;
+  worldList(a, true, '|');
+  worldList(b, false, '|');
+  File f = LittleFS.open("/world.txt", "w");
+  if (!f) return;
+  for (int k = 0; k < 2; k++) {
+    String &l = k ? b : a;
+    for (int at = 0; at < (int)l.length();) {
+      int e = l.indexOf('\n', at);
+      f.print(k ? "w|" : "c|");
+      f.print(l.substring(at, e + 1));
+      at = e + 1;
+    }
+  }
+  f.close();
+}
+
+void worldLoad() {
+  File f = fsOk ? LittleFS.open("/world.txt", "r") : File();
+  if (!f || f.size() > 2048) return;
+  String c, w;
+  while (f.available()) {
+    String l = f.readStringUntil('\n');
+    if (l.startsWith("c|")) c += l.substring(2) + '\n';
+    else if (l.startsWith("w|")) w += l.substring(2) + '\n';
+  }
+  f.close();
+  worldParse(c, true);
+  worldParse(w, false);
+  world.version++;
+}
+
+// Each clock city's offset now, by switching the C library's time zone to the city's rule and back.
+// newlib's setenv leaks the old text whenever a longer one replaces it: one long placeholder first makes
+// every later rule fit in place, so this never grows the heap.
+static void worldOffsets() {
+  if (!world.nc || !timeValid()) return;
+  static bool roomy = false;
+  if (!roomy) {
+    setenv("TZ", "UTC0..........................................................", 1);
+    roomy = true;
+  }
+  bool diff = false;
+  for (int i = 0; i < world.nc; i++) {
+    setenv("TZ", worldTz[i], 1);
+    tzset();
+    const int32_t off = localOffset();
+    diff |= !world.c[i].offOk || world.c[i].off != off;
+    world.c[i].off = off;
+    world.c[i].offOk = true;
+  }
+  setenv("TZ", cfg.tz, 1);
+  tzset();
+  if (diff) world.version++;
+}
+
+static bool fetchWorldWeather() {
+  const int n = world.nw;
+  if (!n) return true;
+  WiFiClient client;
+  String url;
+  url.reserve(400);
+  url = F("http://api.open-meteo.com/v1/forecast?latitude=");
+  for (int i = 0; i < n; i++) {
+    if (i) url += ',';
+    appendFixed(url, worldLat[1][i], 3);
+  }
+  url += F("&longitude=");
+  for (int i = 0; i < n; i++) {
+    if (i) url += ',';
+    appendFixed(url, worldLon[1][i], 3);
+  }
+  url += F("&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+           "&timezone=auto&forecast_days=1");
+  if (httpGet(client, url, 6000) != 200) return false;
+  // one place answers with an object, several with an array of them
+  JsonDocument filter;
+  auto want = [](auto v) {
+    v["current"]["temperature_2m"] = true;
+    v["current"]["weather_code"] = true;
+    v["current"]["is_day"] = true;
+    v["daily"]["temperature_2m_max"] = true;
+    v["daily"]["temperature_2m_min"] = true;
+    v["daily"]["precipitation_probability_max"] = true;
+  };
+  if (n > 1) want(filter.add<JsonObject>());
+  else want(filter.to<JsonObject>());
+  JsonDocument doc;
+  DeserializationError err = deserializeJson(doc, client, DeserializationOption::Filter(filter));
+  client.stop();
+  if (err) return false;
+  auto deg = [](JsonVariantConst v) {
+    float f = v.as<float>();
+    return (int8_t)constrain(lroundf(isfinite(f) ? f : 0), -99, 99);
+  };
+  bool any = false;
+  for (int i = 0; i < n; i++) {
+    JsonVariantConst r = n > 1 ? doc[i].as<JsonVariantConst>() : doc.as<JsonVariantConst>();
+    UiWorldCity &c = world.w[i];
+    if (r["current"]["temperature_2m"].isNull()) {
+      c.wxOk = false;
+      continue;
+    }
+    c.t = deg(r["current"]["temperature_2m"]);
+    c.code = (uint8_t)constrain(r["current"]["weather_code"] | 0, 0, 99);
+    c.day = (r["current"]["is_day"] | 1) != 0;
+    c.tmax = r["daily"]["temperature_2m_max"][0].isNull() ? c.t : deg(r["daily"]["temperature_2m_max"][0]);
+    c.tmin = r["daily"]["temperature_2m_min"][0].isNull() ? c.t : deg(r["daily"]["temperature_2m_min"][0]);
+    JsonVariantConst rp = r["daily"]["precipitation_probability_max"][0];
+    c.rain = rp.isNull() ? 255 : (uint8_t)constrain(rp.as<int>(), 0, 100);
+    c.wxOk = any = true;
+  }
+  world.version++;
+  return any;
+}
+
+void worldLoop() {
+  if (world.nc && timeValid() && (uint32_t)time(nullptr) / 60 != worldMinute) {
+    worldMinute = (uint32_t)time(nullptr) / 60;
+    worldOffsets();
+  }
+  if (!world.nw || WiFi.status() != WL_CONNECTED || (int32_t)(millis() - worldWxNext) < 0) return;
+  // every 20 min; after a failure, again in 3 min
+  worldWxNext = millis() + (fetchWorldWeather() ? 20UL : 3UL) * 60000UL;
+}
+
 // The weather confirms the time while it's set up and answering; without it, two syncs are needed.
 bool weatherConfirms() { return cfg.weatherOn && cfg.city[0] && wxFails < 3; }
 
@@ -1415,6 +1633,8 @@ UiState makeState() {
   s.flights = &flightStats;
   s.energy = &energy;
   s.lightning = &lightning;
+  s.ai = aiUsageUsable() ? &aiUsage : nullptr;
+  s.world = &world;
   s.drone = &drone;
   return s;
 }
@@ -2784,7 +3004,7 @@ void sendFiles() {
 // (without building the whole list in RAM); /api/fsdelete deletes a file or a whole folder, except what
 // the clock needs to work (fsKeep).
 bool fsKeep(const String &p) {
-  if (p == "/stats.bin" || p == "/hooks.txt" || p == "/rotation.txt" || p == "/drone.txt" || p == "/www" || p.startsWith("/www/")) return true;
+  if (p == "/stats.bin" || p == "/hooks.txt" || p == "/rotation.txt" || p == "/world.txt" || p == "/drone.txt" || p == "/www" || p.startsWith("/www/")) return true;
   if (p == "/image" || p == "/gif" || p == "/faces") return true;  // the folders stay; what's inside can go
   return cfg.theme == THEME_PACK && p.startsWith(String("/faces/") + cfg.facePkg + ".");  // face in use
 }
@@ -3130,6 +3350,85 @@ void setupWeb() {
   // the Rain face for 20 seconds, once per shower.
   // weatherbox: EnergyWar.net incidents for the Energy War face: total, p0..p4 place, w0.. what, k0.. kind,
   // s0.. status letter, d0.. date ("16 NOV")
+  // weatherbox: Claude and OpenAI Codex limits for the AI Usage face. For each service (c = Claude, x = Codex):
+  // c5/c7 = % left of the 5-hour/7-day window, cr5/cr7 = reset time (seconds since 1970 UTC). A service whose
+  // c5/x5 is missing is shown as "No data yet".
+  server.on("/api/aiusage", HTTP_POST, [] {
+    if (!guard()) return;
+    UiAiUsage a = {};
+    const char pre[2] = {'c', 'x'};
+    for (int i = 0; i < 2; i++) {
+      const String p(pre[i]);
+      if (!server.hasArg(p + "5")) continue;
+      UiAiUsage::Svc &v = a.svc[i];
+      v.ok = true;
+      v.left5 = (uint8_t)constrain(server.arg(p + "5").toInt(), 0, 100);
+      v.left7 = (uint8_t)constrain(server.arg(p + "7").toInt(), 0, 100);
+      v.reset5 = (uint32_t)strtoul(server.arg(p + "r5").c_str(), nullptr, 10);
+      v.reset7 = (uint32_t)strtoul(server.arg(p + "r7").c_str(), nullptr, 10);
+    }
+    a.at = millis();
+    a.version = aiUsage.version + 1;
+    aiUsage = a;
+    server.send(200, "text/plain", "ok");
+  });
+  // weatherbox: World clock / World weather cities. GET: {"c":[{"n","la","lo","tz","off"}],"w":[{"n","la","lo","t","code"}]}.
+  // POST: c and/or w, each "Name|lat|lon|tz" (clock) or "Name|lat|lon" (weather) lines, up to 6; an empty value clears the list.
+  server.on("/api/world", HTTP_GET, [] {
+    if (!readOk()) return;
+    server.sendHeader("Cache-Control", "no-store");
+    String j;
+    j.reserve(900);
+    j = F("{\"c\":[");
+    for (int i = 0; i < world.nc; i++) {
+      if (i) j += ',';
+      j += F("{\"n\":\"");
+      j += world.c[i].name;
+      j += F("\",\"la\":");
+      appendFixed(j, worldLat[0][i], 4);
+      j += F(",\"lo\":");
+      appendFixed(j, worldLon[0][i], 4);
+      j += F(",\"tz\":\"");
+      j += worldTz[i];
+      j += F("\",\"off\":");
+      if (world.c[i].offOk) j += world.c[i].off;
+      else j += F("null");
+      j += '}';
+    }
+    j += F("],\"w\":[");
+    for (int i = 0; i < world.nw; i++) {
+      if (i) j += ',';
+      j += F("{\"n\":\"");
+      j += world.w[i].name;
+      j += F("\",\"la\":");
+      appendFixed(j, worldLat[1][i], 4);
+      j += F(",\"lo\":");
+      appendFixed(j, worldLon[1][i], 4);
+      if (world.w[i].wxOk) {
+        j += F(",\"t\":");
+        j += world.w[i].t;
+        j += F(",\"code\":");
+        j += world.w[i].code;
+      }
+      j += '}';
+    }
+    j += F("]}");
+    server.send(200, "application/json", j);
+  });
+  server.on("/api/world", HTTP_POST, [] {
+    if (!guard()) return;
+    if (server.hasArg("c")) {
+      worldParse(server.arg("c"), true);
+      worldMinute = 0;  // offsets on the next loop pass
+    }
+    if (server.hasArg("w")) {
+      worldParse(server.arg("w"), false);
+      worldWxNext = millis();  // the new cities' weather now
+    }
+    world.version++;
+    worldSave();
+    server.send(200, "text/plain", "ok");
+  });
   server.on("/api/energy", HTTP_POST, [] {
     if (!guard()) return;
     UiEnergy e = {};
@@ -4123,6 +4422,8 @@ void rotLoop() {
       if (t < 0 || t >= THEME_COUNT) continue;
       if (t == THEME_FLIGHT_STATS && !flightStatsUsable()) continue;
       if (t == THEME_LIGHTNING && !lightningActive()) continue;
+      if (t == THEME_AI_USAGE && !aiUsageUsable()) continue;
+      if ((t == THEME_WORLD_CLOCK && !world.nc) || (t == THEME_WORLD_WEATHER && !world.nw)) continue;  // no cities picked yet
       cfg.theme = t;  // weatherbox: the rotation's pack stays loaded (reloading it on every pass fragments memory)
     } else if (it.startsWith("p:") && (it.substring(2) == facePackId() || loadPack(it.substring(2)))) {
       cfg.theme = THEME_PACK;
@@ -4419,6 +4720,7 @@ void setup() {
     }
   }
   hooksLoad();
+  worldLoad();
   droneLoad();
   if (recoveryMode) {  // no packs, album or weather: only what's needed to fix things
     startRecovery();
@@ -4492,6 +4794,7 @@ void loop() {
   peerLoop();
   tickPomodoro();
   weatherLoop();
+  worldLoop();
   rotLoop();
   if (hookPending >= 0) {  // the phase ended: send the notice (outside the Pomodoro tick; takes up to 4 s without good Wi-Fi)
     int8_t p = hookPending;

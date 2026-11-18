@@ -120,6 +120,36 @@ static UiState base(int h, int m, int s) {
     long days = 365L * y + y / 4 - y / 100 + y / 400 + (153 * (mo - 3) + 2) / 5 + d - 719469;
     st.utc = (uint32_t)(days * 86400L + h * 3600L + m * 60L + s - utcOff);
   }
+  {  // weatherbox: AI Usage sample (Claude 88% / 66% left, Codex 44% / 7% left)
+    static UiAiUsage ai = {};
+    ai.svc[0] = {true, 88, 66, st.utc + 2 * 3600 + 5 * 60, st.utc + 46 * 3600};
+    ai.svc[1] = {true, 44, 7, st.utc + 3 * 3600, st.utc + 83 * 3600};
+    ai.version = 1;
+    st.ai = &ai;
+  }
+  {  // weatherbox: World clock / World weather sample (20 Oct: London BST, New York EDT, Tokyo, LA PDT...)
+    static UiWorld wo = {};
+    const bool six = getenv("SIM_WORLD6") != nullptr;
+    struct C { const char *n; int32_t off; bool day; uint8_t code; int8_t t, lo, hi; uint8_t rain; };
+    const C cs[6] = {{"London", 3600, false, 61, 12, 9, 14, 80}, {"New York", -4 * 3600, false, 3, 16, 11, 19, 10},
+                     {"Tokyo", 9 * 3600, true, 0, 21, 15, 23, 0}, {"Los Angeles", -7 * 3600, false, 2, 19, 15, 26, 0},
+                     {"Mumbai", 19800, true, 95, 31, 26, 33, 70}, {"Reykjavik", 0, false, 71, -3, -6, 1, 60}};
+    wo.nc = wo.nw = six ? 6 : 4;
+    for (int i = 0; i < 6; i++) {
+      UiWorldCity &c = wo.c[i];
+      strcpy(c.name, cs[i].n);
+      c.offOk = true;
+      c.off = cs[i].off;
+      UiWorldCity &w = wo.w[i];
+      strcpy(w.name, cs[i].n);
+      w.wxOk = true;
+      w.day = cs[i].day;
+      w.code = cs[i].code;
+      w.t = cs[i].t; w.tmin = cs[i].lo; w.tmax = cs[i].hi; w.rain = cs[i].rain;
+    }
+    wo.version = 1;
+    st.world = &wo;
+  }
   st.city = getenv("SIM_CITY") ? getenv("SIM_CITY") : "Florianopolis";
   st.accent = uiRgb(242, 242, 242);
   st.ip = "192.168.1.101";

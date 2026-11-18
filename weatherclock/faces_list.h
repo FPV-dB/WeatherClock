@@ -29,4 +29,7 @@
   X(FLIGHT_STATS, themeFlightStats, "Airport Traffic", "Takeoffs and landings so far today at South Australian airports") \
   X(ENERGY, themeEnergy, "Energy War", "Latest attacks on energy infrastructure from EnergyWar.net, and the total (needs the radar program)") \
   X(LIGHTNING, themeLightning, "Lightning", "Live lightning strikes near you: nearest strike, count, where the storm is and where it is heading (needs the radar program)") \
+  X(AI_USAGE, themeAiUsage, "AI Usage", "Claude and OpenAI Codex limits: what is left of the 5-hour and 7-day windows, and when they reset (needs the Mac program)") \
+  X(WORLD_CLOCK, themeWorldClock, "World clock", "The time in up to 6 cities you pick in the panel, with day or night") \
+  X(WORLD_WEATHER, themeWorldWeather, "World weather", "Weather now in up to 6 cities you pick in the panel, with the high and low") \
   X(DRONE, themeDrone, "Drone fly check", "Is it safe to fly your drone? Wind and gusts against its limits, and the best hours ahead")

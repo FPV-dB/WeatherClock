@@ -107,6 +107,38 @@ struct UiDrone {
 };
 enum UiDroneId : uint8_t { DRONE_NEO1 = 0, DRONE_NEO2, DRONE_PAVO20, DRONE_AVATA2, DRONE_WHOOP65, DRONE_CUSTOM, DRONE_COUNT };
 
+// weatherbox: Claude and OpenAI Codex plan limits, sent by the computer program (/api/aiusage)
+struct UiAiUsage {
+  struct Svc {
+    bool ok;                 // data received for this service
+    uint8_t left5, left7;    // % left of the 5-hour and 7-day windows
+    uint32_t reset5, reset7; // when each window resets, seconds since 1970 UTC (0 = unknown)
+  } svc[2];                  // 0 = Claude, 1 = OpenAI Codex
+  uint32_t at;               // millis() when received; stale data is not shown in rotation
+  uint16_t version;
+};
+
+// weatherbox: World clock and World weather faces. The cities are picked in the panel (/api/world);
+// the clock works out each city's UTC offset from its POSIX time zone, and fetches the weather itself
+// from Open-Meteo (one request for all the cities).
+static const int UI_WORLD = 6;
+struct UiWorldCity {
+  char name[16];           // ASCII, as shown (the panel shortens it)
+  bool offOk;              // off is known
+  int32_t off;             // local time - UTC, seconds, right now
+  bool wxOk;               // weather received (World weather only)
+  bool day;                // daytime there (Open-Meteo is_day)
+  uint8_t code;            // WMO weather code
+  int8_t t, tmin, tmax;    // °C, rounded (the faces convert to °F)
+  uint8_t rain;            // today's chance of rain, % (255 = no data)
+};
+struct UiWorld {
+  uint8_t nc, nw;          // cities in c[] (World clock) and w[] (World weather)
+  UiWorldCity c[UI_WORLD];
+  UiWorldCity w[UI_WORLD];
+  uint16_t version;        // changes when the lists, offsets or weather change
+};
+
 struct UiState {
   bool timeOk;
   struct tm now;
@@ -139,6 +171,8 @@ struct UiState {
   const UiFlightStats *flights;
   const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
   const UiLightning *lightning;  // weatherbox: nearby strikes (may be null)
+  const UiAiUsage *ai;     // weatherbox: Claude / Codex usage limits (null = none)
+  const UiWorld *world;    // weatherbox: World clock / World weather cities (null = none)
   const UiDrone *drone;    // weatherbox: drone for the Drone face (null = DJI Neo 2)
 };
 
