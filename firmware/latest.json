@@ -1,23 +1,26 @@
 {
-  "version": "2.0.17",
-  "date": "2026-11-18",
+  "version": "2.0.19",
+  "date": "2026-11-19",
   "file": "weatherclock.bin",
-  "size": 622032,
+  "size": 641680,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 448107,
-  "sig": "QY7wSYwNNMNSg+ZhZ7pluUEzeFl+p6G3CQ399/TVf7uQgZoWulQ+8+D+sSWqFR7D31XcOGbhwDzFYK6C/0/yuLDC06M7VMfDpMbmoHZCmfqotbL5ZDWSBgequq9akyXYPVG2XQ9aldFdL33ZyH6/PbmIeQyFw/D2NGv10ZIIFTQQhlyDrSDp3pxQ6IppxHGuzK/nuqL1x1hye7386JSU+Uoty8+Djp1Bsd3O5oIrZ07KFmH8IrOwdUoUNhQe6VcfH1YxRFRkri3SV+qpj4YZaM3qjLI8FgXjFOIixXd9yBALMyPibS3Jk81X+CUSXMSbcvQZ4xeujGgyWl3GTKCLzg==",
-  "gzsig": "AdIJa3hyUypEAlweQPDd80S5Y//DEeTtVGC4rJ7ooEHBDx2yqxDvqyyH5kTbunadr4nLjmIBGPyM/McevPVESJQvGqzrGcnVdCJbFwUqyI5grsxNyo+V8dEsopXhIWhrPTMEXFUJloYvBflayW/hzDhwTnuDJWVcEjdLam92xwyQP4If8LDe+Rb6jPgfg9D3qf+mzeRKZSJohDfepKLXwRVY4EJ6drAvwE9GcSK5Hsl8QOG2ytTYbarSh23WhHDcG12jxTZUBXl7+8HNdzlB7gvFa1zI3lvVr6QZHNdy/nRzS8rVmFUbrEYmr7idGT5gMhZMXD2w6K2bL6I6zIyqrQ==",
-  "panel": "panel-d31bf670f011700d30e47d5c.html.gz",
-  "psri": "sha256-0xv2cPARcA0w5H1cDvJkDq0LEmAfUwl9aL71xsd0RbM=",
+  "gzsize": 461783,
+  "sig": "lRXjekQ1LK+nTDeoFI4Vo29cZ0yohR+OO6nUj4HZ/zFrbE9z9a8tI3JmGalxSKc0eHIyvhYeqGlOsFoCHEMx/ITwrPlryE+pXKeoASbLtM+EHEh9ZBbbJfEd1lg5eKky/XEyl0xNN6PZW2Jv0AwvbGqZ/Ns06jFrMl0r2d4zqsB5BLlmF1l5MJfOiyO0MWW7vFphIy7TxmxD+myCV434e86drLlDJ7mysdQr6NHMq1pY8aXQWiBX16MWA/AQln6HVeShH3q8L1Fp5stlSbMjmzIe3Lg27U59L3TqBw9RtpqgOune1/1O8XsjqaBKAd1a6g1dDKJkGgiMbjQ3L/fSyw==",
+  "gzsig": "IhOnKURo7eHT/2WvS2/ilZ2n561AKGVJ4GaKo3rgNBVzQ0vxCePvcj+6APGCpdnNKPnl2wypSXEy9yt3Jh6Lrot7us3g87nh7lEgkcW+HXV+EG5zbFpkysj48jgq8aZbaErpQjBnpfeGzENidBB98dnJArCvmjvuy2CsVv2iIvVAFOHIhmFzQl3xq3CRYDGAWTnSL9RU68ITda9ygn4y4yGBBTsgyTz9oA/Yggb91K29hRoSq+rGYPd2nftLVqVgb7eeCQBkPK0QExMe5RrZNDwLsg54NPc92LCnRuFACM/As2ZDy0/LxxUBdRt3X8eE1Vckd+FrgJdX0/mIZTy/yQ==",
+  "panel": "panel-d3732ef881b2a6820207af9e.html.gz",
+  "psri": "sha256-03Mu+IGypoICB6+ejGaA3jyawOXA2OqTxyl+WRTW51c=",
   "notes": {
     "en": [
-      "New Lightning face: live lightning strikes near you (nearest strike, strikes in the last 10 minutes, storm direction and heading), fed by the new tools/lightning-mac helper."
+      "Drone Fly Check safety: precise wind thresholds and fresh, complete weather data.",
+      "Lightning event-only setting, redesigned panel, World Clock and World Weather faces, and AI Usage face."
     ],
     "pt": [
-      "New Lightning face: live lightning strikes near you (nearest strike, strikes in the last 10 minutes, storm direction and heading), fed by the new tools/lightning-mac helper."
+      "Drone Fly Check safety: precise wind thresholds and fresh, complete weather data.",
+      "Lightning event-only setting, redesigned panel, World Clock and World Weather faces, and AI Usage face."
     ],
     "es": [
-      "New Lightning face: live lightning strikes near you (nearest strike, strikes in the last 10 minutes, storm direction and heading), fed by the new tools/lightning-mac helper."
+      "Drone Fly Check safety: precise wind thresholds and fresh, complete weather data.",
+      "Lightning event-only setting, redesigned panel, World Clock and World Weather faces, and AI Usage face."
     ]
   }
 }
