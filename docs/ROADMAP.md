@@ -32,7 +32,7 @@ Add small ESP32 boards around the house, each with its own sensors, and show the
 - [ ] Night face (dim, minimal, for bedrooms)
 - [ ] News face: choose sources and how long each story shows; custom RSS feed
 - [ ] World clock and world weather faces
-- [ ] Lightning detected screen: animated alert with nearest strike distance, strike count, and storm direction (preview in the README; needs live strike data from an AS3935 module or an online lightning feed)
+- [x] Lightning face: animated alert with nearest strike distance, strike count, and storm direction, from the Blitzortung.org live feed (tools/lightning-mac)
 - [ ] AI usage face: how much of your Claude Code and OpenAI Codex limits are used, with reset times
 - [ ] YouTube new video alert: a card when one of your favourite channels posts a new video (channel picker in the panel)
 - [ ] Stocks and commodities face: a few indexes and commodities (for example S&P 500, ASX 200, gold, oil, Bitcoin) with daily change, chosen in the panel

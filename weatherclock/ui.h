@@ -51,6 +51,7 @@ struct UiWeather {
   uint8_t hmm[12];     // weatherbox: rain per hour, mm x 10 (capped at 25.5 mm)
   uint8_t uvMax10;     // today's highest UV index x 10 (255 = no data)
   uint16_t pm25, pm10; // particulate matter, µg/m³ x 10 (0xFFFF = no data)
+  uint8_t hw[12], hg[12];  // weatherbox: wind and gusts per hour, km/h (same hours as ht)
 };
 static const int UI_HOURS = 12;
 
@@ -87,6 +88,57 @@ struct UiEnergy {
   uint16_t version;
 };
 
+// weatherbox: lightning near the clock, from a live strike feed, sent by the computer program (/api/lightning)
+struct UiLightning {
+  int16_t nearKm;          // nearest strike (last 10 min, else last 30 min); -1 = none
+  uint16_t n10;            // strikes within the radius in the last 10 minutes
+  int16_t from;            // bearing from the clock to the strikes, degrees; -1 = unknown
+  int16_t moving;          // direction the storm is moving towards, degrees; -1 = unknown
+  uint16_t radius;         // km watched around the clock
+  uint32_t ago;            // seconds from the latest strike to when this was received; 0xFFFFFFFF = none yet
+  uint32_t at;             // millis() when received (0 = never)
+  uint16_t version;
+};
+// weatherbox: the drone chosen in the panel for the Drone face (limits from WindBar2's aircraft profiles)
+struct UiDrone {
+  uint8_t id;           // UiDroneId
+  char name[20];        // custom drone's name (ASCII)
+  uint8_t wind, gust;   // custom limits, km/h
+};
+enum UiDroneId : uint8_t { DRONE_NEO1 = 0, DRONE_NEO2, DRONE_PAVO20, DRONE_AVATA2, DRONE_WHOOP65, DRONE_CUSTOM, DRONE_COUNT };
+
+// weatherbox: Claude and OpenAI Codex plan limits, sent by the computer program (/api/aiusage)
+struct UiAiUsage {
+  struct Svc {
+    bool ok;                 // data received for this service
+    uint8_t left5, left7;    // % left of the 5-hour and 7-day windows
+    uint32_t reset5, reset7; // when each window resets, seconds since 1970 UTC (0 = unknown)
+  } svc[2];                  // 0 = Claude, 1 = OpenAI Codex
+  uint32_t at;               // millis() when received; stale data is not shown in rotation
+  uint16_t version;
+};
+
+// weatherbox: World clock and World weather faces. The cities are picked in the panel (/api/world);
+// the clock works out each city's UTC offset from its POSIX time zone, and fetches the weather itself
+// from Open-Meteo (one request for all the cities).
+static const int UI_WORLD = 6;
+struct UiWorldCity {
+  char name[16];           // ASCII, as shown (the panel shortens it)
+  bool offOk;              // off is known
+  int32_t off;             // local time - UTC, seconds, right now
+  bool wxOk;               // weather received (World weather only)
+  bool day;                // daytime there (Open-Meteo is_day)
+  uint8_t code;            // WMO weather code
+  int8_t t, tmin, tmax;    // °C, rounded (the faces convert to °F)
+  uint8_t rain;            // today's chance of rain, % (255 = no data)
+};
+struct UiWorld {
+  uint8_t nc, nw;          // cities in c[] (World clock) and w[] (World weather)
+  UiWorldCity c[UI_WORLD];
+  UiWorldCity w[UI_WORLD];
+  uint16_t version;        // changes when the lists, offsets or weather change
+};
+
 struct UiState {
   bool timeOk;
   struct tm now;
@@ -118,6 +170,10 @@ struct UiState {
   const UiNews *news;  // weatherbox: latest headlines (never null on the clock)
   const UiFlightStats *flights;
   const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
+  const UiLightning *lightning;  // weatherbox: nearby strikes (may be null)
+  const UiAiUsage *ai;     // weatherbox: Claude / Codex usage limits (null = none)
+  const UiWorld *world;    // weatherbox: World clock / World weather cities (null = none)
+  const UiDrone *drone;    // weatherbox: drone for the Drone face (null = DJI Neo 2)
 };
 
 constexpr uint16_t uiRgb(uint8_t r, uint8_t g, uint8_t b) {

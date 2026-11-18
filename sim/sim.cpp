@@ -67,6 +67,9 @@ static UiState base(int h, int m, int s) {
     memcpy(st.wx.ht, T, 12); memcpy(st.wx.hp, P, 12);
     static const uint8_t MM[12] = {0, 0, 0, 1, 4, 12, 18, 6, 2, 0, 0, 0};
     memcpy(st.wx.hmm, MM, 12);
+    static const uint8_t HW[12] = {18, 16, 14, 11, 9, 8, 8, 10, 13, 17, 21, 24};  // weatherbox: wind and gusts per hour
+    static const uint8_t HG[12] = {31, 27, 24, 19, 16, 14, 14, 17, 22, 29, 35, 38};
+    memcpy(st.wx.hw, HW, 12); memcpy(st.wx.hg, HG, 12);
     st.wx.d[0].mm10 = 43; st.wx.d[1].mm10 = 128; st.wx.d[2].mm10 = 215; st.wx.d[3].mm10 = 6; st.wx.d[4].mm10 = 0;
   }
   st.south = true;
@@ -101,6 +104,11 @@ static UiState base(int h, int m, int s) {
       {"Refinery", "Oil or fuel facility", "Power Grid", "Power Grid", "Power Grid"},
       {"16 NOV", "16 NOV", "16 NOV", "16 NOV", "15 NOV"}, {'R', 'R', 'R', 'D', 'U'}, 0, 1};
     st.energy = &en;
+    // weatherbox: a storm 8 km to the north-west, heading north-east
+    static UiLightning lt = {8, 24, 315, 45, 100, 40, 1, 1};
+    st.lightning = &lt;
+    static UiDrone dr = {DRONE_AVATA2, "", 0, 0};
+    st.drone = &dr;
   }
   // weatherbox: the place and the matching UTC (local time is AEDT, UTC+11)
   st.lat = -35.28f; st.lon = 149.13f;  // Canberra (any place works; the sun and moon faces need one)
@@ -111,6 +119,36 @@ static UiState base(int h, int m, int s) {
     if (mo < 3) { y--; mo += 12; }
     long days = 365L * y + y / 4 - y / 100 + y / 400 + (153 * (mo - 3) + 2) / 5 + d - 719469;
     st.utc = (uint32_t)(days * 86400L + h * 3600L + m * 60L + s - utcOff);
+  }
+  {  // weatherbox: AI Usage sample (Claude 88% / 66% left, Codex 44% / 7% left)
+    static UiAiUsage ai = {};
+    ai.svc[0] = {true, 88, 66, st.utc + 2 * 3600 + 5 * 60, st.utc + 46 * 3600};
+    ai.svc[1] = {true, 44, 7, st.utc + 3 * 3600, st.utc + 83 * 3600};
+    ai.version = 1;
+    st.ai = &ai;
+  }
+  {  // weatherbox: World clock / World weather sample (20 Oct: London BST, New York EDT, Tokyo, LA PDT...)
+    static UiWorld wo = {};
+    const bool six = getenv("SIM_WORLD6") != nullptr;
+    struct C { const char *n; int32_t off; bool day; uint8_t code; int8_t t, lo, hi; uint8_t rain; };
+    const C cs[6] = {{"London", 3600, false, 61, 12, 9, 14, 80}, {"New York", -4 * 3600, false, 3, 16, 11, 19, 10},
+                     {"Tokyo", 9 * 3600, true, 0, 21, 15, 23, 0}, {"Los Angeles", -7 * 3600, false, 2, 19, 15, 26, 0},
+                     {"Mumbai", 19800, true, 95, 31, 26, 33, 70}, {"Reykjavik", 0, false, 71, -3, -6, 1, 60}};
+    wo.nc = wo.nw = six ? 6 : 4;
+    for (int i = 0; i < 6; i++) {
+      UiWorldCity &c = wo.c[i];
+      strcpy(c.name, cs[i].n);
+      c.offOk = true;
+      c.off = cs[i].off;
+      UiWorldCity &w = wo.w[i];
+      strcpy(w.name, cs[i].n);
+      w.wxOk = true;
+      w.day = cs[i].day;
+      w.code = cs[i].code;
+      w.t = cs[i].t; w.tmin = cs[i].lo; w.tmax = cs[i].hi; w.rain = cs[i].rain;
+    }
+    wo.version = 1;
+    st.world = &wo;
   }
   st.city = getenv("SIM_CITY") ? getenv("SIM_CITY") : "Florianopolis";
   st.accent = uiRgb(242, 242, 242);
@@ -545,6 +583,54 @@ int main() {
       snprintf(name, sizeof name, "wind-%02d", i);
       save(*f, name);
     }
+    delete f;
+  }
+
+  // weatherbox: frames of the animated Drone face (SIM_DRONE_FRAMES=n per scene), 120 ms apart:
+  // calm (good), the sample day (caution), gusty (don't fly) and rain
+  if (const char *nf = getenv("SIM_DRONE_FRAMES")) {
+    Frame *f = new Frame();
+    uiBegin(f);
+    struct Scene { uint8_t wind, gust; uint16_t dir; int code; } sc[] = {{8, 12, 250, 1}, {18, 31, 225, 2}, {29, 52, 290, 3}, {12, 18, 200, 61}};
+    int k = 0;
+    for (const Scene &z : sc) {
+      UiState w = base(14, 37, 24);
+      w.theme = THEME_DRONE;
+      w.wx.wind = z.wind; w.wx.gust = z.gust; w.wx.wdir = z.dir; w.wx.code = z.code; w.wx.version = 10 + k;
+      w.wx.hw[0] = z.wind; w.wx.hg[0] = z.gust;
+      for (int i = 0, n = atoi(nf); i < n; i++) {
+        w.ms = 1000 + i * 120;
+        uiRenderClock(w);
+        char name[32];
+        snprintf(name, sizeof name, "drone-%03d", k++);
+        save(*f, name);
+      }
+    }
+    delete f;
+  }
+
+  // weatherbox: Lightning face frames (SIM_LIGHTNING_FRAMES=n, 100 ms apart), then all clear and waiting
+  if (const char *nf = getenv("SIM_LIGHTNING_FRAMES")) {
+    Frame *f = new Frame();
+    uiBegin(f);
+    UiState w = base(16, 42, 10);
+    w.theme = THEME_LIGHTNING;
+    for (int i = 0, n = atoi(nf); i < n; i++) {
+      w.ms = 1000 + i * 100;
+      uiRenderClock(w);
+      char name[32];
+      snprintf(name, sizeof name, "lightning-%02d", i);
+      save(*f, name);
+    }
+    static UiLightning clear = {-1, 0, -1, -1, 100, 2 * 3600 + 900, 1, 2};
+    w.lightning = &clear;
+    w.ms = 2000;
+    uiRenderClock(w);
+    save(*f, "lightning-clear");
+    static UiLightning none = {};
+    w.lightning = &none;
+    uiRenderClock(w);
+    save(*f, "lightning-wait");
     delete f;
   }
 

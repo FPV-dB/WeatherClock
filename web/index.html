@@ -11,6 +11,10 @@ header b{font-size:18px}header span{color:var(--mut);font-variant-numeric:tabula
 #net{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:8px;vertical-align:middle}
 #alx{display:none;margin-right:10px;padding:2px 8px;border-radius:9px;background:#13283a;color:#5ecbff;font-size:12px;font-weight:600}#alx.v{display:inline-block}
 .alx{display:block;margin-bottom:8px;padding:10px 12px;border-radius:10px;background:var(--bg)}.alx i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;background:#e0a030}.alx.ok i{background:var(--short)}
+/* other clocks strip, under the header on every tab (weatherbox) */
+header{flex-wrap:wrap}#oc{flex-basis:100%;display:none;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:12px}#oc.v{display:flex}
+#oc a{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:9px;background:var(--card2);border:1px solid var(--line);color:var(--fg);text-decoration:none;font-variant-numeric:tabular-nums}
+#oc b{font-size:12px;font-weight:600}#oc a span{color:var(--mut)}#oc a em{font-style:normal;color:#e0a030}#oc>small:first-child{width:100%}#oc i{width:7px;height:7px;border-radius:50%;background:#666;flex:none}#oc i.ok{background:var(--short)}#oc i.old{background:#e0a030}#oc small{align-self:center}
 #net.on{background:var(--short)}#net.off{background:var(--work)}
 h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:1.2px;margin:22px 4px 10px;font-weight:600}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:12px}
@@ -58,7 +62,8 @@ input[type=color]{width:52px;height:36px;padding:2px}
 #go{width:76px;height:76px;border-radius:50%;background:var(--ac);font-size:28px;color:#fff;box-shadow:0 6px 24px -6px var(--ac)}
 .stats{display:flex;justify-content:space-around;text-align:center}.stats b{display:block;font-size:26px}.stats span{color:var(--mut);font-size:13px}
 #wx{display:flex;align-items:center;gap:14px;padding-bottom:8px}#wx b{font-size:34px}#wx div{color:var(--mut)}
-#res button{display:block;width:100%;text-align:left;padding:10px;border-radius:10px;background:var(--bg);margin-top:6px}
+#res button,.wres button{display:block;width:100%;text-align:left;padding:10px;border-radius:10px;background:var(--bg);margin-top:6px}
+.wl .it{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}.wl .it span{flex:1}.wl .it small{color:var(--mut);margin:0}.wl .it button{padding:5px 10px;border-radius:8px;background:var(--card2);border:1px solid var(--line);color:var(--fg)}
 /* fotos */
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
 .grid div{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--bg);cursor:pointer}
@@ -135,7 +140,7 @@ nav button[hidden],[hidden]{display:none!important}
 #radarc{margin-bottom:16px}.warn{background:rgba(255,196,0,.12);border:1px solid rgba(255,196,0,.5);color:var(--fg);border-radius:10px;padding:10px 12px;margin:10px 0 6px;font-size:14px}#welcome{margin-bottom:16px;border:1px solid var(--long)}#welcome p{color:var(--mut);margin:6px 0 12px}#radarc canvas{display:block;width:100%;max-width:240px;aspect-ratio:1;margin:8px auto 0;border-radius:12px;image-rendering:pixelated}
 
 </style></head><body>
-<header><b id="hname">Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span></header>
+<header><b id="hname">Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span><div id="oc"></div></header>
 <main>
 <div class="card" id="upd"><b id="updt"></b><ul id="updn"></ul><div class="row"><button class="btn" onclick="skipUpdate()">Later</button><button class="btn p" id="updgo" onclick="doUpdate()">Update now</button></div></div>
 
@@ -261,6 +266,37 @@ nav button[hidden],[hidden]{display:none!important}
   <label>City<b id="city">—</b></label>
   <label>Search city<input id="q" type="search" placeholder="e.g. Lisbon"></label>
   <div id="res"></div>
+ </div>
+ </div>
+ <div class="grp">
+ <h2>World clock</h2>
+ <div class="card">
+  <small>Up to 6 cities for the World clock face. Each city keeps its own daylight saving.</small>
+  <div class="wl" id="wlc"></div>
+  <label>Add a city<input id="wqc" type="search" placeholder="e.g. London"></label>
+  <div id="wrc" class="wres"></div>
+ </div>
+ </div>
+ <div class="grp">
+ <h2>World weather</h2>
+ <div class="card">
+  <small>Up to 6 cities for the World weather face. The clock fetches their weather every 20 minutes.</small>
+  <div class="wl" id="wlw"></div>
+  <label>Add a city<input id="wqw" type="search" placeholder="e.g. Tokyo"></label>
+  <div id="wrw" class="wres"></div>
+ </div>
+ </div>
+ <div class="grp">
+ <h2>Drone</h2>
+ <div class="card">
+  <small>For the Drone fly check face: the clock compares the wind and gusts with your drone's limits (the same rules as WindBar2).</small>
+  <label>My drone<select id="dsel"><option value="0">DJI Neo 1</option><option value="1">DJI Neo 2</option><option value="2">BetaFPV Pavo 20 Pro</option><option value="3">DJI Avata 2</option><option value="4">65mm Tinywhoop</option><option value="5">Custom</option></select></label>
+  <small id="dlim"></small>
+  <div id="dcus" hidden>
+   <label>Name<input id="dname" type="text" maxlength="19" placeholder="My drone"></label>
+   <label>Max wind (km/h)<input id="dwind" type="number" min="1" max="150"></label>
+   <label>Max gusts (km/h)<input id="dgust" type="number" min="1" max="150"></label>
+  </div>
  </div>
  </div>
  <div class="grp">
@@ -475,7 +511,17 @@ function peerMap(all){PEERS=all;const w=el('div');w.style.cssText='margin:8px 0 
  const hint=el('small');hint.textContent=t('Drag each clock to where it sits. Tap a clock to make it show its number. The grid grows as you use it (up to 10 x 10).');
  w.append(g,tray,hint);return w}
 function peerView(all){const out=[peerMap(all)];all.forEach(c=>out.push(peerRow(c,c.me)));return out}
-function peers(){const box=$('peers');const show=j=>{box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.pos||9)-(b.pos||9)||(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));box.append(...peerView(all));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
+// "Other clocks" strip: every clock heard on this Wi-Fi in the last 5 minutes, with its IP (tap to open its panel).
+// Green: its weather arrived in the last 35 minutes. Amber: on, but no fresh weather. Grey: on (weather off, or older firmware).
+function ocAge(m){return m<1?t('just now'):m<60?t('{0} min ago',m):t('{0} h ago',Math.round(m/60))}
+function ocShow(j){const box=$('oc');if(!box||!j||!j.peers)return;box.replaceChildren(el('small',null,t('Other clocks on this Wi-Fi (tap to open)')));box.classList.add('v');
+ const all=[...j.peers].sort((a,b)=>(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));
+ if(!all.length){box.firstChild.textContent=t('No other clocks heard on this Wi-Fi');return}
+ all.forEach(c=>{const a=el('a');a.href='http://'+c.ip+'/';a.target='_blank';a.rel='noopener';const d=el('i'),w=c.wx==null?-1:c.wx;
+  d.className=w<0?'':w<=35?'ok':'old';a.title=(w<0?t('On'):w<=35?t('Receiving data: weather {0}',ocAge(w)):t('On, but no fresh weather: last {0}',ocAge(w)))+' · v'+c.ver;
+  a.append(d,el('b',null,(c.num?'#'+c.num+' ':'')+(c.name||'Weather Clock')),el('span',null,c.ip));if(w>35)a.append(el('em',null,t('no fresh weather')));box.append(a)})}
+function ocLoad(){fetch('/api/peers').then(r=>r.json()).then(ocShow).catch(()=>{}).finally(()=>setTimeout(ocLoad,60000))}
+function peers(){const box=$('peers');const show=j=>{ocShow(j);box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.pos||9)-(b.pos||9)||(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));box.append(...peerView(all));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
  fetch('/api/peers').then(r=>r.json()).then(j=>{show(j);setTimeout(()=>fetch('/api/peers').then(r=>r.json()).then(show).catch(()=>{}),1500)}).catch(()=>{box.innerHTML='';const s=el('small');s.textContent=t('Failed');box.append(s)})}
 function giftReset(){if(!confirm(t('Prepare this clock as a gift? Everything except the firmware is erased: Wi-Fi, city, name, password, photos and faces. This cannot be undone.')))return;post('/api/giftreset').then(()=>toast(t('Erased. The clock is restarting with the first-install help.'))).catch(()=>toast(t('Failed')))}
 // weatherbox: chosen radar (the program on the computer reads /api/radar and sends /image/radar.wcr)
@@ -753,11 +799,39 @@ let qt;$('q').oninput=()=>{clearTimeout(qt);const q=$('q').value.trim();if(q.len
     tzLoad().then(m=>m[p.timezone]).catch(()=>null).then(tz=>save(Object.assign({lat:p.latitude,lon:p.longitude,city:name,won:1},tz?{tz}:{}))
      .then(()=>toast(t('City: ')+name+(tz?' · '+p.timezone:''))));r.innerHTML='';$('q').value=''};r.appendChild(b)});
   if(!r.children.length)r.textContent=t('No city found')}).catch(()=>toast(t('No internet in the browser'))),400)};
+// ---------- weatherbox: World clock and World weather cities (/api/world) ----------
+// Each list: [{n,la,lo,tz}] (tz only for the clock). The city search is the same as the weather's (Open-Meteo geocoding).
+let WORLD={c:[],w:[]};
+const wShort=n=>n.normalize('NFD').replace(/[^\x20-\x7e]/g,'').replace(/["\\|]/g,'').trim().slice(0,15);
+function worldLoad(){fetch('/api/world').then(r=>r.json()).then(j=>{WORLD=j;worldDraw()}).catch(()=>{})}
+function worldDraw(){[['c','wlc'],['w','wlw']].forEach(([k,id])=>{const box=$(id);box.innerHTML='';const l=WORLD[k]||[];
+ l.forEach((x,i)=>{const r=el('div','it');r.appendChild(el('span',null,x.n));
+  if(k=='w'&&x.t!=null)r.appendChild(el('small',null,Math.round(st&&st.cfg.fahr?x.t*9/5+32:x.t)+'°'));
+  if(i){const u=el('button',null,'↑');u.title=t('Move up');u.onclick=()=>{l.splice(i-1,0,l.splice(i,1)[0]);worldSave(k)};r.appendChild(u)}
+  const d=el('button',null,t('Remove'));d.onclick=()=>{l.splice(i,1);worldSave(k)};r.appendChild(d);box.appendChild(r)});
+ if(!l.length)box.appendChild(el('small',null,t('No cities yet.')))})}
+function worldSave(k){const l=WORLD[k]||[],v=l.map(x=>[x.n,(+x.la).toFixed(4),(+x.lo).toFixed(4)].concat(k=='c'?[x.tz]:[]).join('|')).join('\n');
+ worldDraw();return post('/api/world',new URLSearchParams({[k]:v})).then(r=>{toast(t(r.ok?'Saved':'Failed: ')+(r.ok?'':r.status));setTimeout(worldLoad,k=='w'?4000:1500)})}
+[['c','wqc','wrc'],['w','wqw','wrw']].forEach(([k,qi,ri])=>{let tm;$(qi).oninput=()=>{clearTimeout(tm);const q=$(qi).value.trim();if(q.length<2){$(ri).innerHTML='';return}
+ tm=setTimeout(()=>fetch('https://geocoding-api.open-meteo.com/v1/search?count=5&language='+LANGS[LG]+'&name='+encodeURIComponent(q)).then(r=>r.json()).then(j=>{
+  const r=$(ri);r.innerHTML='';(j.results||[]).forEach(p=>{const b=document.createElement('button');b.type='button';b.textContent=[p.name,p.admin1,p.country].filter(Boolean).join(', ');
+   b.onclick=()=>{r.innerHTML='';$(qi).value='';const l=WORLD[k]=WORLD[k]||[];if(l.length>=6){toast(t('Up to 6 cities: remove one first'));return}
+    const add=tz=>{l.push(Object.assign({n:wShort(p.name)||'City',la:p.latitude,lo:p.longitude},tz?{tz}:{}));worldSave(k)};
+    if(k=='w')return add();
+    tzLoad().then(m=>m[p.timezone]).catch(()=>null).then(tz=>tz?add(tz):toast(t('No time zone found for {0}',p.name)))};r.appendChild(b)});
+  if(!r.children.length)r.textContent=t('No city found')}).catch(()=>toast(t('No internet in the browser'))),400)}});
+// ---------- weatherbox: drone for the Drone fly check face (/api/drone) ----------
+const DLIM=[[25,25],[20,24],[36,36],[30,40],[15,20]];
+function droneLim(){const id=+$('dsel').value,l=id<5?DLIM[id]:[$('dwind').value,$('dgust').value];$('dcus').hidden=id!=5;$('dlim').textContent=t('Limits: {0} km/h wind, {1} km/h gusts',l[0],l[1])}
+function droneLoad(){fetch('/api/drone').then(r=>r.json()).then(j=>{$('dsel').value=j.id;$('dname').value=j.name||'';$('dwind').value=j.wind;$('dgust').value=j.gust;droneLim()}).catch(()=>{})}
+function droneSave(){const id=$('dsel').value;droneLim();
+ post('/api/drone',new URLSearchParams({id,name:$('dname').value.replace(/[^\x20-\x7e]|[|"\\]/g,'').slice(0,19),wind:$('dwind').value||20,gust:$('dgust').value||25})).then(r=>toast(t(r.ok?'Saved':'Failed: ')+(r.ok?'':r.status)))}
+['dsel','dname','dwind','dgust'].forEach(i=>$(i).onchange=droneSave);
 // ---------- photos ----------
 // ---------- storage: everything that takes up file storage (/api/storage) ----------
 // Groups by type; "Other" is what the clock doesn't use (on clocks that came from the original firmware, its files).
 // The clock marks with k what it needs to work (no delete button).
-const STG=[['Photos and GIFs',p=>p.startsWith('/image/')||p.startsWith('/gif/')],['Downloaded faces',p=>p.startsWith('/faces/')],['Panel',p=>p.startsWith('/www/')],['History and settings',p=>['/stats.bin','/hooks.txt','/rotation.txt'].includes(p)]];
+const STG=[['Photos and GIFs',p=>p.startsWith('/image/')||p.startsWith('/gif/')],['Downloaded faces',p=>p.startsWith('/faces/')],['Panel',p=>p.startsWith('/www/')],['History and settings',p=>['/stats.bin','/hooks.txt','/rotation.txt','/world.txt','/drone.txt'].includes(p)]];
 function storage(){fetch('/api/storage').then(r=>r.json()).then(j=>{const c=$('sheetc');c.innerHTML='';c.appendChild(el('h3',null,t('File storage')));
  const fl=j.files.filter(x=>!x.d),sum=fl.reduce((a,x)=>a+x.s,0);c.appendChild(el('p',null,t('{0} used of {1}',kb(j.used),kb(j.total))));
  const box=el('div','stg'),known=new Set(),mine=['/image','/gif','/faces','/www'];
@@ -796,5 +870,5 @@ $('up').onchange=async e=>{const fs=[...e.target.files];e.target.value='';let ok
 $('op').onsubmit=e=>{e.preventDefault();const o=e.target;post('/api/otapass',new URLSearchParams(new FormData(o))).then(r=>r.text()).then(x=>{toast(t(x));o.reset()})};
 document.onkeydown=e=>{if(e.code=='Space'&&curTab==1&&!/INPUT|BUTTON|SELECT/.test(e.target.tagName)){e.preventDefault();cmd('toggle')}};
 function poll(){if(updating)return setTimeout(poll,1000);fetch('/api/state').then(r=>r.json()).then(load).catch(()=>$('net').className='off').finally(()=>setTimeout(poll,1000))}
-$('prow').onchange=$('pcol').onchange=posSave;i18n();loadI18n();loadFaces().then(peers,peers);let t0=0;try{t0=+localStorage.tab||0}catch(e){}tab(t0);poll();
+$('prow').onchange=$('pcol').onchange=posSave;i18n();loadI18n();loadFaces().then(peers,peers);setTimeout(ocLoad,60000);worldLoad();droneLoad();let t0=0;try{t0=+localStorage.tab||0}catch(e){}tab(t0);poll();
 </script></body></html>

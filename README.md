@@ -35,7 +35,7 @@ Weather Clock is a fork of [smalltv-pomodoro](https://github.com/davicorrea0/sma
 
 ## Clock faces
 
-There are 23 faces. Every GIF below is recorded from the simulator, which runs the same drawing code as the clock, so this is how they move on the real screen. The animations run on the clock itself: no video files, each frame is drawn live by the ESP8266. Screens also fade to black and back when the clock changes face.
+There are 24 faces. Every GIF below is recorded from the simulator, which runs the same drawing code as the clock, so this is how they move on the real screen. The animations run on the clock itself: no video files, each frame is drawn live by the ESP8266. Screens also fade to black and back when the clock changes face.
 
 ### Made for it!
 
@@ -60,6 +60,9 @@ These faces are new in Weather Clock, and all of them are animated.
 <tr>
 <td align="center" valign="top" width="33%"><img src="docs/readme/faces/airport-traffic.gif" width="200" alt="Airport Traffic"><br><b>Airport Traffic</b><br><sub>Takeoffs and landings so far today at nearby airports. Needs a helper computer</sub></td>
 <td align="center" valign="top" width="33%"><img src="docs/readme/faces/energy-war.gif" width="200" alt="Energy War"><br><b>Energy War</b><br><sub>Latest attacks on energy infrastructure from EnergyWar.net. Needs a helper computer</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/lightning.gif" width="200" alt="Lightning"><br><b>Lightning</b><br><sub>Live lightning strikes near you: nearest strike, strikes in the last 10 minutes, where the storm is and where it is heading. Needs a helper computer</sub></td>
+</tr>
+<tr>
 <td align="center" valign="top" width="33%"><img src="docs/readme/faces/drone.gif" width="200" alt="Drone fly check"><br><b>Drone fly check</b><br><sub>Is it safe to fly your drone right now? Pick your drone in Settings &gt; Drone (DJI Neo 1/2, Avata 2, Pavo 20 Pro, 65 mm Tinywhoop, or your own limits). Shows wind and gusts against its limits and the best hours in the next 12 hours. Built in, no computer needed. Uses the same rules as <a href="https://github.com/FPV-dB/WindBar2">WindBar2</a>, a wind checker made for flying FPV drones</sub></td>
 </tr>
 </table>
@@ -156,7 +159,9 @@ The optional **WeatherClockRadar** helper also makes several 240×240 album card
 - **Flights Today:** counts observed takeoffs and landings at airports within 200 km. These are observed ADS-B transitions, not guaranteed complete airport totals.
 - **Weather warnings:** shows nearby BoM warning cards and removes them when the warning is no longer active.
 
-<img src="docs/readme/lightning-detected.gif" width="240" alt="Animated Lightning detected screen"><br><sub>Design preview of the animated "Lightning detected" screen. Needs the helper script running on another computer (see [Optional helper computer](#optional-helper-computer)). The numbers are sample values; today's helper shows the BoM warning text.</sub>
+For live strikes, use the **Lightning** face instead: it shows real strikes from the Blitzortung.org lightning network (nearest strike, how many in the last 10 minutes, where the storm is and where it is heading), fed by the [lightning helper](tools/lightning-mac/).
+
+<img src="docs/readme/lightning-detected.gif" width="240" alt="Animated Lightning detected screen"><br><sub>The Lightning face while strikes are coming in (sample values).</sub>
 
 These are album cards rather than built-in faces, so they do not appear in the face checkbox list. Set *Clock → What to show* to **Alternate clock and album** to include them. They update only while the helper computer is on, awake and connected to the same network as the clock. Public ADS-B coverage is incomplete, so aircraft can occasionally be missed.
 
@@ -308,13 +313,23 @@ The clock fetches weather by itself and works fine on its own. A few extras need
 |---|---|---|
 | **WeatherClockRadar** | BoM rain radar and warning cards, News, Nearby Aircraft, Military Aircraft, Flights Today and the Lightning warning card | Helper is working; public source package and installer still need to be added to this repository |
 | **Energy War and Airport Traffic** | Data for the Energy War and Airport Traffic faces, every 15 minutes | [tools/energy-airport-mac](tools/energy-airport-mac/) |
+| **Lightning** | Live strikes for the Lightning face, from the Blitzortung.org network, every minute | [tools/lightning-mac](tools/lightning-mac/) |
 | **Markets card** | A two-page album card with stocks, metals and Bitcoin, every 15 minutes | [tools/markets-card](tools/markets-card/) |
 
 Cards made by helpers play between faces like photos in the album:
 
 ![Plane spotlight and markets cards](docs/readme/helper-cards.png)
 
-**Faces that need a helper:** News, Airport Traffic and Energy War. Without a helper running they have nothing new to show, and Airport Traffic is left out of the rotation until fresh data arrives. The radar, lightning, warning, nearby-aircraft, military-aircraft, Flights Today and markets screens are helper-generated album cards rather than faces. To show them, set *Clock → What to show* to **Alternate clock and album**.
+**Faces that need a helper:** News, Airport Traffic, Energy War and Lightning. Without a helper running they have nothing new to show, and Airport Traffic is left out of the rotation until fresh data arrives. Lightning joins the rotation only while there has been a strike nearby in the last 30 minutes. The radar, lightning, warning, nearby-aircraft, military-aircraft, Flights Today and markets screens are helper-generated album cards rather than faces. To show them, set *Clock → What to show* to **Alternate clock and album**.
+
+### Build your own station with a Raspberry Pi
+
+A Raspberry Pi with the official 7-inch Raspberry Pi Touch Display makes a fairly decent home weather station of its own, with your Weather Clocks around it:
+
+- **Big screen:** run the [Weather Clock WWW dashboard](#weather-clock-www-dashboard) full screen on the touch display.
+- **Helper computer:** the same Pi runs the helper scripts all day for very little power, so every clock on your Wi-Fi gets radar, warnings, news and the other helper cards.
+- **Powers the clocks:** the clocks only need USB power, so one or two can run from the Pi's USB ports or the same power supply.
+- **Your own sensors:** wire temperature, humidity, pressure or air-quality sensors to the Pi's pins, for readings from your own home next to the forecast (see the [roadmap](docs/ROADMAP.md)).
 
 ## If something goes wrong
 
@@ -363,6 +378,7 @@ Planned work, including **local sensor modules** (ESP32 boards with BME280 and o
 - Aircraft positions: [adsb.fi](https://adsb.fi/) and [adsb.lol](https://adsb.lol/); routes: [adsbdb](https://www.adsbdb.com/)
 - News headlines: public news RSS feeds
 - Energy War face: [EnergyWar.net](https://energywar.net/)
+- Lightning face: [Blitzortung.org](https://www.blitzortung.org/) community lightning network (private, non-commercial use)
 - Markets card: Yahoo Finance public chart data
 
 **Fonts** (SIL Open Font License 1.1, see [`licenses/`](licenses))
