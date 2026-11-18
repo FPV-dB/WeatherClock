@@ -267,7 +267,8 @@ nav button[hidden],[hidden]{display:none!important}
  <h2>Drone</h2>
  <div class="card">
   <small>For the Drone fly check face: the clock compares the wind and gusts with your drone's limits (the same rules as WindBar2).</small>
-  <label>My drone<select id="dsel"><option value="0">DJI Neo 1 (25 / 25 km/h)</option><option value="1">DJI Neo 2 (20 / 24 km/h)</option><option value="2">BetaFPV Pavo 20 Pro (36 / 36 km/h)</option><option value="3">DJI Avata 2 (30 / 40 km/h)</option><option value="4">65mm Tinywhoop (15 / 20 km/h)</option><option value="5">Custom</option></select></label>
+  <label>My drone<select id="dsel"><option value="0">DJI Neo 1</option><option value="1">DJI Neo 2</option><option value="2">BetaFPV Pavo 20 Pro</option><option value="3">DJI Avata 2</option><option value="4">65mm Tinywhoop</option><option value="5">Custom</option></select></label>
+  <small id="dlim"></small>
   <div id="dcus" hidden>
    <label>Name<input id="dname" type="text" maxlength="19" placeholder="My drone"></label>
    <label>Max wind (km/h)<input id="dwind" type="number" min="1" max="150"></label>
@@ -766,8 +767,10 @@ let qt;$('q').oninput=()=>{clearTimeout(qt);const q=$('q').value.trim();if(q.len
      .then(()=>toast(t('City: ')+name+(tz?' · '+p.timezone:''))));r.innerHTML='';$('q').value=''};r.appendChild(b)});
   if(!r.children.length)r.textContent=t('No city found')}).catch(()=>toast(t('No internet in the browser'))),400)};
 // ---------- weatherbox: drone for the Drone fly check face (/api/drone) ----------
-function droneLoad(){fetch('/api/drone').then(r=>r.json()).then(j=>{$('dsel').value=j.id;$('dname').value=j.name||'';$('dwind').value=j.wind;$('dgust').value=j.gust;$('dcus').hidden=j.id!=5}).catch(()=>{})}
-function droneSave(){const id=$('dsel').value;$('dcus').hidden=id!=5;
+const DLIM=[[25,25],[20,24],[36,36],[30,40],[15,20]];
+function droneLim(){const id=+$('dsel').value,l=id<5?DLIM[id]:[$('dwind').value,$('dgust').value];$('dcus').hidden=id!=5;$('dlim').textContent=t('Limits: {0} km/h wind, {1} km/h gusts',l[0],l[1])}
+function droneLoad(){fetch('/api/drone').then(r=>r.json()).then(j=>{$('dsel').value=j.id;$('dname').value=j.name||'';$('dwind').value=j.wind;$('dgust').value=j.gust;droneLim()}).catch(()=>{})}
+function droneSave(){const id=$('dsel').value;droneLim();
  post('/api/drone',new URLSearchParams({id,name:$('dname').value.replace(/[^\x20-\x7e]|[|"\\]/g,'').slice(0,19),wind:$('dwind').value||20,gust:$('dgust').value||25})).then(r=>toast(t(r.ok?'Saved':'Failed: ')+(r.ok?'':r.status)))}
 ['dsel','dname','dwind','dgust'].forEach(i=>$(i).onchange=droneSave);
 // ---------- photos ----------
