@@ -155,7 +155,7 @@ The optional **WeatherClockRadar** helper also makes several 240×240 album card
 - **Flights Today:** counts observed takeoffs and landings at airports within 200 km. These are observed ADS-B transitions, not guaranteed complete airport totals.
 - **Weather warnings:** shows nearby BoM warning cards and removes them when the warning is no longer active.
 
-<img src="docs/readme/lightning-detected.gif" width="240" alt="Animated Lightning detected screen"><br><sub>Design preview of the animated "Lightning detected" screen. The numbers are sample values; today's helper shows the BoM warning text.</sub>
+<img src="docs/readme/lightning-detected.gif" width="240" alt="Animated Lightning detected screen"><br><sub>Design preview of the animated "Lightning detected" screen. Needs the helper script running on another computer (see [Optional helper computer](#optional-helper-computer)). The numbers are sample values; today's helper shows the BoM warning text.</sub>
 
 These are album cards rather than built-in faces, so they do not appear in the face checkbox list. Set *Clock → What to show* to **Alternate clock and album** to include them. They update only while the helper computer is on, awake and connected to the same network as the clock. Public ADS-B coverage is incomplete, so aircraft can occasionally be missed.
 
