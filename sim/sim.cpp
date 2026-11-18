@@ -101,6 +101,9 @@ static UiState base(int h, int m, int s) {
       {"Refinery", "Oil or fuel facility", "Power Grid", "Power Grid", "Power Grid"},
       {"16 NOV", "16 NOV", "16 NOV", "16 NOV", "15 NOV"}, {'R', 'R', 'R', 'D', 'U'}, 0, 1};
     st.energy = &en;
+    // weatherbox: a storm 8 km to the north-west, heading north-east
+    static UiLightning lt = {8, 24, 315, 45, 100, 40, 1, 1};
+    st.lightning = &lt;
   }
   // weatherbox: the place and the matching UTC (local time is AEDT, UTC+11)
   st.lat = -35.28f; st.lon = 149.13f;  // Canberra (any place works; the sun and moon faces need one)
@@ -545,6 +548,31 @@ int main() {
       snprintf(name, sizeof name, "wind-%02d", i);
       save(*f, name);
     }
+    delete f;
+  }
+
+  // weatherbox: Lightning face frames (SIM_LIGHTNING_FRAMES=n, 100 ms apart), then all clear and waiting
+  if (const char *nf = getenv("SIM_LIGHTNING_FRAMES")) {
+    Frame *f = new Frame();
+    uiBegin(f);
+    UiState w = base(16, 42, 10);
+    w.theme = THEME_LIGHTNING;
+    for (int i = 0, n = atoi(nf); i < n; i++) {
+      w.ms = 1000 + i * 100;
+      uiRenderClock(w);
+      char name[32];
+      snprintf(name, sizeof name, "lightning-%02d", i);
+      save(*f, name);
+    }
+    static UiLightning clear = {-1, 0, -1, -1, 100, 2 * 3600 + 900, 1, 2};
+    w.lightning = &clear;
+    w.ms = 2000;
+    uiRenderClock(w);
+    save(*f, "lightning-clear");
+    static UiLightning none = {};
+    w.lightning = &none;
+    uiRenderClock(w);
+    save(*f, "lightning-wait");
     delete f;
   }
 
