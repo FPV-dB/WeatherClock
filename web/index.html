@@ -11,6 +11,10 @@ header b{font-size:18px}header span{color:var(--mut);font-variant-numeric:tabula
 #net{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:8px;vertical-align:middle}
 #alx{display:none;margin-right:10px;padding:2px 8px;border-radius:9px;background:#13283a;color:#5ecbff;font-size:12px;font-weight:600}#alx.v{display:inline-block}
 .alx{display:block;margin-bottom:8px;padding:10px 12px;border-radius:10px;background:var(--bg)}.alx i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;background:#e0a030}.alx.ok i{background:var(--short)}
+/* other clocks strip, under the header on every tab (weatherbox) */
+header{flex-wrap:wrap}#oc{flex-basis:100%;display:none;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:12px}#oc.v{display:flex}
+#oc a{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:9px;background:var(--card2);border:1px solid var(--line);color:var(--fg);text-decoration:none;font-variant-numeric:tabular-nums}
+#oc b{font-size:12px;font-weight:600}#oc a span{color:var(--mut)}#oc a em{font-style:normal;color:#e0a030}#oc>small:first-child{width:100%}#oc i{width:7px;height:7px;border-radius:50%;background:#666;flex:none}#oc i.ok{background:var(--short)}#oc i.old{background:#e0a030}#oc small{align-self:center}
 #net.on{background:var(--short)}#net.off{background:var(--work)}
 h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:1.2px;margin:22px 4px 10px;font-weight:600}
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:12px}
@@ -135,7 +139,7 @@ nav button[hidden],[hidden]{display:none!important}
 #radarc{margin-bottom:16px}.warn{background:rgba(255,196,0,.12);border:1px solid rgba(255,196,0,.5);color:var(--fg);border-radius:10px;padding:10px 12px;margin:10px 0 6px;font-size:14px}#welcome{margin-bottom:16px;border:1px solid var(--long)}#welcome p{color:var(--mut);margin:6px 0 12px}#radarc canvas{display:block;width:100%;max-width:240px;aspect-ratio:1;margin:8px auto 0;border-radius:12px;image-rendering:pixelated}
 
 </style></head><body>
-<header><b id="hname">Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span></header>
+<header><b id="hname">Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span><div id="oc"></div></header>
 <main>
 <div class="card" id="upd"><b id="updt"></b><ul id="updn"></ul><div class="row"><button class="btn" onclick="skipUpdate()">Later</button><button class="btn p" id="updgo" onclick="doUpdate()">Update now</button></div></div>
 
@@ -475,7 +479,17 @@ function peerMap(all){PEERS=all;const w=el('div');w.style.cssText='margin:8px 0 
  const hint=el('small');hint.textContent=t('Drag each clock to where it sits. Tap a clock to make it show its number. The grid grows as you use it (up to 10 x 10).');
  w.append(g,tray,hint);return w}
 function peerView(all){const out=[peerMap(all)];all.forEach(c=>out.push(peerRow(c,c.me)));return out}
-function peers(){const box=$('peers');const show=j=>{box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.pos||9)-(b.pos||9)||(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));box.append(...peerView(all));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
+// "Other clocks" strip: every clock heard on this Wi-Fi in the last 5 minutes, with its IP (tap to open its panel).
+// Green: its weather arrived in the last 35 minutes. Amber: on, but no fresh weather. Grey: on (weather off, or older firmware).
+function ocAge(m){return m<1?t('just now'):m<60?t('{0} min ago',m):t('{0} h ago',Math.round(m/60))}
+function ocShow(j){const box=$('oc');if(!box||!j||!j.peers)return;box.replaceChildren(el('small',null,t('Other clocks on this Wi-Fi (tap to open)')));box.classList.add('v');
+ const all=[...j.peers].sort((a,b)=>(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));
+ if(!all.length){box.firstChild.textContent=t('No other clocks heard on this Wi-Fi');return}
+ all.forEach(c=>{const a=el('a');a.href='http://'+c.ip+'/';a.target='_blank';a.rel='noopener';const d=el('i'),w=c.wx==null?-1:c.wx;
+  d.className=w<0?'':w<=35?'ok':'old';a.title=(w<0?t('On'):w<=35?t('Receiving data: weather {0}',ocAge(w)):t('On, but no fresh weather: last {0}',ocAge(w)))+' · v'+c.ver;
+  a.append(d,el('b',null,(c.num?'#'+c.num+' ':'')+(c.name||'Weather Clock')),el('span',null,c.ip));if(w>35)a.append(el('em',null,t('no fresh weather')));box.append(a)})}
+function ocLoad(){fetch('/api/peers').then(r=>r.json()).then(ocShow).catch(()=>{}).finally(()=>setTimeout(ocLoad,60000))}
+function peers(){const box=$('peers');const show=j=>{ocShow(j);box.innerHTML='';const all=[{...j.me,me:1},...j.peers].sort((a,b)=>(a.pos||9)-(b.pos||9)||(a.num||99)-(b.num||99)||a.ip.localeCompare(b.ip,undefined,{numeric:true}));box.append(...peerView(all));if(!j.peers.length){const s=el('small');s.textContent=t('No other clocks found yet. They show up within a minute of being on the same Wi-Fi (version 2.0.16 or later).');box.append(s)}};
  fetch('/api/peers').then(r=>r.json()).then(j=>{show(j);setTimeout(()=>fetch('/api/peers').then(r=>r.json()).then(show).catch(()=>{}),1500)}).catch(()=>{box.innerHTML='';const s=el('small');s.textContent=t('Failed');box.append(s)})}
 function giftReset(){if(!confirm(t('Prepare this clock as a gift? Everything except the firmware is erased: Wi-Fi, city, name, password, photos and faces. This cannot be undone.')))return;post('/api/giftreset').then(()=>toast(t('Erased. The clock is restarting with the first-install help.'))).catch(()=>toast(t('Failed')))}
 // weatherbox: chosen radar (the program on the computer reads /api/radar and sends /image/radar.wcr)
@@ -796,5 +810,5 @@ $('up').onchange=async e=>{const fs=[...e.target.files];e.target.value='';let ok
 $('op').onsubmit=e=>{e.preventDefault();const o=e.target;post('/api/otapass',new URLSearchParams(new FormData(o))).then(r=>r.text()).then(x=>{toast(t(x));o.reset()})};
 document.onkeydown=e=>{if(e.code=='Space'&&curTab==1&&!/INPUT|BUTTON|SELECT/.test(e.target.tagName)){e.preventDefault();cmd('toggle')}};
 function poll(){if(updating)return setTimeout(poll,1000);fetch('/api/state').then(r=>r.json()).then(load).catch(()=>$('net').className='off').finally(()=>setTimeout(poll,1000))}
-$('prow').onchange=$('pcol').onchange=posSave;i18n();loadI18n();loadFaces().then(peers,peers);let t0=0;try{t0=+localStorage.tab||0}catch(e){}tab(t0);poll();
+$('prow').onchange=$('pcol').onchange=posSave;i18n();loadI18n();loadFaces().then(peers,peers);setTimeout(ocLoad,60000);let t0=0;try{t0=+localStorage.tab||0}catch(e){}tab(t0);poll();
 </script></body></html>
