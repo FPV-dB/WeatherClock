@@ -145,6 +145,18 @@ With the optional helper running on another computer, the clock shows the Bureau
 
 <img src="docs/readme/panel-radar.png" width="700" alt="Rain radar settings">
 
+### Lightning, nearby aircraft and military aircraft cards
+
+The optional **WeatherClockRadar** helper also makes several 240×240 album cards and sends them to the clock:
+
+- **Lightning:** shows an official Bureau of Meteorology thunderstorm warning for the chosen Australian location. It is warning detection, not live lightning-strike detection, and the card is hidden when no local warning is active.
+- **Nearby Aircraft:** shows aircraft detected within 100 km, using public ADS-B positions.
+- **Military Aircraft:** shows military-registered aircraft detected within 250 km. The recent-sighting window is configurable from 1 to 1,440 minutes (60 minutes by default), and the card is removed from rotation when no aircraft qualifies.
+- **Flights Today:** counts observed takeoffs and landings at airports within 200 km. These are observed ADS-B transitions, not guaranteed complete airport totals.
+- **Weather warnings:** shows nearby BoM warning cards and removes them when the warning is no longer active.
+
+These are album cards rather than built-in faces, so they do not appear in the face checkbox list. Set *Clock → What to show* to **Alternate clock and album** to include them. They update only while the helper computer is on, awake and connected to the same network as the clock. Public ADS-B coverage is incomplete, so aircraft can occasionally be missed.
+
 ### Brightness that follows the sun
 
 Set the daytime brightness, then a lower night level. Night can follow your city's sunset and sunrise or fixed hours. Changes ramp smoothly instead of jumping.
@@ -291,8 +303,7 @@ The clock fetches weather by itself and works fine on its own. A few extras need
 
 | Helper | What it adds | Status |
 |---|---|---|
-| **Rain radar** | Bureau of Meteorology radar loop every 10 minutes, shown between faces (Australia only), plus warning cards. Also feeds the **News** face | Coming soon to this repository |
-| **Plane spotlight** | A card for each aircraft flying nearby, with its route, from public ADS-B data | Coming soon to this repository |
+| **WeatherClockRadar** | BoM rain radar and warning cards, News, Nearby Aircraft, Military Aircraft, Flights Today and the Lightning warning card | Helper is working; public source package and installer still need to be added to this repository |
 | **Energy War and Airport Traffic** | Data for the Energy War and Airport Traffic faces, every 15 minutes | [tools/energy-airport-mac](tools/energy-airport-mac/) |
 | **Markets card** | A two-page album card with stocks, metals and Bitcoin, every 15 minutes | [tools/markets-card](tools/markets-card/) |
 
@@ -300,7 +311,7 @@ Cards made by helpers play between faces like photos in the album:
 
 ![Plane spotlight and markets cards](docs/readme/helper-cards.png)
 
-**Faces that need a helper:** News, Airport Traffic and Energy War. Without a helper running they have nothing new to show, and Airport Traffic is left out of the rotation until fresh data arrives. To show radar and other cards, set *Clock → What to show* to **Alternate clock and album**.
+**Faces that need a helper:** News, Airport Traffic and Energy War. Without a helper running they have nothing new to show, and Airport Traffic is left out of the rotation until fresh data arrives. The radar, lightning, warning, nearby-aircraft, military-aircraft, Flights Today and markets screens are helper-generated album cards rather than faces. To show them, set *Clock → What to show* to **Alternate clock and album**.
 
 ## If something goes wrong
 
