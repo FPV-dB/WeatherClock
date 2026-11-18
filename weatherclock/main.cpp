@@ -790,23 +790,27 @@ void alexaBegin() {
 
 // ---------- weatherbox: other Weather Clocks on the same Wi-Fi ----------
 // Each clock broadcasts a small beacon on UDP 47811 every minute ("WCLK1|num|theme|ver|name") and remembers the
-// others it hears, for the panel's "My clocks" list. "WCLK1?" also asks the others to answer now; "WCLK1!" (sent
+// others it hears, for the panel's "My clocks" list and the "Other clocks" strip on every panel page. Newer clocks
+// also end the beacon with "|minutes since this clock's weather last arrived" (-1 = none), so the panel can tell
+// which clocks are receiving data. "WCLK1?" also asks the others to answer now; "WCLK1!" (sent
 // to one clock) makes it show Identify. Nothing private goes out: number, face, version and name only.
 const uint16_t PEER_PORT = 47811;
-extern uint32_t viewUntil;
+extern uint32_t viewUntil, wxGotAt;
 WiFiUDP peerUdp;
 bool peerUp = false;
 struct Peer {
   uint32_t ip, seen;
   uint8_t num, theme, pos;
+  uint16_t wxMin;  // minutes since its weather last arrived, when it sent the beacon (0xFFFF = unknown or none)
   char ver[12], name[24];
 };
 Peer peers[12];  // up to 10 clocks together, with room for spares
 uint32_t peerBeaconAt = 0, peerReplyAt = 0;
 
 void peerSend(IPAddress to, bool ask) {
-  char b[80];
-  int n = snprintf(b, sizeof b, "WCLK1%s|%u|%u|%s|%s|%u", ask ? "?" : "", cfg.devNum, cfg.theme, FW_VERSION, cfg.devName, cfg.devPos);
+  char b[88];
+  long wxMin = cfg.weatherOn && wxGotAt ? (long)min((millis() - wxGotAt) / 60000UL, 9999UL) : -1;
+  int n = snprintf(b, sizeof b, "WCLK1%s|%u|%u|%s|%s|%u|%ld", ask ? "?" : "", cfg.devNum, cfg.theme, FW_VERSION, cfg.devName, cfg.devPos, wxMin);
   peerUdp.beginPacket(to, PEER_PORT);
   peerUdp.write((const uint8_t *)b, min(n, (int)sizeof b - 1));
   peerUdp.endPacket();
@@ -855,8 +859,8 @@ void peerLoop() {
   Peer q{};
   q.ip = (uint32_t)from;
   q.seen = millis();
-  char *f[5] = {};
-  for (int i = 0; i < 5 && p; i++) {
+  char *f[6] = {};
+  for (int i = 0; i < 6 && p; i++) {
     *p++ = 0;
     f[i] = p;
     p = strchr(p, '|');
@@ -867,6 +871,7 @@ void peerLoop() {
   strlcpy(q.ver, f[2], sizeof q.ver);
   strlcpy(q.name, f[3], sizeof q.name);
   q.pos = f[4] ? (uint8_t)constrain(atoi(f[4]), 0, 100) : 0;
+  q.wxMin = f[5] && atoi(f[5]) >= 0 ? (uint16_t)constrain(atoi(f[5]), 0, 9999) : 0xFFFF;  // older clocks don't send it
   for (char *c = q.name; *c; c++)
     if (*c < 0x20 || *c >= 0x7F || *c == '"' || *c == '\\') *c = ' ';
   for (char *c = q.ver; *c; c++)
@@ -998,6 +1003,7 @@ struct Weather {
   int32_t utcOff = 0;     // this time zone's offset right now, in seconds (the panel compares it with the clock's)
 } wx;
 uint32_t wxNext = 0;
+uint32_t wxGotAt = 0;  // weatherbox: millis() of the last weather that arrived (0 = none yet), for the other clocks
 uint8_t wxFails = 0;  // consecutive weather fetches that failed
 
 // HTTP/1.0 GET (reply without "chunked", closes at the end) instead of HTTPClient (~4 KB).
@@ -1202,6 +1208,7 @@ bool fetchWeather() {
   wx.utcOff = doc["utc_offset_seconds"] | 0;
   wx.ok = true;
   wx.version++;
+  wxGotAt = millis() | 1;
   return true;
 }
 
@@ -3184,6 +3191,8 @@ void setupWeb() {
     j += WiFi.localIP().toString();
     j += F("\",\"ver\":\"" FW_VERSION "\",\"theme\":");
     j += cfg.theme;
+    j += F(",\"wx\":");  // minutes since the weather last arrived (-1 = none or weather off)
+    j += cfg.weatherOn && wxGotAt ? (long)min((millis() - wxGotAt) / 60000UL, 9999UL) : -1L;
     j += F(",\"pos\":");
     j += cfg.devPos;
     j += F("},\"peers\":[");
@@ -3206,6 +3215,8 @@ void setupWeb() {
       j += p.pos;
       j += F(",\"ago\":");
       j += (millis() - p.seen) / 1000;
+      j += F(",\"wx\":");  // minutes since its weather last arrived, now (-1 = unknown: weather off, none yet or older firmware)
+      j += p.wxMin == 0xFFFF ? -1L : (long)min(p.wxMin + (millis() - p.seen) / 60000UL, 9999UL);
       j += '}';
     }
     j += F("]}");
