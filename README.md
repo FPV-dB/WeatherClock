@@ -315,6 +315,15 @@ Cards made by helpers play between faces like photos in the album:
 
 **Faces that need a helper:** News, Airport Traffic and Energy War. Without a helper running they have nothing new to show, and Airport Traffic is left out of the rotation until fresh data arrives. The radar, lightning, warning, nearby-aircraft, military-aircraft, Flights Today and markets screens are helper-generated album cards rather than faces. To show them, set *Clock → What to show* to **Alternate clock and album**.
 
+### Build your own station with a Raspberry Pi
+
+A Raspberry Pi with the official 7-inch Raspberry Pi Touch Display makes a fairly decent home weather station of its own, with your Weather Clocks around it:
+
+- **Big screen:** run the [Weather Clock WWW dashboard](#weather-clock-www-dashboard) full screen on the touch display.
+- **Helper computer:** the same Pi runs the helper scripts all day for very little power, so every clock on your Wi-Fi gets radar, warnings, news and the other helper cards.
+- **Powers the clocks:** the clocks only need USB power, so one or two can run from the Pi's USB ports or the same power supply.
+- **Your own sensors:** wire temperature, humidity, pressure or air-quality sensors to the Pi's pins, for readings from your own home next to the forecast (see the [roadmap](docs/ROADMAP.md)).
+
 ## If something goes wrong
 
 **Recovery mode:** unplug the clock and plug it back in **3 times in a row**, leaving it on for less than 30 seconds each time. On the third start it opens the `WeatherClock-Recovery` Wi-Fi. Join it and open `http://192.168.4.1` to upload any firmware (no password or signature needed), reset settings, or forget the Wi-Fi. *Restart normally* goes back to the clock.
