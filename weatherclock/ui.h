@@ -110,6 +110,27 @@ struct UiAiUsage {
   uint16_t version;
 };
 
+// weatherbox: World clock and World weather faces. The cities are picked in the panel (/api/world);
+// the clock works out each city's UTC offset from its POSIX time zone, and fetches the weather itself
+// from Open-Meteo (one request for all the cities).
+static const int UI_WORLD = 6;
+struct UiWorldCity {
+  char name[16];           // ASCII, as shown (the panel shortens it)
+  bool offOk;              // off is known
+  int32_t off;             // local time - UTC, seconds, right now
+  bool wxOk;               // weather received (World weather only)
+  bool day;                // daytime there (Open-Meteo is_day)
+  uint8_t code;            // WMO weather code
+  int8_t t, tmin, tmax;    // °C, rounded (the faces convert to °F)
+  uint8_t rain;            // today's chance of rain, % (255 = no data)
+};
+struct UiWorld {
+  uint8_t nc, nw;          // cities in c[] (World clock) and w[] (World weather)
+  UiWorldCity c[UI_WORLD];
+  UiWorldCity w[UI_WORLD];
+  uint16_t version;        // changes when the lists, offsets or weather change
+};
+
 struct UiState {
   bool timeOk;
   struct tm now;
@@ -143,6 +164,7 @@ struct UiState {
   const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
   const UiLightning *lightning;  // weatherbox: nearby strikes (may be null)
   const UiAiUsage *ai;     // weatherbox: Claude / Codex usage limits (null = none)
+  const UiWorld *world;    // weatherbox: World clock / World weather cities (null = none)
 };
 
 constexpr uint16_t uiRgb(uint8_t r, uint8_t g, uint8_t b) {
