@@ -6,7 +6,7 @@ One active feature module at a time. Each module follows: proposed → build →
 
 | Module | Scope | Branch / PR | Dependencies and version | Verification / remaining gates |
 |---|---|---|---|---|
-| 01 | Lightning detection and event-only rotation setting | `module/lightning-display-policy`; original PR #8 merged | v2.0.17 released; setting targets a subsequent release | Setting implemented; firmware, timing boundaries, native simulator, upload security and history checked locally. Needs CI, panel preview and live helper/device checks before release. |
+| 01 | Lightning detection and event-only rotation setting | Face released in v2.0.17; setting in PR #9 (`module/lightning-display-policy`) | Setting targets v2.0.18 | Setting implemented; firmware, timing boundaries, native simulator, upload security and history checked locally; CI passed on the initial branch. Integrate the newer main changes, build the final version, merge and publish. No clock installation is included. |
 | 02 | Drone Fly Check | `drone-face`, PR #7; README PR #5 | After Module 01; append face ID after Lightning; version assigned after integration | Rebase, build, threshold tests, preview, release, then README |
 | 03 | Web panel redesign | `panel-redesign` | After Module 02; version unassigned | Rebase and preview before device update |
 | 04 | World clock and weather | `world-faces` | Stable face numbering | Build, tests and preview |
