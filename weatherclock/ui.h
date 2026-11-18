@@ -51,6 +51,7 @@ struct UiWeather {
   uint8_t hmm[12];     // weatherbox: rain per hour, mm x 10 (capped at 25.5 mm)
   uint8_t uvMax10;     // today's highest UV index x 10 (255 = no data)
   uint16_t pm25, pm10; // particulate matter, µg/m³ x 10 (0xFFFF = no data)
+  uint8_t hw[12], hg[12];  // weatherbox: wind and gusts per hour, km/h (same hours as ht)
 };
 static const int UI_HOURS = 12;
 
@@ -87,6 +88,14 @@ struct UiEnergy {
   uint16_t version;
 };
 
+// weatherbox: the drone chosen in the panel for the Drone face (limits from WindBar2's aircraft profiles)
+struct UiDrone {
+  uint8_t id;           // UiDroneId
+  char name[20];        // custom drone's name (ASCII)
+  uint8_t wind, gust;   // custom limits, km/h
+};
+enum UiDroneId : uint8_t { DRONE_NEO1 = 0, DRONE_NEO2, DRONE_PAVO20, DRONE_AVATA2, DRONE_WHOOP65, DRONE_CUSTOM, DRONE_COUNT };
+
 struct UiState {
   bool timeOk;
   struct tm now;
@@ -118,6 +127,7 @@ struct UiState {
   const UiNews *news;  // weatherbox: latest headlines (never null on the clock)
   const UiFlightStats *flights;
   const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
+  const UiDrone *drone;    // weatherbox: drone for the Drone face (null = DJI Neo 2)
 };
 
 constexpr uint16_t uiRgb(uint8_t r, uint8_t g, uint8_t b) {

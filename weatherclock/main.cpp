@@ -959,6 +959,11 @@ static uint8_t rainInNow(uint8_t fromForecast) {
   return (uint8_t)constrain(left, 1, 120);
 }
 
+// ---------- weatherbox: drone for the Drone fly check face ----------
+// Chosen in the panel (/api/drone) and kept in /drone.txt as "id|name|wind|gust" (name and limits only matter
+// for the custom drone). The face compares the clock's own wind and gusts with the limits: no computer needed.
+UiDrone drone = {DRONE_NEO2, "", 20, 25};
+
 // ---------- weather (Open-Meteo, no API key) ----------
 struct Weather {
   bool ok = false;
@@ -980,6 +985,7 @@ struct Weather {
   int8_t ht[UI_HOURS];
   uint8_t hp[UI_HOURS];
   uint8_t hmm[UI_HOURS];
+  uint8_t hw[UI_HOURS], hg[UI_HOURS];  // wind and gusts per hour, km/h (Drone face)
   char tzName[40] = "";  // the city's time zone according to Open-Meteo (IANA, e.g. America/Sao_Paulo)
   int32_t utcOff = 0;     // this time zone's offset right now, in seconds (the panel compares it with the clock's)
 } wx;
@@ -1071,7 +1077,7 @@ bool fetchWeather() {
   url += F("&longitude=");
   appendFixed(url, cfg.lon, 4);
   url += F("&current=temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m,wind_direction_10m,wind_gusts_10m,apparent_temperature,uv_index"
-           "&hourly=temperature_2m,precipitation_probability,precipitation&forecast_hours=12"
+           "&hourly=temperature_2m,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m&forecast_hours=12"
            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max,precipitation_sum"
            "&minutely_15=precipitation,precipitation_probability&forecast_minutely_15=4"
            "&timezone=auto&forecast_days=");
@@ -1094,6 +1100,8 @@ bool fetchWeather() {
   filter["hourly"]["temperature_2m"] = true;
   filter["hourly"]["precipitation_probability"] = true;
   filter["hourly"]["precipitation"] = true;
+  filter["hourly"]["wind_speed_10m"] = true;
+  filter["hourly"]["wind_gusts_10m"] = true;
   filter["daily"]["precipitation_sum"] = true;
   filter["current"]["time"] = true;  // the service's local time: the second source that confirms SNTP's
   filter["utc_offset_seconds"] = true;
@@ -1125,6 +1133,7 @@ bool fetchWeather() {
     JsonVariantConst um = doc["daily"]["uv_index_max"][0];
     wx.uvMax10 = um.isNull() ? 255 : (uint8_t)constrain(lroundf(um.as<float>() * 10), 0, 254);
     JsonArrayConst ht = doc["hourly"]["temperature_2m"], hp = doc["hourly"]["precipitation_probability"], hm = doc["hourly"]["precipitation"];
+    JsonArrayConst hw = doc["hourly"]["wind_speed_10m"], hg = doc["hourly"]["wind_gusts_10m"];
     const char *h0 = doc["hourly"]["time"][0] | (const char *)nullptr;
     const char *tp = h0 ? strchr(h0, 'T') : nullptr;
     wx.h0 = tp && strlen(tp) >= 3 ? (uint8_t)(((tp[1] - '0') * 10 + (tp[2] - '0')) % 24) : 0;
@@ -1134,6 +1143,8 @@ bool fetchWeather() {
       wx.ht[i] = (int8_t)constrain(lroundf(isfinite(v) ? v : 0), -99, 99);
       wx.hp[i] = hp[i].isNull() ? 255 : (uint8_t)constrain(hp[i].as<int>(), 0, 100);
       wx.hmm[i] = (uint8_t)constrain(lroundf((hm[i] | 0.0f) * 10), 0, 255);
+      wx.hw[i] = (uint8_t)constrain(lroundf(hw[i] | 0.0f), 0, 255);
+      wx.hg[i] = (uint8_t)constrain(lroundf(hg[i] | 0.0f), 0, 255);
       wx.nh = i + 1;
     }
   }
@@ -1358,6 +1369,8 @@ UiState makeState() {
   memcpy(s.wx.ht, wx.ht, sizeof wx.ht);
   memcpy(s.wx.hp, wx.hp, sizeof wx.hp);
   memcpy(s.wx.hmm, wx.hmm, sizeof wx.hmm);
+  memcpy(s.wx.hw, wx.hw, sizeof wx.hw);
+  memcpy(s.wx.hg, wx.hg, sizeof wx.hg);
   s.fahr = cfg.fahr;
   if (s.fahr) {  // °F only on the screen: the weather is still stored in °C
     auto f = [](float c) { return c * 9 / 5 + 32; };
@@ -1386,6 +1399,7 @@ UiState makeState() {
   s.news = &news;  // a phase just finished: end animation on the Pomodoro
   s.flights = &flightStats;
   s.energy = &energy;
+  s.drone = &drone;
   return s;
 }
 
@@ -1549,6 +1563,36 @@ void fsMount() {
 }
 void sendStats();
 void setupUpdate();
+
+
+// weatherbox: Drone fly check settings (see UiDrone drone above)
+static void droneSet(int id, const String &name, int wind, int gust) {
+  drone.id = (uint8_t)constrain(id, 0, DRONE_COUNT - 1);
+  size_t k = 0;
+  for (char c : name)
+    if (c >= 0x20 && c < 0x7F && c != '|' && c != '"' && c != '\\' && k < sizeof drone.name - 1) drone.name[k++] = c;
+  drone.name[k] = 0;
+  drone.wind = (uint8_t)constrain(wind, 1, 150);
+  drone.gust = (uint8_t)constrain(gust, 1, 150);
+}
+
+void droneLoad() {
+  File f = fsOk ? LittleFS.open("/drone.txt", "r") : File();
+  if (!f) return;
+  String l = f.readStringUntil('\n');
+  f.close();
+  int a = l.indexOf('|'), b = l.indexOf('|', a + 1), c = l.indexOf('|', b + 1);
+  if (a < 0 || b < 0 || c < 0) return;
+  droneSet(l.substring(0, a).toInt(), l.substring(a + 1, b), l.substring(b + 1, c).toInt(), l.substring(c + 1).toInt());
+}
+
+static bool droneSave() {
+  File f = fsOk ? LittleFS.open("/drone.txt", "w") : File();
+  if (!f) return false;
+  f.printf("%u|%s|%u|%u\n", drone.id, drone.name, drone.wind, drone.gust);
+  f.close();
+  return true;
+}
 
 // ---------- focus history (/stats.bin) ----------
 // One counter per day in a ring of 371 days (53 weeks): gives the streak of days with the goal reached,
@@ -2724,7 +2768,7 @@ void sendFiles() {
 // (without building the whole list in RAM); /api/fsdelete deletes a file or a whole folder, except what
 // the clock needs to work (fsKeep).
 bool fsKeep(const String &p) {
-  if (p == "/stats.bin" || p == "/hooks.txt" || p == "/rotation.txt" || p == "/www" || p.startsWith("/www/")) return true;
+  if (p == "/stats.bin" || p == "/hooks.txt" || p == "/rotation.txt" || p == "/drone.txt" || p == "/www" || p.startsWith("/www/")) return true;
   if (p == "/image" || p == "/gif" || p == "/faces") return true;  // the folders stay; what's inside can go
   return cfg.theme == THEME_PACK && p.startsWith(String("/faces/") + cfg.facePkg + ".");  // face in use
 }
@@ -2953,6 +2997,28 @@ void setupWeb() {
     jsonEscapeAppend(j, hookBreak.c_str());
     j += F("\"}");
     server.send(200, "application/json", j);
+  });
+  server.on("/api/drone", HTTP_GET, [] {  // weatherbox: drone for the Drone fly check face
+    String j;
+    j.reserve(80);
+    j = F("{\"id\":");
+    j += drone.id;
+    j += F(",\"name\":\"");
+    jsonEscapeAppend(j, drone.name);
+    j += F("\",\"wind\":");
+    j += drone.wind;
+    j += F(",\"gust\":");
+    j += drone.gust;
+    j += '}';
+    server.send(200, "application/json", j);
+  });
+  server.on("/api/drone", HTTP_POST, [] {
+    if (!guard()) return;
+    droneSet(argRange("id", drone.id, 0, DRONE_COUNT - 1), server.hasArg("name") ? server.arg("name") : String(drone.name),
+             argRange("wind", drone.wind, 1, 150), argRange("gust", drone.gust, 1, 150));
+    if (cfg.theme == THEME_DRONE || previewActive()) uiInvalidate();
+    bool ok = droneSave();
+    server.send(ok ? 200 : 500, "text/plain", ok ? "ok" : "failed");
   });
   server.on("/api/hooks", HTTP_POST, [] {
     if (!guard()) return;
@@ -4307,6 +4373,7 @@ void setup() {
     }
   }
   hooksLoad();
+  droneLoad();
   if (recoveryMode) {  // no packs, album or weather: only what's needed to fix things
     startRecovery();
     return;

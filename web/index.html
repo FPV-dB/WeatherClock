@@ -264,6 +264,18 @@ nav button[hidden],[hidden]{display:none!important}
  </div>
  </div>
  <div class="grp">
+ <h2>Drone</h2>
+ <div class="card">
+  <small>For the Drone fly check face: the clock compares the wind and gusts with your drone's limits (the same rules as WindBar2).</small>
+  <label>My drone<select id="dsel"><option value="0">DJI Neo 1 (25 / 25 km/h)</option><option value="1">DJI Neo 2 (20 / 24 km/h)</option><option value="2">BetaFPV Pavo 20 Pro (36 / 36 km/h)</option><option value="3">DJI Avata 2 (30 / 40 km/h)</option><option value="4">65mm Tinywhoop (15 / 20 km/h)</option><option value="5">Custom</option></select></label>
+  <div id="dcus" hidden>
+   <label>Name<input id="dname" type="text" maxlength="19" placeholder="My drone"></label>
+   <label>Max wind (km/h)<input id="dwind" type="number" min="1" max="150"></label>
+   <label>Max gusts (km/h)<input id="dgust" type="number" min="1" max="150"></label>
+  </div>
+ </div>
+ </div>
+ <div class="grp">
  <h2>Brightness</h2>
  <div class="card">
   <label>Brightness<input data-k="bri" type="range" min="5" max="100"></label>
@@ -753,11 +765,16 @@ let qt;$('q').oninput=()=>{clearTimeout(qt);const q=$('q').value.trim();if(q.len
     tzLoad().then(m=>m[p.timezone]).catch(()=>null).then(tz=>save(Object.assign({lat:p.latitude,lon:p.longitude,city:name,won:1},tz?{tz}:{}))
      .then(()=>toast(t('City: ')+name+(tz?' · '+p.timezone:''))));r.innerHTML='';$('q').value=''};r.appendChild(b)});
   if(!r.children.length)r.textContent=t('No city found')}).catch(()=>toast(t('No internet in the browser'))),400)};
+// ---------- weatherbox: drone for the Drone fly check face (/api/drone) ----------
+function droneLoad(){fetch('/api/drone').then(r=>r.json()).then(j=>{$('dsel').value=j.id;$('dname').value=j.name||'';$('dwind').value=j.wind;$('dgust').value=j.gust;$('dcus').hidden=j.id!=5}).catch(()=>{})}
+function droneSave(){const id=$('dsel').value;$('dcus').hidden=id!=5;
+ post('/api/drone',new URLSearchParams({id,name:$('dname').value.replace(/[^\x20-\x7e]|[|"\\]/g,'').slice(0,19),wind:$('dwind').value||20,gust:$('dgust').value||25})).then(r=>toast(t(r.ok?'Saved':'Failed: ')+(r.ok?'':r.status)))}
+['dsel','dname','dwind','dgust'].forEach(i=>$(i).onchange=droneSave);
 // ---------- photos ----------
 // ---------- storage: everything that takes up file storage (/api/storage) ----------
 // Groups by type; "Other" is what the clock doesn't use (on clocks that came from the original firmware, its files).
 // The clock marks with k what it needs to work (no delete button).
-const STG=[['Photos and GIFs',p=>p.startsWith('/image/')||p.startsWith('/gif/')],['Downloaded faces',p=>p.startsWith('/faces/')],['Panel',p=>p.startsWith('/www/')],['History and settings',p=>['/stats.bin','/hooks.txt','/rotation.txt'].includes(p)]];
+const STG=[['Photos and GIFs',p=>p.startsWith('/image/')||p.startsWith('/gif/')],['Downloaded faces',p=>p.startsWith('/faces/')],['Panel',p=>p.startsWith('/www/')],['History and settings',p=>['/stats.bin','/hooks.txt','/rotation.txt','/drone.txt'].includes(p)]];
 function storage(){fetch('/api/storage').then(r=>r.json()).then(j=>{const c=$('sheetc');c.innerHTML='';c.appendChild(el('h3',null,t('File storage')));
  const fl=j.files.filter(x=>!x.d),sum=fl.reduce((a,x)=>a+x.s,0);c.appendChild(el('p',null,t('{0} used of {1}',kb(j.used),kb(j.total))));
  const box=el('div','stg'),known=new Set(),mine=['/image','/gif','/faces','/www'];
@@ -796,5 +813,5 @@ $('up').onchange=async e=>{const fs=[...e.target.files];e.target.value='';let ok
 $('op').onsubmit=e=>{e.preventDefault();const o=e.target;post('/api/otapass',new URLSearchParams(new FormData(o))).then(r=>r.text()).then(x=>{toast(t(x));o.reset()})};
 document.onkeydown=e=>{if(e.code=='Space'&&curTab==1&&!/INPUT|BUTTON|SELECT/.test(e.target.tagName)){e.preventDefault();cmd('toggle')}};
 function poll(){if(updating)return setTimeout(poll,1000);fetch('/api/state').then(r=>r.json()).then(load).catch(()=>$('net').className='off').finally(()=>setTimeout(poll,1000))}
-$('prow').onchange=$('pcol').onchange=posSave;i18n();loadI18n();loadFaces().then(peers,peers);let t0=0;try{t0=+localStorage.tab||0}catch(e){}tab(t0);poll();
+$('prow').onchange=$('pcol').onchange=posSave;i18n();loadI18n();loadFaces().then(peers,peers);droneLoad();let t0=0;try{t0=+localStorage.tab||0}catch(e){}tab(t0);poll();
 </script></body></html>

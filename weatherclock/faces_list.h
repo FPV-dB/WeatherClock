@@ -27,4 +27,5 @@
   X(RAIN, themeRain, "Rain", "Chance of rain and millimetres: today, the next 12 hours and the coming days") \
   X(NEWS, themeNews, "News", "Breaking news headlines (needs the radar program on a computer)") \
   X(FLIGHT_STATS, themeFlightStats, "Airport Traffic", "Takeoffs and landings so far today at South Australian airports") \
-  X(ENERGY, themeEnergy, "Energy War", "Latest attacks on energy infrastructure from EnergyWar.net, and the total (needs the radar program)")
+  X(ENERGY, themeEnergy, "Energy War", "Latest attacks on energy infrastructure from EnergyWar.net, and the total (needs the radar program)") \
+  X(DRONE, themeDrone, "Drone fly check", "Is it safe to fly your drone? Wind and gusts against its limits, and the best hours ahead")

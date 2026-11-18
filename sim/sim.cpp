@@ -67,6 +67,9 @@ static UiState base(int h, int m, int s) {
     memcpy(st.wx.ht, T, 12); memcpy(st.wx.hp, P, 12);
     static const uint8_t MM[12] = {0, 0, 0, 1, 4, 12, 18, 6, 2, 0, 0, 0};
     memcpy(st.wx.hmm, MM, 12);
+    static const uint8_t HW[12] = {18, 16, 14, 11, 9, 8, 8, 10, 13, 17, 21, 24};  // weatherbox: wind and gusts per hour
+    static const uint8_t HG[12] = {31, 27, 24, 19, 16, 14, 14, 17, 22, 29, 35, 38};
+    memcpy(st.wx.hw, HW, 12); memcpy(st.wx.hg, HG, 12);
     st.wx.d[0].mm10 = 43; st.wx.d[1].mm10 = 128; st.wx.d[2].mm10 = 215; st.wx.d[3].mm10 = 6; st.wx.d[4].mm10 = 0;
   }
   st.south = true;
@@ -101,6 +104,8 @@ static UiState base(int h, int m, int s) {
       {"Refinery", "Oil or fuel facility", "Power Grid", "Power Grid", "Power Grid"},
       {"16 NOV", "16 NOV", "16 NOV", "16 NOV", "15 NOV"}, {'R', 'R', 'R', 'D', 'U'}, 0, 1};
     st.energy = &en;
+    static UiDrone dr = {DRONE_AVATA2, "", 0, 0};
+    st.drone = &dr;
   }
   // weatherbox: the place and the matching UTC (local time is AEDT, UTC+11)
   st.lat = -35.28f; st.lon = 149.13f;  // Canberra (any place works; the sun and moon faces need one)
@@ -544,6 +549,29 @@ int main() {
       char name[32];
       snprintf(name, sizeof name, "wind-%02d", i);
       save(*f, name);
+    }
+    delete f;
+  }
+
+  // weatherbox: frames of the animated Drone face (SIM_DRONE_FRAMES=n per scene), 120 ms apart:
+  // calm (good), the sample day (caution), gusty (don't fly) and rain
+  if (const char *nf = getenv("SIM_DRONE_FRAMES")) {
+    Frame *f = new Frame();
+    uiBegin(f);
+    struct Scene { uint8_t wind, gust; uint16_t dir; int code; } sc[] = {{8, 12, 250, 1}, {18, 31, 225, 2}, {29, 52, 290, 3}, {12, 18, 200, 61}};
+    int k = 0;
+    for (const Scene &z : sc) {
+      UiState w = base(14, 37, 24);
+      w.theme = THEME_DRONE;
+      w.wx.wind = z.wind; w.wx.gust = z.gust; w.wx.wdir = z.dir; w.wx.code = z.code; w.wx.version = 10 + k;
+      w.wx.hw[0] = z.wind; w.wx.hg[0] = z.gust;
+      for (int i = 0, n = atoi(nf); i < n; i++) {
+        w.ms = 1000 + i * 120;
+        uiRenderClock(w);
+        char name[32];
+        snprintf(name, sizeof name, "drone-%03d", k++);
+        save(*f, name);
+      }
     }
     delete f;
   }
