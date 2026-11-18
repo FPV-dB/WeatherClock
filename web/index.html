@@ -189,6 +189,9 @@ nav button[hidden],[hidden]{display:none!important}
   <label>Rotate faces<select data-k="rotmin"><option value="0">Never</option><option value="1">Every 1 min</option><option value="5">Every 5 min</option><option value="15">Every 15 min</option><option value="30">Every 30 min</option><option value="60">Every hour</option></select></label>
   <label>Lightning only when strikes are detected<input data-k="lightningonly" type="checkbox"></label>
   <small>Applies to rotation. Uses nearby strikes from the last 30 minutes and fresh helper data. Turn off to include the all-clear and waiting screens. Manual selection always works.</small>
+  <label>News source<select data-k="nsrc"><option value="0">BBC World</option><option value="1">ABC Just In</option><option value="2">Kyiv Independent</option><option value="3">The Moscow Times</option><option value="4">RT</option><option value="5">Take turns (all of them)</option></select></label>
+  <label>News screen seconds<input data-k="nsec" type="number" min="10" max="120"></label>
+  <small>The News face stays on for this long (rounded up to whole "Seconds per item") and scrolls its headlines slowly through it. The source changes within 10 minutes (the radar program on the computer fetches it).</small>
   <small>Faces in the rotation (tick 2 or more):</small>
   <div id="rotlist"></div>
   <small id="rotinfo" hidden></small>

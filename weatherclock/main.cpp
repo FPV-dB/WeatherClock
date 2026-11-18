@@ -149,7 +149,11 @@ struct Settings {
   uint8_t devPos;       // weatherbox: where it sits among the others, a grid of up to 10x10: 0 none, else (row-1)*10 + col (1..100)
   uint8_t devNum;       // weatherbox: the clock's number among several (1..99, 0 = none), shown by Identify; garbage becomes 0
   uint8_t lightningOnly, lightningMark; // appended: preserve existing EEPROM offsets
+  uint8_t newsSrc;      // weatherbox: News face source, read by the computer program (NEWS_SOURCES below); garbage becomes 0
+  uint8_t newsSec;      // weatherbox: seconds the News face stays on screen (10..120, rounded up to whole "Seconds per item"); garbage becomes 30
 };
+// weatherbox: News face sources (the computer program fetches the feed; the last one takes turns between the others)
+const uint8_t NEWS_SOURCES = 6;  // 0 BBC World, 1 ABC Just In, 2 Kyiv Independent, 3 The Moscow Times, 4 RT, 5 take turns
 const uint32_t SETTINGS_MAGIC = 0x504F4D34;     // "POM4"
 const uint32_t SETTINGS_MAGIC_V3 = 0x504F4D33;  // "POM3": same fields, without the v4 ones
 Settings cfg;
@@ -160,6 +164,8 @@ void defaultSettings() {
   cfg.lightningOnly = 1;
   cfg.lightningMark = 0xD7;
   cfg.lang = 1;   // weatherbox: English by default
+  cfg.newsSrc = 0;
+  cfg.newsSec = 30;
   cfg.alexa = 0;  // Alexa's "Pomodoro" light belongs to the timer, which doesn't exist here
 }
 
@@ -282,6 +288,8 @@ void loadSettings() {
     if (!ok) cfg.devName[0] = 0;
   }
   if (cfg.devNum > 99) cfg.devNum = 0;
+  if (cfg.newsSrc >= NEWS_SOURCES) cfg.newsSrc = 0;
+  if (cfg.newsSec < 10 || cfg.newsSec > 120) cfg.newsSec = 30;
   if (cfg.devPos > 100) cfg.devPos = 0;
   if (!(fabsf(cfg.lat) <= 90 && fabsf(cfg.lon) <= 180)) cfg.lat = cfg.lon = 0;  // garbage or NaN would overflow String(float)
   // password for the clock's networks: 8 letters/digits without the easily confused ones, drawn by the chip's generator
@@ -1642,7 +1650,8 @@ UiState makeState() {
   s.lat = cfg.lat;
   s.lon = cfg.lon;
   s.utc = s.timeOk ? (uint32_t)time(nullptr) : 0;
-  s.news = &news;  // a phase just finished: end animation on the Pomodoro
+  s.news = &news;
+  s.newsSec = cfg.newsSec;  // weatherbox: how long the News face is on screen (its scroll speed)
   s.flights = &flightStats;
   s.energy = &energy;
   s.lightning = &lightning;
@@ -2515,6 +2524,9 @@ void scheduleView() {
     rotStepNow = false;
   }
   viewUntil = now + albumSlotDelayMs();
+  // weatherbox: the News face stays longer, so the headlines can be read: whole extra slots, so numbered clocks stay in step
+  if (!inAlbum && cfg.theme == THEME_NEWS && cfg.albumDelay && cfg.newsSec > cfg.albumDelay)
+    viewUntil += (uint32_t)((cfg.newsSec - 1) / cfg.albumDelay) * cfg.albumDelay * 1000UL;
   if (!viewUntil) viewUntil = 1;
 }
 
@@ -2823,6 +2835,10 @@ void sendState() {
   j += cfg.fahr;
   j += F(",\"rain\":");
   j += cfg.rainAlert;
+  j += F(",\"nsrc\":");
+  j += cfg.newsSrc;
+  j += F(",\"nsec\":");
+  j += cfg.newsSec;
   j += F(",\"beta\":");
   j += cfg.beta;
   j += F(",\"lat\":");
@@ -3805,6 +3821,8 @@ void setupWeb() {
     uint8_t won = argRange("won", cfg.weatherOn, 0, 1);
     uint8_t fahr = argRange("fahr", cfg.fahr, 0, 1), rain = argRange("rain", cfg.rainAlert, 0, 1);
     cfg.beta = argRange("beta", cfg.beta, 0, 1);
+    cfg.newsSrc = argRange("nsrc", cfg.newsSrc, 0, NEWS_SOURCES - 1);
+    cfg.newsSec = argRange("nsec", cfg.newsSec, 10, 120);
     if (fahr != cfg.fahr || rain != cfg.rainAlert) uiInvalidate();  // numbers and the warning change on screen
     cfg.fahr = fahr;
     cfg.rainAlert = rain;

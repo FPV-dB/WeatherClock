@@ -170,6 +170,7 @@ struct UiState {
   float lat, lon;  // weatherbox: the clock's place (for the sun's position)
   uint32_t utc;    // weatherbox: seconds since 1970, UTC (0 = unknown)
   const UiNews *news;  // weatherbox: latest headlines (never null on the clock)
+  uint8_t newsSec;     // weatherbox: seconds the News face is on screen (0 = 10); the headlines scroll through in that time
   const UiFlightStats *flights;
   const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
   const UiLightning *lightning;  // weatherbox: nearby strikes (may be null)

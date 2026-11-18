@@ -867,7 +867,9 @@ void themeNews(const UiState &s, bool full) {
   const int total = s.news ? s.news->n * 90 : 0;
   const int maxScroll = total > 186 ? total - 186 : 0;
   uint32_t elapsed = s.ms - scrollStart;
-  const int offset = elapsed < 1000 ? 0 : elapsed >= 9000 ? maxScroll : (uint32_t)maxScroll * (elapsed - 1000) / 8000;
+  // weatherbox: a 1 s pause at the top and at the bottom, the scroll in between takes the rest of the News screen time
+  const uint32_t scrollMs = (s.newsSec > 10 ? s.newsSec : 10) * 1000UL - 2000;
+  const int offset = elapsed < 1000 ? 0 : elapsed >= 1000 + scrollMs ? maxScroll : (uint32_t)maxScroll * (elapsed - 1000) / scrollMs;
   if (reset || s.ms - lastBody >= 350) {
     lastBody = s.ms;
     NewsBody b = {&s, offset};

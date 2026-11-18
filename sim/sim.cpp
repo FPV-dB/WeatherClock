@@ -660,6 +660,23 @@ int main() {
     delete f;
   }
 
+  // weatherbox: the News face with a longer screen time (30 s): one frame per second, a slower scroll
+  {
+    Frame *f = new Frame();
+    uiBegin(f);
+    UiState t = base(14, 37, 24);
+    t.theme = THEME_NEWS;
+    t.newsSec = 30;
+    for (int i = 0; i <= 30; i++) {
+      t.ms = i * 1000;
+      uiRenderClock(t);
+      char n[32];
+      snprintf(n, sizeof n, "news-30s-%02d", i);
+      save(*f, n);
+    }
+    delete f;
+  }
+
   // ---- Pomodoro ----
   UiState p = base(14, 37, 25);
   p.phase = PH_WORK; p.running = true; p.totalMs = 25 * 60000; p.remainingMs = 10 * 60000 + 12000; p.cycleDone = 2;
