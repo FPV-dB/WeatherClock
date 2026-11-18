@@ -48,7 +48,7 @@ extern "C" uint32_t _FS_start;
 
 void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h);  // ui.cpp: clips to the dirty area; off-screen, it lands in the strip
 
-#define FW_VERSION "2.0.18"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
+#define FW_VERSION "2.0.19"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
 #define HOSTNAME   "weatherclock"
 #define AP_NAME    "WeatherClock-Setup"
 
@@ -1012,6 +1012,9 @@ struct Weather {
   int8_t ht[UI_HOURS];
   uint8_t hp[UI_HOURS];
   uint8_t hmm[UI_HOURS];
+  bool droneValid = false;
+  uint32_t receivedAt = 0;
+  uint16_t droneHours = 0;
   uint8_t hw[UI_HOURS], hg[UI_HOURS];  // wind and gusts per hour, km/h (Drone face)
   char tzName[40] = "";  // the city's time zone according to Open-Meteo (IANA, e.g. America/Sao_Paulo)
   int32_t utcOff = 0;     // this time zone's offset right now, in seconds (the panel compares it with the clock's)
@@ -1145,6 +1148,13 @@ bool fetchWeather() {
   DeserializationError err = deserializeJson(doc, client, DeserializationOption::Filter(filter));
   client.stop();
   if (err || doc["current"]["temperature_2m"].isNull()) return false;
+  auto windValid = [](JsonVariantConst value) {
+    return (value.is<float>() || value.is<int>() || value.is<unsigned>()) &&
+           isfinite(value.as<float>()) && value.as<float>() >= 0;
+  };
+  wx.droneValid = windValid(doc["current"]["wind_speed_10m"]) &&
+                  windValid(doc["current"]["wind_gusts_10m"]) && doc["current"]["weather_code"].is<int>();
+  wx.droneHours = 0;
   wx.t = doc["current"]["temperature_2m"];
   wx.hum = doc["current"]["relative_humidity_2m"];
   wx.code = doc["current"]["weather_code"];
@@ -1171,6 +1181,7 @@ bool fetchWeather() {
       wx.ht[i] = (int8_t)constrain(lroundf(isfinite(v) ? v : 0), -99, 99);
       wx.hp[i] = hp[i].isNull() ? 255 : (uint8_t)constrain(hp[i].as<int>(), 0, 100);
       wx.hmm[i] = (uint8_t)constrain(lroundf((hm[i] | 0.0f) * 10), 0, 255);
+      if (windValid(hw[i]) && windValid(hg[i]) && windValid(hm[i])) wx.droneHours |= (1U << i);
       wx.hw[i] = (uint8_t)constrain(lroundf(hw[i] | 0.0f), 0, 255);
       wx.hg[i] = (uint8_t)constrain(lroundf(hg[i] | 0.0f), 0, 255);
       wx.nh = i + 1;
@@ -1220,6 +1231,7 @@ bool fetchWeather() {
   for (char *c = wx.tzName; *c; c++)  // IANA name ("America/Sao_Paulo"): only this goes into the state JSON
     if (!isalnum((unsigned char)*c) && !strchr("/_+-", *c)) *c = 0;
   wx.utcOff = doc["utc_offset_seconds"] | 0;
+  wx.receivedAt = millis();
   wx.ok = true;
   wx.version++;
   wxGotAt = millis() | 1;
@@ -1608,6 +1620,8 @@ UiState makeState() {
   memcpy(s.wx.ht, wx.ht, sizeof wx.ht);
   memcpy(s.wx.hp, wx.hp, sizeof wx.hp);
   memcpy(s.wx.hmm, wx.hmm, sizeof wx.hmm);
+  s.wx.droneValid = wx.droneValid && millis() - wx.receivedAt <= 30UL * 60000UL;
+  s.wx.droneHours = wx.droneHours;
   memcpy(s.wx.hw, wx.hw, sizeof wx.hw);
   memcpy(s.wx.hg, wx.hg, sizeof wx.hg);
   s.fahr = cfg.fahr;
