@@ -151,9 +151,13 @@ struct Settings {
   uint8_t lightningOnly, lightningMark; // appended: preserve existing EEPROM offsets
   uint8_t newsSrc;      // weatherbox: News face source, read by the computer program (NEWS_SOURCES below); garbage becomes 0
   uint8_t newsSec;      // weatherbox: seconds the News face stays on screen (10..120, rounded up to whole "Seconds per item"); garbage becomes 30
+  uint16_t newsMask;    // weatherbox: sources "take turns" goes through (bit n = source n); 0 or garbage becomes NEWS_MASK_DEFAULT
 };
 // weatherbox: News face sources (the computer program fetches the feed; the last one takes turns between the others)
-const uint8_t NEWS_SOURCES = 6;  // 0 BBC World, 1 ABC Just In, 2 Kyiv Independent, 3 The Moscow Times, 4 RT, 5 take turns
+// 0 BBC World, 1 ABC Just In, 2 Kyiv Independent, 3 The Moscow Times, 4 RT, 5 Al Jazeera, 6 The Guardian World, 7 NPR News,
+// 8 DW News, 9 France 24, 10 SBS News, 11 Ukrainska Pravda, 12 Meduza, 13 TASS, 14 custom feed (/newsfeed.txt), 15 take turns
+const uint8_t NEWS_SOURCES = 16;
+const uint16_t NEWS_MASK_ALL = 0x7FFF, NEWS_MASK_DEFAULT = 0x001F;  // the first five
 const uint32_t SETTINGS_MAGIC = 0x504F4D34;     // "POM4"
 const uint32_t SETTINGS_MAGIC_V3 = 0x504F4D33;  // "POM3": same fields, without the v4 ones
 Settings cfg;
@@ -166,6 +170,7 @@ void defaultSettings() {
   cfg.lang = 1;   // weatherbox: English by default
   cfg.newsSrc = 0;
   cfg.newsSec = 30;
+  cfg.newsMask = NEWS_MASK_DEFAULT;
   cfg.alexa = 0;  // Alexa's "Pomodoro" light belongs to the timer, which doesn't exist here
 }
 
@@ -290,6 +295,7 @@ void loadSettings() {
   if (cfg.devNum > 99) cfg.devNum = 0;
   if (cfg.newsSrc >= NEWS_SOURCES) cfg.newsSrc = 0;
   if (cfg.newsSec < 10 || cfg.newsSec > 120) cfg.newsSec = 30;
+  if (!(cfg.newsMask & NEWS_MASK_ALL) || (cfg.newsMask & ~NEWS_MASK_ALL)) cfg.newsMask = NEWS_MASK_DEFAULT;
   if (cfg.devPos > 100) cfg.devPos = 0;
   if (!(fabsf(cfg.lat) <= 90 && fabsf(cfg.lon) <= 180)) cfg.lat = cfg.lon = 0;  // garbage or NaN would overflow String(float)
   // password for the clock's networks: 8 letters/digits without the easily confused ones, drawn by the chip's generator
@@ -2839,6 +2845,18 @@ void sendState() {
   j += cfg.newsSrc;
   j += F(",\"nsec\":");
   j += cfg.newsSec;
+  j += F(",\"nmask\":");
+  j += cfg.newsMask;
+  {  // the custom feed: name and address, one per line in /newsfeed.txt (checked when saved)
+    File f = fsOk ? LittleFS.open("/newsfeed.txt", "r") : File();
+    String nm = f ? f.readStringUntil('\n') : String(), url = f ? f.readStringUntil('\n') : String();
+    if (f) f.close();
+    j += F(",\"nname\":\"");
+    jsonEscapeAppend(j, nm.c_str());
+    j += F("\",\"nurl\":\"");
+    jsonEscapeAppend(j, url.c_str());
+    j += '"';
+  }
   j += F(",\"beta\":");
   j += cfg.beta;
   j += F(",\"lat\":");
@@ -3035,7 +3053,7 @@ void sendFiles() {
 // (without building the whole list in RAM); /api/fsdelete deletes a file or a whole folder, except what
 // the clock needs to work (fsKeep).
 bool fsKeep(const String &p) {
-  if (p == "/stats.bin" || p == "/hooks.txt" || p == "/rotation.txt" || p == "/world.txt" || p == "/drone.txt" || p == "/www" || p.startsWith("/www/")) return true;
+  if (p == "/stats.bin" || p == "/hooks.txt" || p == "/newsfeed.txt" || p == "/rotation.txt" || p == "/world.txt" || p == "/drone.txt" || p == "/www" || p.startsWith("/www/")) return true;
   if (p == "/image" || p == "/gif" || p == "/faces") return true;  // the folders stay; what's inside can go
   return cfg.theme == THEME_PACK && p.startsWith(String("/faces/") + cfg.facePkg + ".");  // face in use
 }
@@ -3823,6 +3841,30 @@ void setupWeb() {
     cfg.beta = argRange("beta", cfg.beta, 0, 1);
     cfg.newsSrc = argRange("nsrc", cfg.newsSrc, 0, NEWS_SOURCES - 1);
     cfg.newsSec = argRange("nsec", cfg.newsSec, 10, 120);
+    if (server.hasArg("nmask")) {
+      const long m = server.arg("nmask").toInt();
+      if (m > 0 && m <= NEWS_MASK_ALL) cfg.newsMask = (uint16_t)m;
+    }
+    if (server.hasArg("nname") || server.hasArg("nurl")) {  // weatherbox: the custom news feed (name, RSS/Atom address)
+      File r = fsOk ? LittleFS.open("/newsfeed.txt", "r") : File();
+      String nm = r ? r.readStringUntil('\n') : String(), url = r ? r.readStringUntil('\n') : String();
+      if (r) r.close();
+      if (server.hasArg("nname")) nm = server.arg("nname");
+      if (server.hasArg("nurl")) url = server.arg("nurl");
+      nm.trim();
+      url.trim();
+      bool ok = nm.length() < 20 && url.length() <= 300 &&
+                (!url.length() || url.startsWith("http://") || url.startsWith("https://"));
+      for (char c : nm) ok = ok && c >= 0x20 && c < 0x7F && c != '"' && c != '\\';
+      for (char c : url) ok = ok && c > 0x20 && c < 0x7F && c != '"' && c != '\\';
+      if (ok && fsOk) {
+        File w = LittleFS.open("/newsfeed.txt", "w");
+        if (w) {
+          w.print(nm + "\n" + url + "\n");
+          w.close();
+        }
+      }
+    }
     if (fahr != cfg.fahr || rain != cfg.rainAlert) uiInvalidate();  // numbers and the warning change on screen
     cfg.fahr = fahr;
     cfg.rainAlert = rain;
