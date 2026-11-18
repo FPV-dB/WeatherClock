@@ -88,6 +88,17 @@ struct UiEnergy {
   uint16_t version;
 };
 
+// weatherbox: lightning near the clock, from a live strike feed, sent by the computer program (/api/lightning)
+struct UiLightning {
+  int16_t nearKm;          // nearest strike (last 10 min, else last 30 min); -1 = none
+  uint16_t n10;            // strikes within the radius in the last 10 minutes
+  int16_t from;            // bearing from the clock to the strikes, degrees; -1 = unknown
+  int16_t moving;          // direction the storm is moving towards, degrees; -1 = unknown
+  uint16_t radius;         // km watched around the clock
+  uint32_t ago;            // seconds from the latest strike to when this was received; 0xFFFFFFFF = none yet
+  uint32_t at;             // millis() when received (0 = never)
+  uint16_t version;
+};
 // weatherbox: the drone chosen in the panel for the Drone face (limits from WindBar2's aircraft profiles)
 struct UiDrone {
   uint8_t id;           // UiDroneId
@@ -127,6 +138,7 @@ struct UiState {
   const UiNews *news;  // weatherbox: latest headlines (never null on the clock)
   const UiFlightStats *flights;
   const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
+  const UiLightning *lightning;  // weatherbox: nearby strikes (may be null)
   const UiDrone *drone;    // weatherbox: drone for the Drone face (null = DJI Neo 2)
 };
 

@@ -938,6 +938,14 @@ void sendHueDescription() {
 UiNews news = {};
 UiFlightStats flightStats = {};
 UiEnergy energy = {};
+UiLightning lightning = {-1, 0, -1, -1, 100, 0xFFFFFFFFUL, 0, 0};
+
+// The computer program posts every minute. Rotation shows the Lightning face only while there has been a strike
+// within the radius in the last 30 minutes and the data is fresh (5 minutes); picked by hand, it always shows.
+static bool lightningActive() {
+  if (!lightning.at || millis() - lightning.at > 5UL * 60000UL || lightning.ago == 0xFFFFFFFFUL) return false;
+  return lightning.nearKm >= 0 && lightning.ago + (millis() - lightning.at) / 1000 < 30UL * 60;
+}
 
 // The companion posts every 15 minutes. No update for 45 minutes means the feed failed; zero movements means
 // there is nothing useful to show. In both cases rotation skips Airport Traffic instead of displaying an empty panel.
@@ -1399,6 +1407,7 @@ UiState makeState() {
   s.news = &news;  // a phase just finished: end animation on the Pomodoro
   s.flights = &flightStats;
   s.energy = &energy;
+  s.lightning = &lightning;
   s.drone = &drone;
   return s;
 }
@@ -3139,6 +3148,31 @@ void setupWeb() {
     energy = e;
     server.send(200, "text/plain", "ok");
   });
+  // weatherbox: lightning near the clock for the Lightning face, from a live strike feed. near = nearest strike in
+  // km (-1 none), n = strikes in the last 10 minutes, from / mv = bearing to the storm and its heading in degrees
+  // (-1 unknown), r = radius watched in km, ago = seconds since the latest strike (-1 none seen).
+  server.on("/api/lightning", HTTP_POST, [] {
+    if (!guard()) return;
+    UiLightning l = {};
+    auto deg = [](const String &v) -> int16_t {
+      if (!v.length()) return -1;
+      const long d = v.toInt();
+      return d < 0 ? -1 : (int16_t)(d % 360);
+    };
+    l.nearKm = server.hasArg("near") ? (int16_t)constrain(server.arg("near").toInt(), -1, 9999) : -1;
+    l.n10 = (uint16_t)constrain(server.arg("n").toInt(), 0, 65535);
+    l.from = deg(server.arg("from"));
+    l.moving = deg(server.arg("mv"));
+    l.radius = (uint16_t)constrain(server.hasArg("r") ? server.arg("r").toInt() : 100, 1, 999);
+    const long ago = server.hasArg("ago") ? server.arg("ago").toInt() : -1;
+    l.ago = ago < 0 ? 0xFFFFFFFFUL : (uint32_t)min(ago, 30L * 86400L);
+    if (l.nearKm < 0) l.n10 = 0;
+    l.at = millis();
+    if (!l.at) l.at = 1;
+    l.version = lightning.version + 1;
+    lightning = l;
+    server.send(200, "text/plain", "ok");
+  });
   server.on("/api/peers", HTTP_GET, [] {  // weatherbox: other clocks heard on this Wi-Fi in the last 5 minutes
     if (!readOk()) return;
     if (peerUp) peerSend(IPAddress(255, 255, 255, 255), true);  // the panel asks again a moment later for the answers
@@ -4077,6 +4111,7 @@ void rotLoop() {
       int t = it.substring(2).toInt();
       if (t < 0 || t >= THEME_COUNT) continue;
       if (t == THEME_FLIGHT_STATS && !flightStatsUsable()) continue;
+      if (t == THEME_LIGHTNING && !lightningActive()) continue;
       cfg.theme = t;  // weatherbox: the rotation's pack stays loaded (reloading it on every pass fragments memory)
     } else if (it.startsWith("p:") && (it.substring(2) == facePackId() || loadPack(it.substring(2)))) {
       cfg.theme = THEME_PACK;
