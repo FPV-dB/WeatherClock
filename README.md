@@ -1,16 +1,16 @@
 <h1 align="center">Weather Clock</h1>
 
-<p align="center"><b>Decent alternative firmware for $5 ESP32-based weather gadget with 240x240 LCD screen</b></p>
+<p align="center"><b>Fairly decent alternative firmware for $5 ESP32-based weather gadget with 240x240 LCD screen</b></p>
 
 <p align="center"><img src="docs/readme/art2.jpg" width="640" alt="Artistic sketch of a white GeekMagic SmallTV-Ultra"></p>
 
-A weather and news-focused firmware for the cheap clones of a Weather clock: the **GeekMagic SmallTV-Ultra** (ESP8266, 240×240 screen) and its look-alikes. It turns the little desk clock into a weather station with 20+ animated faces, a web panel you open from any phone or computer, and updates over Wi-Fi.
+A weather and news-focused firmware for the cheap clones of a Weather clock: the **[GeekMagic SmallTV-Ultra](https://geekmagicclock.com)** (ESP8266, 240×240 screen) and its look-alikes. It turns the little desk clock into a weather station with 20+ animated faces, a web panel you open from any phone or computer, and updates over Wi-Fi.
 
 Weather Clock is a fork of [smalltv-pomodoro](https://github.com/davicorrea0/smalltv-pomodoro) by davicorrea0 (GPL-3.0). See [Credits](#credits).
 
-**Where to get one:** the GeekMagic SmallTV-Ultra is sold by GeekMagic, and clones of it are sold on AliExpress and similar shops, often as a "portable mini weather screen" ([AliExpress search](https://www.aliexpress.com/w/wholesale-portable-mini-weather-screen.html)). Check that the listing is the ESP8266 model with a 240×240 screen.
+**Where to get one:** the GeekMagic SmallTV-Ultra is sold by [GeekMagic](https://geekmagicclock.com), and clones of it are sold on AliExpress and similar shops, often as a "portable mini weather screen" ([AliExpress search](https://www.aliexpress.com/w/wholesale-portable-mini-weather-screen.html)). Check that the listing is the ESP8266 model with a 240×240 screen.
 
-> **Note on clones:** this project also works with compatible clones of the GeekMagic SmallTV-Ultra. This project does not condone any alleged intellectual property theft of hardware designs. Where you can, buy the original from GeekMagic.
+> **Note on clones:** this project also works with compatible clones of the GeekMagic SmallTV-Ultra. This project does not condone any alleged intellectual property theft of hardware designs. Where you can, buy the original from [GeekMagic](https://geekmagicclock.com).
 
 ![Animated clock faces](docs/readme/animated-faces.gif)
 
@@ -154,6 +154,8 @@ The optional **WeatherClockRadar** helper also makes several 240×240 album card
 - **Military Aircraft:** shows military-registered aircraft detected within 250 km. The recent-sighting window is configurable from 1 to 1,440 minutes (60 minutes by default), and the card is removed from rotation when no aircraft qualifies.
 - **Flights Today:** counts observed takeoffs and landings at airports within 200 km. These are observed ADS-B transitions, not guaranteed complete airport totals.
 - **Weather warnings:** shows nearby BoM warning cards and removes them when the warning is no longer active.
+
+<img src="docs/readme/lightning-detected.gif" width="240" alt="Animated Lightning detected screen"><br><sub>Design preview of the animated "Lightning detected" screen. Needs the helper script running on another computer (see [Optional helper computer](#optional-helper-computer)). The numbers are sample values; today's helper shows the BoM warning text.</sub>
 
 These are album cards rather than built-in faces, so they do not appear in the face checkbox list. Set *Clock → What to show* to **Alternate clock and album** to include them. They update only while the helper computer is on, awake and connected to the same network as the clock. Public ADS-B coverage is incomplete, so aircraft can occasionally be missed.
 
