@@ -1,27 +1,34 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0e0e10"><title>Weather Clock</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23ff9f1c' d='M0 0h1v1h-1zM10 0h1v1h-1zM1 1h1v1h-1zM9 1h1v1h-1zM5 2h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM7 3h1v1h-1zM3 4h1v1h-1zM7 4h1v1h-1zM2 5h1v1h-1zM8 5h1v1h-1zM3 6h1v1h-1zM7 6h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM5 8h1v1h-1zM1 9h1v1h-1zM0 10h1v1h-1z'/%3E%3Cpath fill='%23ffd23f' d='M5 3h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM3 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM6 5h1v1h-1zM7 5h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM5 7h1v1h-1z'/%3E%3Cpath fill='%23f2f4f8' d='M8 8h1v1h-1zM9 8h1v1h-1zM10 8h1v1h-1zM6 9h1v1h-1zM7 9h1v1h-1zM8 9h1v1h-1zM9 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM14 10h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM14 11h1v1h-1zM15 11h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM13 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1z'/%3E%3Cpath fill='%23b8c2cf' d='M5 13h1v1h-1zM6 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1z'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0f0d0b"><title>Weather Clock</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23ff9f1c' d='M0 0h1v1h-1zM10 0h1v1h-1zM1 1h1v1h-1zM9 1h1v1h-1zM5 2h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM7 3h1v1h-1zM3 4h1v1h-1zM7 4h1v1h-1zM2 5h1v1h-1zM8 5h1v1h-1zM3 6h1v1h-1zM7 6h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM5 8h1v1h-1zM1 9h1v1h-1zM0 10h1v1h-1z'/%3E%3Cpath fill='%23ffd23f' d='M5 3h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM3 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM6 5h1v1h-1zM7 5h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM5 7h1v1h-1z'/%3E%3Cpath fill='%23f2f4f8' d='M8 8h1v1h-1zM9 8h1v1h-1zM10 8h1v1h-1zM6 9h1v1h-1zM7 9h1v1h-1zM8 9h1v1h-1zM9 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM14 10h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM14 11h1v1h-1zM15 11h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM13 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1z'/%3E%3Cpath fill='%23b8c2cf' d='M5 13h1v1h-1zM6 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1z'/%3E%3C/svg%3E">
 <style>
-:root{--bg:#0e0e10;--card:#18181b;--card2:#202024;--line:#2a2a2f;--fg:#f4f4f5;--mut:#8b8b93;--work:#ff5a47;--short:#3ecf7a;--long:#4f8dff;--ac:var(--work)}
+:root{--bg:#0f0d0b;--card:#181512;--card2:#221e1a;--line:#2e2924;--fg:#f3ece2;--mut:#9c9184;--work:#e8664a;--short:#7cc47f;--long:#6fa8dc;--amb:#f0a43a;--ac:var(--amb);--serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--fg)}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--fg);background:var(--bg);background-image:radial-gradient(900px 520px at 22% -6%,#3a2a1a66,transparent 70%),repeating-linear-gradient(115deg,#ffffff03 0 1px,transparent 1px 7px);background-attachment:fixed}
 main{max-width:480px;margin:auto;padding:4px 16px calc(96px + env(safe-area-inset-bottom))}
-header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;max-width:480px;margin:auto;padding:14px 16px;background:linear-gradient(var(--bg) 75%,transparent)}
-header b{font-size:18px}header span{color:var(--mut);font-variant-numeric:tabular-nums}
+/* header: art2 (the sketched clock) as a hero, title set in a serif on the dark side of the drawing */
+header{position:relative;max-width:480px;margin:12px auto 6px;padding:0 16px}
+#hero{position:relative;min-height:316px;border-radius:22px;overflow:hidden;border:1px solid #3a322a;display:flex;flex-direction:column;justify-content:flex-end;padding:18px 20px;background:radial-gradient(70% 90% at 30% 60%,#4a3826,#15110d 70%);box-shadow:0 24px 50px -28px #000,inset 0 1px #ffffff14}
+#art{position:absolute;left:0;top:0;width:100%;height:230px;object-fit:cover;object-position:32% 40%;opacity:0;transition:opacity .8s;-webkit-mask-image:linear-gradient(180deg,#000 62%,transparent);mask-image:linear-gradient(180deg,#000 62%,transparent)}#art.v{opacity:1}
+#hero::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,#0f0d0b00 50%,#0f0d0bcc 80%)}#hero>:not(#art):not(.hst){position:relative;z-index:2}#hero .hst{z-index:2}
+.kick{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--amb)}
+#hname{display:block;font:500 30px/1.1 var(--serif);letter-spacing:.2px;margin:4px 0 2px;text-shadow:0 2px 14px #000}
+#hsub{margin:0;color:#d9cdbd;font:italic 15px var(--serif)}
+.hst{position:absolute;top:14px;right:14px;display:flex;align-items:center;padding:6px 12px;border-radius:999px;background:#0f0d0b99;border:1px solid #ffffff1f;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#e9dfd2;font-variant-numeric:tabular-nums;font-size:14px}
 #net{display:inline-block;width:8px;height:8px;border-radius:50%;background:#555;margin-right:8px;vertical-align:middle}
 #alx{display:none;margin-right:10px;padding:2px 8px;border-radius:9px;background:#13283a;color:#5ecbff;font-size:12px;font-weight:600}#alx.v{display:inline-block}
 .alx{display:block;margin-bottom:8px;padding:10px 12px;border-radius:10px;background:var(--bg)}.alx i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;background:#e0a030}.alx.ok i{background:var(--short)}
 /* other clocks strip, under the header on every tab (weatherbox) */
-header{flex-wrap:wrap}#oc{flex-basis:100%;display:none;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:12px}#oc.v{display:flex}
+header{flex-wrap:wrap}#oc{flex-basis:100%;display:none;flex-wrap:wrap;gap:6px;margin:12px 2px 0;font-size:12px}#oc.v{display:flex}
 #oc a{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:9px;background:var(--card2);border:1px solid var(--line);color:var(--fg);text-decoration:none;font-variant-numeric:tabular-nums}
 #oc b{font-size:12px;font-weight:600}#oc a span{color:var(--mut)}#oc a em{font-style:normal;color:#e0a030}#oc>small:first-child{width:100%}#oc i{width:7px;height:7px;border-radius:50%;background:#666;flex:none}#oc i.ok{background:var(--short)}#oc i.old{background:#e0a030}#oc small{align-self:center}
 #net.on{background:var(--short)}#net.off{background:var(--work)}
-h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:1.2px;margin:22px 4px 10px;font-weight:600}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:12px}
+h2{display:flex;align-items:center;gap:12px;font:italic 400 19px var(--serif);color:var(--fg);letter-spacing:.2px;margin:26px 4px 12px}h2::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.card{background:linear-gradient(180deg,#1d1915,var(--card));border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:inset 0 1px #ffffff0a,0 14px 30px -24px #000}
 .tab{display:none}.tab.on{display:block;animation:fade .2s}@keyframes fade{from{opacity:0;transform:translateY(4px)}}
 button{font:inherit;border:0;cursor:pointer;color:var(--fg);background:none}
 button:active{transform:scale(.97)}
-.btn{width:100%;padding:13px;border-radius:12px;background:var(--card2);border:1px solid var(--line)}.btn.p{background:var(--ac);border-color:transparent;color:#fff;font-weight:600}
+.btn{width:100%;padding:13px;border-radius:12px;background:var(--card2);border:1px solid var(--line)}.btn.p{background:linear-gradient(180deg,#f4b456,var(--ac));border-color:transparent;color:#1a1208;font-weight:650}
 .row{display:flex;gap:8px}.row>*{flex:1}
 small{color:var(--mut)}
 .abt{display:flex;align-items:center;gap:14px;margin-bottom:12px}.abt img{width:48px;height:48px;image-rendering:pixelated}.abt b{font-size:18px;display:block}.cred p{margin:8px 0;font-size:14px;line-height:1.45}.cred a{color:var(--ac)}
@@ -72,7 +79,7 @@ input[type=color]{width:52px;height:36px;padding:2px}
 .diag div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:13px}.diag div:first-child{border-top:0}.diag b{color:var(--mut);font-weight:500;white-space:nowrap}.diag span{text-align:right}
 .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--ac)}
 /* barra de abas */
-nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#121215ee;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#13100dee;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
 nav div{display:flex;max-width:480px;margin:auto}
 nav button{flex:1;padding:10px 0 12px;color:var(--mut);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:3px}
 nav button.on{color:var(--fg)}nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -103,7 +110,10 @@ nav button.on svg{stroke:var(--ac)}
  body{padding-left:92px}
  main,header{max-width:1180px;padding-left:32px;padding-right:32px}
  main{padding-bottom:40px}
- header{padding-top:20px;padding-bottom:16px}header b{font-size:22px}
+ header{margin-top:20px;margin-bottom:4px}
+ #hero{min-height:360px;padding:34px 40px;justify-content:center;align-items:flex-start;padding-left:max(56%,40px)}
+ #art{width:68%;height:100%;object-position:center 45%;-webkit-mask-image:linear-gradient(90deg,#000 70%,transparent);mask-image:linear-gradient(90deg,#000 70%,transparent)}#hero::before{background:linear-gradient(90deg,#0f0d0b00 45%,#0f0d0b80 80%)}
+ #hname{font-size:46px}#hsub{font-size:18px}.hst{top:20px;right:22px;font-size:15px}
  nav{top:0;right:auto;width:92px;border-top:0;border-right:1px solid var(--line);padding:20px 0}
  nav div{flex-direction:column;gap:6px;max-width:none}
  nav button{flex:none;padding:12px 0;margin:0 10px;border-radius:14px;font-size:12px}
@@ -140,7 +150,7 @@ nav button[hidden],[hidden]{display:none!important}
 #radarc{margin-bottom:16px}.warn{background:rgba(255,196,0,.12);border:1px solid rgba(255,196,0,.5);color:var(--fg);border-radius:10px;padding:10px 12px;margin:10px 0 6px;font-size:14px}#welcome{margin-bottom:16px;border:1px solid var(--long)}#welcome p{color:var(--mut);margin:6px 0 12px}#radarc canvas{display:block;width:100%;max-width:240px;aspect-ratio:1;margin:8px auto 0;border-radius:12px;image-rendering:pixelated}
 
 </style></head><body>
-<header><b id="hname">Weather Clock</b><span><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span><div id="oc"></div></header>
+<header><div id="hero"><img id="art" alt=""><span class="hst"><span id="alx" title="Alexa" hidden>Alexa</span><i id="net"></i><span id="clock">--:--</span></span><small class="kick" id="hdate">Weather Clock</small><b id="hname">Weather Clock</b><p id="hsub"></p></div><div id="oc"></div></header>
 <main>
 <div class="card" id="upd"><b id="updt"></b><ul id="updn"></ul><div class="row"><button class="btn" onclick="skipUpdate()">Later</button><button class="btn p" id="updgo" onclick="doUpdate()">Update now</button></div></div>
 
@@ -421,6 +431,7 @@ function i18n(){document.documentElement.lang=LANGS[LG];document.documentElement
 // Portuguese/Spanish dictionary: lives on the site (web/i18n.json published as panel/i18n-<version>.json) and is
 // stored in the browser the first time; English needs nothing. The build replaces __I18V__ with the
 // dictionary's code; without it (test panel), it comes from /i18n.json.
+const ARTV='__ARTV__';  // header art (web/art/panel-art.webp), published on the site as panel/art-<code>.webp: takes no flash
 const I18V='__I18V__',I18I='__I18I__';  // I18I: fingerprint (SRI) of the published dictionary
 const TZV='__TZV__',TZI='__TZI__';  // published time zone table (panel/tz-<code>.json), likewise
 function loadI18n(){if(LG==1||I18N._v==I18V)return;let c=null;try{c=JSON.parse(localStorage.i18n||'null')}catch(e){}
@@ -435,6 +446,7 @@ let FACES=[];  // comes from the firmware (/api/faces): built-in (faces_list.h) 
 // the same gallery as the site (gh-pages/catalog/index.json); the site allows CORS so the panel can read it
 // the project site: catalogue, built-in face previews and new firmware (localStorage.site/catalog change the source in tests)
 let SITE='https://fpv-db.github.io/WeatherClock/';try{if(localStorage.site)SITE=localStorage.site}catch(e){}
+{const a=$('art');a.onload=()=>a.classList.add('v');a.onerror=()=>a.remove();a.src=ARTV[0]=='_'?'/art.webp':SITE+'panel/art-'+ARTV+'.webp'}
 let CATALOG=SITE+'catalog/';try{if(localStorage.catalog)CATALOG=localStorage.catalog}catch(e){}
 let st=null,at=0,holding=false,holdRem=0,waitSeq=0,fp=0,filled=false,lastPhase=null,actx=null,curTab=0;
 // requests to the clock itself carry X-SmallTV: without it the clock refuses actions (protection against other sites)
@@ -474,7 +486,9 @@ const rotKeys=()=>st&&st.cfg.rot?st.cfg.rot.split(',').filter(Boolean):[];
 // weatherbox: "weather now" card and rotation by checkboxes
 const WXI=(c,d)=>c<=1?(d?'☀️':'🌙'):c==2?(d?'⛅':'☁️'):c==3?'☁️':c==45||c==48?'🌫️':c>=95?'⛈️':c>=71&&c<=77||c==85||c==86?'🌨️':c>=51?'🌧️':'🌡️';
 const WDIR=g=>['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(g/22.5)%16];
-function nowDraw(s){const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.ok)){c.innerHTML='<small>'+t('Weather is off or still loading. Choose your city in Settings.')+'</small>';return}
+function heroSub(s){const d=$('hdate'),dv=new Date().toLocaleDateString([['pt','en','es'][s.cfg.lang]||'en'],{weekday:'long',day:'numeric',month:'long'});if(d.textContent!=dv)d.textContent=dv;
+ const w=s.wx||{},h=$('hsub');if(!h)return;const v=s.cfg.won&&w.ok?Math.round(s.cfg.fahr?w.t*9/5+32:w.t)+'° · '+w.desc+(s.cfg.city?' · '+s.cfg.city:''):(s.cfg.city||'');if(h.textContent!=v)h.textContent=v}
+function nowDraw(s){heroSub(s);const w=s.wx||{},c=$('now');if(!c)return;if(!(s.cfg.won&&w.ok)){c.innerHTML='<small>'+t('Weather is off or still loading. Choose your city in Settings.')+'</small>';return}
  const dg=v=>Math.round(s.cfg.fahr?v*9/5+32:v)+'°',chip=(k,v)=>'<span>'+k+' <b>'+v+'</b></span>';
  const rain=w.rin?'<span class="rn">'+(w.rin<15?t('Rain any minute'):t('Rain in {0} min',w.rin))+'</span>':'';
  c.innerHTML='<div class="ic">'+WXI(w.code,w.day)+'</div><div class="tp">'+dg(w.t)+'</div><div class="ds">'+w.desc+(s.cfg.city?' · '+s.cfg.city:'')+'</div>'
@@ -742,7 +756,7 @@ function load(s){{const n=s.cfg.name||'Weather Clock';if($('hname').textContent!
  // firmware without the notice (up to 1.19.3): hold for the measured drawing time
  else if(s.running&&s.remaining>=s.total-1500&&(!st||!st.running||st.phase!=s.phase))ringDraw(s.pdraw||100,s.remaining,false);
  st=s;at=Date.now();$('net').className='on';
- document.documentElement.style.setProperty('--ac','var(--long)');
+ 
  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('sel',b.dataset.p==s.phase));
  const n=s.cfg.every,d=s.phase=='long'?n:s.cycle%n;$('dots').innerHTML='<i class="f"></i>'.repeat(d)+'<i></i>'.repeat(n-d);
  $('go').innerHTML=s.running?'&#10074;&#10074;':'&#9654;';$('today').textContent=s.today;$('goal').textContent=s.cfg.goal;$('mins').textContent=s.today*s.cfg.work;$('streak').textContent=s.streak||0;

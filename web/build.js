@@ -25,6 +25,11 @@ const out = path.join(__dirname, '..', 'weatherclock', 'web.h');
   const tzv = crypto.createHash('sha1').update(tz).digest('hex').slice(0, 10);
   html = html.replace(/__TZV__/g, tzv).replace(/__TZI__/g, 'sha384-' + crypto.createHash('sha384').update(tz).digest('base64'));
   fs.writeFileSync(path.join(__dirname, 'out', `tz-${tzv}.json`), tz);
+  // header art: web/art/panel-art.webp goes to the site as panel/art-<code>.webp (the panel loads it from there; nothing in flash)
+  const art = fs.readFileSync(path.join(__dirname, 'art', 'panel-art.webp'));
+  const artv = crypto.createHash('sha1').update(art).digest('hex').slice(0, 10);
+  html = html.replace(/__ARTV__/g, artv);
+  fs.writeFileSync(path.join(__dirname, 'out', `art-${artv}.webp`), art);
   // share card: web/share.js goes to the site as panel/share-<code>.js (minified, if possible)
   let share = fs.readFileSync(path.join(__dirname, 'share.js'), 'utf8');
   const shv = crypto.createHash('sha1').update(share).digest('hex').slice(0, 10);
@@ -71,6 +76,6 @@ const out = path.join(__dirname, '..', 'weatherclock', 'web.h');
   fs.writeFileSync(out, h);
   // for latest.json and tools/release.sh ("site": the files that go to panel/ on the site)
   fs.writeFileSync(path.join(__dirname, 'out', 'panel.json'), JSON.stringify({ panel: file, psri: sri, psize: gz.length,
-    site: [file, `i18n-${ver}.json`, `tz-${tzv}.json`, `share-${shv}.js`] }) + '\n');
+    site: [file, `i18n-${ver}.json`, `tz-${tzv}.json`, `share-${shv}.js`, `art-${artv}.webp`] }) + '\n');
   console.log(`panel: ${(fs.statSync(src).size / 1024).toFixed(1)} KB -> ${(gz.length / 1024).toFixed(1)} KB (gzip) in ${file}; loader in flash: ${loader.length} bytes; dictionary i18n-${ver}.json, time zones tz-${tzv}.json, card share-${shv}.js`);
 })();
