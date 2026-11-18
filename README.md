@@ -4,13 +4,13 @@
 
 <p align="center"><img src="docs/readme/art2.jpg" width="640" alt="Artistic sketch of a white GeekMagic SmallTV-Ultra"></p>
 
-A weather and news-focused firmware for the cheap clones of a Weather clock: the **GeekMagic SmallTV-Ultra** (ESP8266, 240×240 screen) and its look-alikes. It turns the little desk clock into a weather station with 20+ animated faces, a web panel you open from any phone or computer, and updates over Wi-Fi.
+A weather and news-focused firmware for the cheap clones of a Weather clock: the **[GeekMagic SmallTV-Ultra](https://geekmagicclock.com)** (ESP8266, 240×240 screen) and its look-alikes. It turns the little desk clock into a weather station with 20+ animated faces, a web panel you open from any phone or computer, and updates over Wi-Fi.
 
 Weather Clock is a fork of [smalltv-pomodoro](https://github.com/davicorrea0/smalltv-pomodoro) by davicorrea0 (GPL-3.0). See [Credits](#credits).
 
-**Where to get one:** the GeekMagic SmallTV-Ultra is sold by GeekMagic, and clones of it are sold on AliExpress and similar shops, often as a "portable mini weather screen" ([AliExpress search](https://www.aliexpress.com/w/wholesale-portable-mini-weather-screen.html)). Check that the listing is the ESP8266 model with a 240×240 screen.
+**Where to get one:** the GeekMagic SmallTV-Ultra is sold by [GeekMagic](https://geekmagicclock.com), and clones of it are sold on AliExpress and similar shops, often as a "portable mini weather screen" ([AliExpress search](https://www.aliexpress.com/w/wholesale-portable-mini-weather-screen.html)). Check that the listing is the ESP8266 model with a 240×240 screen.
 
-> **Note on clones:** this project also works with compatible clones of the GeekMagic SmallTV-Ultra. This project does not condone any alleged intellectual property theft of hardware designs. Where you can, buy the original from GeekMagic.
+> **Note on clones:** this project also works with compatible clones of the GeekMagic SmallTV-Ultra. This project does not condone any alleged intellectual property theft of hardware designs. Where you can, buy the original from [GeekMagic](https://geekmagicclock.com).
 
 ![Animated clock faces](docs/readme/animated-faces.gif)
 
