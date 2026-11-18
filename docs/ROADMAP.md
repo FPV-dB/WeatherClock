@@ -15,6 +15,7 @@ Add small ESP32 boards around the house, each with its own sensors, and show the
   - [ ] SCD40 / SCD41: CO₂
   - [ ] PMS5003 / SPS30: PM2.5 and PM10 particles
   - [ ] BH1750 / VEML7700: light level
+  - [ ] AS3935: real lightning detector (strikes up to about 40 km away, with distance)
   - [ ] DS18B20: waterproof temperature probe (pool, fridge, garden soil)
 - [ ] **Setup like the clock**: setup Wi-Fi network with a QR code, then a small page to name the module ("Bedroom", "Garage", "Outside")
 - [ ] **Discovery**: modules announce themselves on the local network, and the clock panel lists them next to **My clocks**
@@ -31,7 +32,10 @@ Add small ESP32 boards around the house, each with its own sensors, and show the
 - [ ] Night face (dim, minimal, for bedrooms)
 - [ ] News face: choose sources and how long each story shows; custom RSS feed
 - [ ] World clock and world weather faces
-- [ ] AI usage face
+- [ ] Lightning detected screen: animated alert with nearest strike distance, strike count, and storm direction (preview in the README; needs live strike data from an AS3935 module or an online lightning feed)
+- [ ] AI usage face: how much of your Claude Code and OpenAI Codex limits are used, with reset times
+- [ ] YouTube new video alert: a card when one of your favourite channels posts a new video (channel picker in the panel)
+- [ ] Stocks and commodities face: a few indexes and commodities (for example S&P 500, ASX 200, gold, oil, Bitcoin) with daily change, chosen in the panel
 - [ ] Add Rain and Air & UV to the default rotation
 
 ## Multiple clocks
