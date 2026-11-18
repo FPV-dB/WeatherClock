@@ -161,6 +161,8 @@ The optional **WeatherClockRadar** helper also makes several 240×240 album card
 
 For live strikes, use the **Lightning** face instead: it shows real strikes from the Blitzortung.org lightning network (nearest strike, how many in the last 10 minutes, where the storm is and where it is heading), fed by the [lightning helper](tools/lightning-mac/).
 
+In *Clock → Appearance*, **Lightning only when strikes are detected** controls whether the waiting and all-clear screens join face rotation. It is on by default; Lightning enters rotation for a recent nearby strike with fresh helper data. Manual selection remains available.
+
 <img src="docs/readme/lightning-detected.gif" width="240" alt="Animated Lightning detected screen"><br><sub>The Lightning face while strikes are coming in (sample values).</sub>
 
 These are album cards rather than built-in faces, so they do not appear in the face checkbox list. Set *Clock → What to show* to **Alternate clock and album** to include them. They update only while the helper computer is on, awake and connected to the same network as the clock. Public ADS-B coverage is incomplete, so aircraft can occasionally be missed.
