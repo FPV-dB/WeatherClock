@@ -947,6 +947,14 @@ static bool lightningActive() {
   return lightning.nearKm >= 0 && lightning.ago + (millis() - lightning.at) / 1000 < 30UL * 60;
 }
 
+UiAiUsage aiUsage = {};  // weatherbox: Claude / Codex limits from the Mac program (/api/aiusage)
+
+// The Mac program posts every 5 minutes. Older than 45 minutes means the feed stopped: the face then says
+// "No data yet" instead of showing old numbers, and rotation skips it.
+static bool aiUsageUsable() {
+  return aiUsage.at && millis() - aiUsage.at < 45UL * 60000UL && (aiUsage.svc[0].ok || aiUsage.svc[1].ok);
+}
+
 // The companion posts every 15 minutes. No update for 45 minutes means the feed failed; zero movements means
 // there is nothing useful to show. In both cases rotation skips Airport Traffic instead of displaying an empty panel.
 static bool flightStatsUsable() {
@@ -1395,6 +1403,7 @@ UiState makeState() {
   s.flights = &flightStats;
   s.energy = &energy;
   s.lightning = &lightning;
+  s.ai = aiUsageUsable() ? &aiUsage : nullptr;
   return s;
 }
 
@@ -3057,6 +3066,28 @@ void setupWeb() {
   // the Rain face for 20 seconds, once per shower.
   // weatherbox: EnergyWar.net incidents for the Energy War face: total, p0..p4 place, w0.. what, k0.. kind,
   // s0.. status letter, d0.. date ("16 NOV")
+  // weatherbox: Claude and OpenAI Codex limits for the AI Usage face. For each service (c = Claude, x = Codex):
+  // c5/c7 = % left of the 5-hour/7-day window, cr5/cr7 = reset time (seconds since 1970 UTC). A service whose
+  // c5/x5 is missing is shown as "No data yet".
+  server.on("/api/aiusage", HTTP_POST, [] {
+    if (!guard()) return;
+    UiAiUsage a = {};
+    const char pre[2] = {'c', 'x'};
+    for (int i = 0; i < 2; i++) {
+      const String p(pre[i]);
+      if (!server.hasArg(p + "5")) continue;
+      UiAiUsage::Svc &v = a.svc[i];
+      v.ok = true;
+      v.left5 = (uint8_t)constrain(server.arg(p + "5").toInt(), 0, 100);
+      v.left7 = (uint8_t)constrain(server.arg(p + "7").toInt(), 0, 100);
+      v.reset5 = (uint32_t)strtoul(server.arg(p + "r5").c_str(), nullptr, 10);
+      v.reset7 = (uint32_t)strtoul(server.arg(p + "r7").c_str(), nullptr, 10);
+    }
+    a.at = millis();
+    a.version = aiUsage.version + 1;
+    aiUsage = a;
+    server.send(200, "text/plain", "ok");
+  });
   server.on("/api/energy", HTTP_POST, [] {
     if (!guard()) return;
     UiEnergy e = {};
@@ -4046,6 +4077,7 @@ void rotLoop() {
       if (t < 0 || t >= THEME_COUNT) continue;
       if (t == THEME_FLIGHT_STATS && !flightStatsUsable()) continue;
       if (t == THEME_LIGHTNING && !lightningActive()) continue;
+      if (t == THEME_AI_USAGE && !aiUsageUsable()) continue;
       cfg.theme = t;  // weatherbox: the rotation's pack stays loaded (reloading it on every pass fragments memory)
     } else if (it.startsWith("p:") && (it.substring(2) == facePackId() || loadPack(it.substring(2)))) {
       cfg.theme = THEME_PACK;

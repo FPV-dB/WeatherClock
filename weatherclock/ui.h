@@ -99,6 +99,17 @@ struct UiLightning {
   uint16_t version;
 };
 
+// weatherbox: Claude and OpenAI Codex plan limits, sent by the computer program (/api/aiusage)
+struct UiAiUsage {
+  struct Svc {
+    bool ok;                 // data received for this service
+    uint8_t left5, left7;    // % left of the 5-hour and 7-day windows
+    uint32_t reset5, reset7; // when each window resets, seconds since 1970 UTC (0 = unknown)
+  } svc[2];                  // 0 = Claude, 1 = OpenAI Codex
+  uint32_t at;               // millis() when received; stale data is not shown in rotation
+  uint16_t version;
+};
+
 struct UiState {
   bool timeOk;
   struct tm now;
@@ -131,6 +142,7 @@ struct UiState {
   const UiFlightStats *flights;
   const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
   const UiLightning *lightning;  // weatherbox: nearby strikes (may be null)
+  const UiAiUsage *ai;     // weatherbox: Claude / Codex usage limits (null = none)
 };
 
 constexpr uint16_t uiRgb(uint8_t r, uint8_t g, uint8_t b) {

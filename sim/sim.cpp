@@ -115,6 +115,13 @@ static UiState base(int h, int m, int s) {
     long days = 365L * y + y / 4 - y / 100 + y / 400 + (153 * (mo - 3) + 2) / 5 + d - 719469;
     st.utc = (uint32_t)(days * 86400L + h * 3600L + m * 60L + s - utcOff);
   }
+  {  // weatherbox: AI Usage sample (Claude 88% / 66% left, Codex 44% / 7% left)
+    static UiAiUsage ai = {};
+    ai.svc[0] = {true, 88, 66, st.utc + 2 * 3600 + 5 * 60, st.utc + 46 * 3600};
+    ai.svc[1] = {true, 44, 7, st.utc + 3 * 3600, st.utc + 83 * 3600};
+    ai.version = 1;
+    st.ai = &ai;
+  }
   st.city = getenv("SIM_CITY") ? getenv("SIM_CITY") : "Florianopolis";
   st.accent = uiRgb(242, 242, 242);
   st.ip = "192.168.1.101";
