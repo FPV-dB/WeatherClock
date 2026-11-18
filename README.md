@@ -37,7 +37,7 @@ Weather Clock is a fork of [smalltv-pomodoro](https://github.com/davicorrea0/sma
 
 There are 22 faces. Every GIF below is recorded from the simulator, which runs the same drawing code as the clock, so this is how they move on the real screen. The animations run on the clock itself: no video files, each frame is drawn live by the ESP8266. Screens also fade to black and back when the clock changes face.
 
-### Made for Weather Clock
+### Made for it!
 
 These faces are new in Weather Clock, and all of them are animated.
 
@@ -63,7 +63,7 @@ These faces are new in Weather Clock, and all of them are animated.
 </tr>
 </table>
 
-### From SmallTV Pomodoro, reworked
+### Reworked Clock Faces from the Original Author's Project
 
 These 11 faces come from [SmallTV Pomodoro](https://github.com/davicorrea0/smalltv-pomodoro). In the original they showed Pomodoro focus counts and were static. We replaced the Pomodoro parts with weather, wind and humidity, and animated the weather icons on the Weather and Forecast faces.
 
