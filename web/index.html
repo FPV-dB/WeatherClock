@@ -187,6 +187,8 @@ nav button[hidden],[hidden]{display:none!important}
   <label>What to show<select data-k="mode"><option value="0">Clock only</option><option value="1">Photo album</option><option value="2">Alternate clock and album</option></select></label>
   <label>Seconds per item<input data-k="delay" type="number" min="3" max="255"></label>
   <label>Rotate faces<select data-k="rotmin"><option value="0">Never</option><option value="1">Every 1 min</option><option value="5">Every 5 min</option><option value="15">Every 15 min</option><option value="30">Every 30 min</option><option value="60">Every hour</option></select></label>
+  <label>Lightning only when strikes are detected<input data-k="lightningonly" type="checkbox"></label>
+  <small>Applies to rotation. Uses nearby strikes from the last 30 minutes and fresh helper data. Turn off to include the all-clear and waiting screens. Manual selection always works.</small>
   <small>Faces in the rotation (tick 2 or more):</small>
   <div id="rotlist"></div>
   <small id="rotinfo" hidden></small>

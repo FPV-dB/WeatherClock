@@ -44,10 +44,11 @@ extern "C" uint32_t _FS_start;
 #include "ui.h"
 #include "web.h"
 #include "facepack.h"
+#include "lightning_policy.h"
 
 void blit(int16_t x, int16_t y, uint16_t *px, int16_t w, int16_t h);  // ui.cpp: clips to the dirty area; off-screen, it lands in the strip
 
-#define FW_VERSION "2.0.17"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
+#define FW_VERSION "2.0.18t"  // weatherbox: Weather Clock (base: smalltv-pomodoro 1.23.5)
 #define HOSTNAME   "weatherclock"
 #define AP_NAME    "WeatherClock-Setup"
 
@@ -147,6 +148,7 @@ struct Settings {
   char devName[24];     // weatherbox: the clock's name ("Mum's clock"), shown on the start-up screen and the panel; garbage becomes ""
   uint8_t devPos;       // weatherbox: where it sits among the others, a grid of up to 10x10: 0 none, else (row-1)*10 + col (1..100)
   uint8_t devNum;       // weatherbox: the clock's number among several (1..99, 0 = none), shown by Identify; garbage becomes 0
+  uint8_t lightningOnly, lightningMark; // appended: preserve existing EEPROM offsets
 };
 const uint32_t SETTINGS_MAGIC = 0x504F4D34;     // "POM4"
 const uint32_t SETTINGS_MAGIC_V3 = 0x504F4D33;  // "POM3": same fields, without the v4 ones
@@ -155,6 +157,8 @@ Settings cfg;
 void defaultSettings() {
   cfg = Settings{SETTINGS_MAGIC, 25, 5, 15, 4, 80, 0, 0, "<-03>3", "", 0, -1,
                  THEME_MATRIX, 0, 10, 0, 22, 7, 15, 1, 242, 242, 242, 0, 0, "", 0, 1, 0, 8, ACT_READ, "", 0, 0, 0, 1, "", UI_VCOM_DEFAULT, 0, 0, 1, 0, 0};
+  cfg.lightningOnly = 1;
+  cfg.lightningMark = 0xD7;
   cfg.lang = 1;   // weatherbox: English by default
   cfg.alexa = 0;  // Alexa's "Pomodoro" light belongs to the timer, which doesn't exist here
 }
@@ -269,6 +273,8 @@ void loadSettings() {
   if (cfg.fahr > 1) cfg.fahr = 0;
   if (cfg.rainAlert > 1) cfg.rainAlert = 1;
   if (cfg.beta > 1) cfg.beta = 0;
+  if (cfg.lightningMark != 0xD7 || cfg.lightningOnly > 1) cfg.lightningOnly = 1;
+  cfg.lightningMark = 0xD7;
   cfg.spi80 = 0;  // anyone who switched it on in the test goes back to 40 MHz
   {
     bool ok = memchr(cfg.devName, 0, sizeof cfg.devName) != nullptr;
@@ -946,10 +952,10 @@ UiEnergy energy = {};
 UiLightning lightning = {-1, 0, -1, -1, 100, 0xFFFFFFFFUL, 0, 0};
 
 // The computer program posts every minute. Rotation shows the Lightning face only while there has been a strike
-// within the radius in the last 30 minutes and the data is fresh (5 minutes); picked by hand, it always shows.
+// within the radius in the last 30 minutes and the data is fresh (5 minutes), unless event-only rotation
+// is disabled. Picked by hand, it always shows.
 static bool lightningActive() {
-  if (!lightning.at || millis() - lightning.at > 5UL * 60000UL || lightning.ago == 0xFFFFFFFFUL) return false;
-  return lightning.nearKm >= 0 && lightning.ago + (millis() - lightning.at) / 1000 < 30UL * 60;
+  return lightningRotationAllowed(cfg.lightningOnly, millis(), lightning.at, lightning.ago, lightning.nearKm);
 }
 
 UiAiUsage aiUsage = {};  // weatherbox: Claude / Codex limits from the Mac program (/api/aiusage)
@@ -2852,6 +2858,8 @@ void sendState() {
   j += cfg.alexa;
   j += F(",\"rotmin\":");
   j += cfg.rotMin;
+  j += F(",\"lightningonly\":");
+  j += cfg.lightningOnly;
   j += F(",\"rot\":\"");
   j += rotList;
   j += F("\"},\"alexa\":{\"ago\":");  // seconds since an Echo's last request (-1 = none)
@@ -3777,6 +3785,7 @@ void setupWeb() {
     cfg.nightBri = argRange("nbri", cfg.nightBri, 1, 100);
     cfg.nightSun = argRange("nsun", cfg.nightSun, 0, 1);
     cfg.rotMin = argRange("rotmin", cfg.rotMin, 0, 240);
+    cfg.lightningOnly = argRange("lightningonly", cfg.lightningOnly, 0, 1);
     cfg.alexa = argRange("alexa", cfg.alexa, 0, 1);
     alexaBegin();  // switched on now: starts answering discovery without a restart
     if (server.hasArg("rot")) rotSet(server.arg("rot"));
@@ -3833,7 +3842,7 @@ void setupWeb() {
     if (panelChanged) applyPanel();
     // Brightness, night hours and options that don't show on screen: without clearing and redrawing everything, which would flicker
     // on every movement of the slider (together with the brightness ramp)
-    static const char *const QUIET[] = {"bri", "non", "nstart", "nend", "nbri", "nsun", "beta", "alexa", "rotmin"};
+    static const char *const QUIET[] = {"bri", "non", "nstart", "nend", "nbri", "nsun", "beta", "alexa", "rotmin", "lightningonly"};
     bool quiet = true;
     for (int i = 0; quiet && i < server.args(); i++) {
       bool q = false;

@@ -1,6 +1,31 @@
 # Roadmap and to-do list
 
-Ideas and planned work for Weather Clock. Nothing here is released yet. Items move into the [README](../README.md) once they ship.
+One active feature module at a time. Each module follows: proposed → build → test → preview → approve → release. A module may be deliberately paused with its remaining gates recorded. Only released features move into the [README](../README.md).
+
+## Module tracker
+
+| Module | Scope | Branch / PR | Dependencies and version | Verification / remaining gates |
+|---|---|---|---|---|
+| 01 | Lightning detection and event-only rotation setting | `module/lightning-display-policy`; original PR #8 merged | v2.0.17 released; setting targets a subsequent release | Setting implemented; firmware, timing boundaries, native simulator, upload security and history checked locally. Needs CI, panel preview and live helper/device checks before release. |
+| 02 | Drone Fly Check | `drone-face`, PR #7; README PR #5 | After Module 01; append face ID after Lightning; version assigned after integration | Rebase, build, threshold tests, preview, release, then README |
+| 03 | Web panel redesign | `panel-redesign` | After Module 02; version unassigned | Rebase and preview before device update |
+| 04 | World clock and weather | `world-faces` | Stable face numbering | Build, tests and preview |
+| 05 | Usage display | `ai-usage-face` | Stable face numbering | Build, tests and preview |
+| 06 | News and custom RSS | `news-sources` | Stable firmware baseline | Feed validation, tests and preview |
+| 07 | Radar and aircraft | Separate helper work package | Permanent helper computer | Data freshness, empty-state and saved-history checks |
+| 08 | Raspberry Pi station | README PR #6 | Documentation review | Review separately; no firmware required |
+| 09 | ESP32 sensor expansion | Queued | Sensor protocol and hardware | Design and hardware tests |
+| 10 | Additional faces and UX | Queued | Stable baseline | One face or UX change per work package |
+| 11 | Documentation and release polish | Per released module | Released features only | Refresh previews and release notes after shipping |
+
+Firmware signing stays on the build machine; permanent helper services stay on the helper machine. All changes use pull requests. Merge and publication require approval. Visual changes must be previewed before installation on a clock. Existing working clocks remain unchanged until verification passes.
+
+### Module 01: Lightning display policy
+
+The released v2.0.17 skips Lightning during rotation when no nearby strike has been reported within 30 minutes or when the helper data is more than five minutes old. Manual selection remains available.
+
+The pending setting, **Lightning only when strikes are detected**, preserves that default. Turning it off includes the all-clear and waiting screens in rotation. The setting is stored without moving existing saved configuration fields. No new firmware version has been published for this setting.
+
 
 ## Local sensor modules (modular, user-defined)
 

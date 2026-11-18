@@ -14,6 +14,8 @@ if [ -z "${GEN:-}" ]; then
   node stats_test.cjs "$G/stats.cpp"
 fi
 export ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=halt_on_error=1
+g++ -std=c++17 -fsanitize=address,undefined -g lightning_policy_test.cpp -o "$T/lightning"
+"$T/lightning"
 for t in sec stats; do
   g++ -std=c++17 -fsanitize=address,undefined -g -w "$G/$t.cpp" -o "$T/$t"
   "$T/$t"
