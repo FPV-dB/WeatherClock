@@ -1,32 +1,23 @@
 {
-  "version": "2.0.16",
-  "date": "2026-11-17",
+  "version": "2.0.17",
+  "date": "2026-11-18",
   "file": "weatherclock.bin",
-  "size": 616544,
+  "size": 622032,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 444072,
-  "sig": "fW+JehSZu0Di6LIkyK4RirZcuaatHveB+lfGwgZvKbB0koG4TWJWInoHmLCOOem64w9cCkPky+9AquDpOyDJXeiKJXtbm1WsOEFFHLDDnmPdeQJicxe9t9IDG2k2LM+atY/8UxDM1fIUBH9X2DWThxLHylcphyJDcq8sQG1MZ6La0HvAPPwTpN2TWNehtP5X36Ph0DCaL3JdbkDSkGdeosgxvJTT4H/iOvlyuvNhg6V2xt83QsCRxNCttwZ0YUh9uiNj/LqMACub7+ipJNb1EZ96EGPKAwyuNpwUhoGYyLbg+2N1Qaf4CPTJAGR4DkYontBaU0QeHFPx6Dn3twFrJQ==",
-  "gzsig": "PlKFyfJSMUjcnsRJcn3Lm7FOIN1hyw/DcHcIB1Nt4/8QzQYK9omyMmvQI6WAaZnYfYQwrm9x/OYmnTavm9a6NOOfFExBL/d1S/0aiuFKcAJkvNPhNr3iReHA7C4zVC1EWUA4DdoBVbqPTinr0+A/be8WgHtqAGnEPRzwQ0TlmAznY3VYYci6LoMVKKwVS0o/GH74rvvBKu7iDMUBv/iyUq2OvtvjqQotNiWGxLypTpy4n4UfZnbzAGRpBv7qHS9JFVs4nmubt1HgHpV0MG6NarO5/2fbmaChOgb2L19n1RtU0+tDQh8/NbgW/5NZ/S9A+dTcWeA1GGbm4GpOgt1GnQ==",
+  "gzsize": 448107,
+  "sig": "QY7wSYwNNMNSg+ZhZ7pluUEzeFl+p6G3CQ399/TVf7uQgZoWulQ+8+D+sSWqFR7D31XcOGbhwDzFYK6C/0/yuLDC06M7VMfDpMbmoHZCmfqotbL5ZDWSBgequq9akyXYPVG2XQ9aldFdL33ZyH6/PbmIeQyFw/D2NGv10ZIIFTQQhlyDrSDp3pxQ6IppxHGuzK/nuqL1x1hye7386JSU+Uoty8+Djp1Bsd3O5oIrZ07KFmH8IrOwdUoUNhQe6VcfH1YxRFRkri3SV+qpj4YZaM3qjLI8FgXjFOIixXd9yBALMyPibS3Jk81X+CUSXMSbcvQZ4xeujGgyWl3GTKCLzg==",
+  "gzsig": "AdIJa3hyUypEAlweQPDd80S5Y//DEeTtVGC4rJ7ooEHBDx2yqxDvqyyH5kTbunadr4nLjmIBGPyM/McevPVESJQvGqzrGcnVdCJbFwUqyI5grsxNyo+V8dEsopXhIWhrPTMEXFUJloYvBflayW/hzDhwTnuDJWVcEjdLam92xwyQP4If8LDe+Rb6jPgfg9D3qf+mzeRKZSJohDfepKLXwRVY4EJ6drAvwE9GcSK5Hsl8QOG2ytTYbarSh23WhHDcG12jxTZUBXl7+8HNdzlB7gvFa1zI3lvVr6QZHNdy/nRzS8rVmFUbrEYmr7idGT5gMhZMXD2w6K2bL6I6zIyqrQ==",
   "panel": "panel-d31bf670f011700d30e47d5c.html.gz",
   "psri": "sha256-0xv2cPARcA0w5H1cDvJkDq0LEmAfUwl9aL71xsd0RbM=",
   "notes": {
     "en": [
-      "Several clocks together: give each a number and a place on a grid, and see them all in the panel's new My clocks section",
-      "Drag clocks around the grid to set where each one sits (up to 10 clocks)",
-      "Identify: a clock shows its number, row and column, name and IP for 10 seconds",
-      "Airport Traffic: heading centred"
+      "New Lightning face: live lightning strikes near you (nearest strike, strikes in the last 10 minutes, storm direction and heading), fed by the new tools/lightning-mac helper."
     ],
     "pt": [
-      "Several clocks together: give each a number and a place on a grid, and see them all in the panel's new My clocks section",
-      "Drag clocks around the grid to set where each one sits (up to 10 clocks)",
-      "Identify: a clock shows its number, row and column, name and IP for 10 seconds",
-      "Airport Traffic: heading centred"
+      "New Lightning face: live lightning strikes near you (nearest strike, strikes in the last 10 minutes, storm direction and heading), fed by the new tools/lightning-mac helper."
     ],
     "es": [
-      "Several clocks together: give each a number and a place on a grid, and see them all in the panel's new My clocks section",
-      "Drag clocks around the grid to set where each one sits (up to 10 clocks)",
-      "Identify: a clock shows its number, row and column, name and IP for 10 seconds",
-      "Airport Traffic: heading centred"
+      "New Lightning face: live lightning strikes near you (nearest strike, strikes in the last 10 minutes, storm direction and heading), fed by the new tools/lightning-mac helper."
     ]
   }
 }
