@@ -6,11 +6,11 @@ One active feature module at a time. Each module follows: proposed → build →
 
 | Module | Scope | Branch / PR | Dependencies and version | Verification / remaining gates |
 |---|---|---|---|---|
-| 01 | Lightning detection and event-only rotation setting | Face released in v2.0.17; setting in PR #9 (`module/lightning-display-policy`) | Setting targets v2.0.18 | Setting implemented; firmware, timing boundaries, native simulator, upload security and history checked locally; CI passed on the initial branch. Integrate the newer main changes, build the final version, merge and publish. No clock installation is included. |
-| 02 | Drone Fly Check | `drone-face`, PR #7; README PR #5 | After Module 01; append face ID after Lightning; version assigned after integration | Rebase, build, threshold tests, preview, release, then README |
-| 03 | Web panel redesign | `panel-redesign` | After Module 02; version unassigned | Rebase and preview before device update |
-| 04 | World clock and weather | `world-faces` | Stable face numbering | Build, tests and preview |
-| 05 | Usage display | `ai-usage-face` | Stable face numbering | Build, tests and preview |
+| 01 | Lightning detection and event-only rotation setting | Face in v2.0.17; setting PR #9 | v2.0.18; carried into v2.0.19 | Released and installed on three clocks. Event-only is on by default; manual selection works independently. |
+| 02 | Drone Fly Check | Face PR #7; safety follow-up PR #10; README PR #5 | Face 25; safety fix in v2.0.19 | Released and installed on three clocks. Firmware build and wind policy tests passed. Live flight verdict requires fresh weather. |
+| 03 | Web panel redesign | Panel commits `299158c`, `1dd964a` | Included in v2.0.18 and v2.0.19 | Published with its header artwork; visually checked on a clock after installation. |
+| 04 | World clock and weather | PR #11 (`world-faces`) | Faces 23 and 24; included in v2.0.18 and v2.0.19 | Built and published; sample face previews checked. Pick cities in the panel for live data on each clock. |
+| 05 | Usage display | PR #12 (`ai-usage-face`) | Face 22; included in v2.0.18 and v2.0.19 | Merged and included in the firmware; helper integration remains a separate check. |
 | 06 | News and custom RSS | `news-sources` | Stable firmware baseline | Feed validation, tests and preview |
 | 07 | Radar and aircraft | Separate helper work package | Permanent helper computer | Data freshness, empty-state and saved-history checks |
 | 08 | Raspberry Pi station | README PR #6 | Documentation review | Review separately; no firmware required |
@@ -18,13 +18,13 @@ One active feature module at a time. Each module follows: proposed → build →
 | 10 | Additional faces and UX | Queued | Stable baseline | One face or UX change per work package |
 | 11 | Documentation and release polish | Per released module | Released features only | Refresh previews and release notes after shipping |
 
-Firmware signing stays on the build machine; permanent helper services stay on the helper machine. All changes use pull requests. Merge and publication require approval. Visual changes must be previewed before installation on a clock. Existing working clocks remain unchanged until verification passes.
+Firmware signing stays on the build machine; permanent helper services stay on the helper machine. All changes use pull requests. Merge and publication require approval. Visual changes must be previewed before installation on a clock. Firmware v2.0.19 was installed one clock at a time, with each device version checked after reboot.
 
 ### Module 01: Lightning display policy
 
 The released v2.0.17 skips Lightning during rotation when no nearby strike has been reported within 30 minutes or when the helper data is more than five minutes old. Manual selection remains available.
 
-The pending setting, **Lightning only when strikes are detected**, preserves that default. Turning it off includes the all-clear and waiting screens in rotation. The setting is stored without moving existing saved configuration fields. No new firmware version has been published for this setting.
+The **Lightning only when strikes are detected** setting preserves that default. Turning it off includes the all-clear and waiting screens in rotation. The setting is stored without moving existing saved configuration fields. It was released in v2.0.18 and remains in v2.0.19.
 
 
 ## Local sensor modules (modular, user-defined)
