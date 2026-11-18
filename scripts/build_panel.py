@@ -36,6 +36,12 @@ tzv = hashlib.sha1(tz).hexdigest()[:10]
 html = html.replace("__TZV__", tzv).replace("__TZI__", sri("sha384", tz))
 open(os.path.join(out, f"tz-{tzv}.json"), "wb").write(tz)
 
+# header art: published on the site as panel/art-<code>.webp (the panel loads it from there; nothing in flash)
+art = open(os.path.join(web, "art", "panel-art.webp"), "rb").read()
+artv = hashlib.sha1(art).hexdigest()[:10]
+html = html.replace("__ARTV__", artv)
+open(os.path.join(out, f"art-{artv}.webp"), "wb").write(art)
+
 share = open(os.path.join(web, "share.js"), "rb").read()
 shv = hashlib.sha1(share).hexdigest()[:10]
 html = html.replace("__SHV__", shv)
@@ -68,6 +74,6 @@ for i, b in enumerate(lg):
 hdr += "\n};\n"
 open(os.path.join(root, "weatherclock", "web.h"), "w", encoding="utf-8").write(hdr)
 json.dump({"panel": pfile, "psri": psri, "psize": len(g),
-           "site": [pfile, f"i18n-{ver}.json", f"tz-{tzv}.json", f"share-{shv}.js"]},
+           "site": [pfile, f"i18n-{ver}.json", f"tz-{tzv}.json", f"share-{shv}.js", f"art-{artv}.webp"]},
           open(os.path.join(out, "panel.json"), "w"))
 print(f"panel {len(mini)/1024:.1f} KB -> {len(g)/1024:.1f} KB gz: {pfile}; loader {len(lg)} bytes")
