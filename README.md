@@ -1,265 +1,383 @@
-# Weather Clock
+<h1 align="center">Weather Clock</h1>
 
-A weather-focused firmware for the **GeekMagic SmallTV-Ultra** (ESP8266, 240×240), forked from
-[davicorrea0/smalltv-pomodoro](https://github.com/davicorrea0/smalltv-pomodoro) (GPL-3.0).
+<p align="center"><b>Decent alternative software for $5 ESP32-based weather gadget with 240x240 LCD screen</b></p>
 
-Changes in this fork:
-- **Android Partner:** local tablet dashboard at [weather-clock-Android-partner](https://github.com/FPV-dB/weather-clock-Android-partner). Firmware 2.0.16 supports saved screen numbers and authenticated temporary identification without changing saved faces or albums.
-- Renamed to **Weather Clock**: Wi-Fi setup `WeatherClock-Setup`, recovery `WeatherClock-Recovery`, `http://weatherclock.local`.
-- **Pomodoro timer removed** from the screen and the web panel; English by default; Alexa timer off.
-- **Wind** speed, gusts and direction from Open-Meteo; face-pack variables `{WIND}`, `{GUST}`, `{WDIR}`.
-- Every built-in face shows weather instead of focus counts (Matrix, Neon, Flip, Retro LCD: wind + humidity; Tomato is now a weather **Scene**).
-- Face-pack `when` conditions for animated weather icons: `sunny`, `moon`, `partly`, `partlynight`, `cloudy`, `fog`, `drizzle`, `rainy`, `snowy`, `storm`.
-- Panel and website served from GitHub Pages (`https://fpv-db.github.io/WeatherClock/`), built with `scripts/build_panel.py`.
-- Updates over Wi-Fi are signed with this fork's own key (`weatherclock/ota-public.pem`); the first install from another firmware goes through recovery mode.
+<p align="center"><img src="docs/readme/weather-clock-photo.jpg" width="360" alt="A SmallTV-Ultra running Weather Clock"></p>
 
-Build: see "Building" below (`arduino-cli compile --fqbn "esp8266:esp8266:generic:eesz=4M2M,xtal=160,ip=lm2n" --build-property "build.float=" --output-dir build weatherclock`).
+A weather and news-focused firmware for the cheap clones of a Weather clock: the **GeekMagic SmallTV-Ultra** (ESP8266, 240×240 screen) and its look-alikes. It turns the little desk clock into a weather station with 20+ animated faces, a web panel you open from any phone or computer, and updates over Wi-Fi.
 
----
+Weather Clock is a fork of [smalltv-pomodoro](https://github.com/davicorrea0/smalltv-pomodoro) by davicorrea0 (GPL-3.0). See [Credits](#credits).
 
-*Original README follows.*
+<table><tr>
+<td width="50%"><img src="docs/readme/smalltv-ultra.jpg" width="400" alt="GeekMagic SmallTV-Ultra"><br><sub>A "portable mini weather screen": a clone of the GeekMagic SmallTV-Ultra, with its original firmware</sub></td>
+<td width="50%"><img src="docs/readme/weather-clock-photo.jpg" width="300" alt="A SmallTV-Ultra running Weather Clock"><br><sub>A SmallTV-Ultra running Weather Clock</sub></td>
+</tr></table>
 
-# SmallTV Pomodoro 🍅
+**Where to get one:** the GeekMagic SmallTV-Ultra is sold by GeekMagic, and clones of it are sold on AliExpress and similar shops, often as a "portable mini weather screen" ([AliExpress search](https://www.aliexpress.com/w/wholesale-portable-mini-weather-screen.html)). Check that the listing is the ESP8266 model with a 240×240 screen.
 
-Alternative firmware for the **GeekMagic SmallTV Ultra** (ESP8266, 240×240 ST7789 screen): a clock with 11 faces, a Pomodoro timer, weather, a photo/GIF album and a pixel art tomato mascot that grows a plant as you keep your focus streak.
+> **Note on clones:** the device pictured on the left is a clone of the GeekMagic SmallTV-Ultra. This project does not condone any alleged intellectual property theft of hardware designs. Where you can, buy the original from GeekMagic.
 
-🌐 **Project website:** [davicorrea0.github.io/smalltv-pomodoro](https://davicorrea0.github.io/smalltv-pomodoro/): what changes on the clock, how to install it, and the [face gallery](https://davicorrea0.github.io/smalltv-pomodoro/galeria.html).
+![Animated clock faces](docs/readme/animated-faces.gif)
 
-![The 11 built-in clock faces](docs/clock-faces.png)
+<sub>Every screen in this README is drawn by the project's simulator, which compiles the same drawing code as the firmware.</sub>
 
-<sub>Screens are rendered by the project's simulator, which compiles the same drawing code as the firmware.</sub>
+> ⚠️ For the **SmallTV-Ultra (ESP8266)** only. Do not flash it on the SmallTV Pro (ESP32) or other models.
+
+## Contents
+
+- [Clock faces](#clock-faces)
+- [Features](#features)
+- [Install](#install)
+- [First-time setup](#first-time-setup)
+- [The web panel](#the-web-panel)
+- [Updates](#updates-in-one-tap)
+- [Optional helper computer](#optional-helper-computer)
+- [If something goes wrong](#if-something-goes-wrong)
+- [For developers](#for-developers)
+- [Credits](#credits)
+- [Roadmap and to-do list](docs/ROADMAP.md)
+- [License](#license)
+
+## Clock faces
+
+There are 22 faces. Every GIF below is recorded from the simulator, which runs the same drawing code as the clock, so this is how they move on the real screen. The animations run on the clock itself: no video files, each frame is drawn live by the ESP8266. Screens also fade to black and back when the clock changes face.
+
+### Made for Weather Clock
+
+These faces are new in Weather Clock, and all of them are animated.
+
+<table>
+<tr>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/weather-half.gif" width="200" alt="Weather Half"><br><b>Weather Half</b><br><sub>Half clock, half weather: temperature, high and low, wind, gusts and humidity. Ships as a face pack</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/wind.gif" width="200" alt="Wind"><br><b>Wind</b><br><sub>Compass with an arrow that sways with the gusts, speed, direction and Beaufort force</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/sky.gif" width="200" alt="Sky"><br><b>Sky</b><br><sub>The sun moving along its path from sunrise to sunset, golden hour and the moon phase</sub></td>
+</tr>
+<tr>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/next-12-hours.gif" width="200" alt="Next 12 hours"><br><b>Next 12 hours</b><br><sub>Temperature curve drawing itself and hourly rain chance bars</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/umbrella.gif" width="200" alt="Umbrella"><br><b>Umbrella</b><br><sub>"Umbrella today?" with falling rain, plus feels-like, UV and air quality</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/air-uv.gif" width="200" alt="Air & UV"><br><b>Air & UV</b><br><sub>UV index with today's peak, PM2.5, PM10 and air index</sub></td>
+</tr>
+<tr>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/moon.gif" width="200" alt="Moon"><br><b>Moon</b><br><sub>Phase and how much is lit, moonrise and moonset, next full and new moon</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/rain.gif" width="200" alt="Rain"><br><b>Rain</b><br><sub>Rain today (chance and mm), the next 12 hours and the coming days</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/news.gif" width="200" alt="News"><br><b>News</b><br><sub>Scrolling breaking news headlines. Needs a helper computer</sub></td>
+</tr>
+<tr>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/airport-traffic.gif" width="200" alt="Airport Traffic"><br><b>Airport Traffic</b><br><sub>Takeoffs and landings so far today at nearby airports. Needs a helper computer</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/energy-war.gif" width="200" alt="Energy War"><br><b>Energy War</b><br><sub>Latest attacks on energy infrastructure from EnergyWar.net. Needs a helper computer</sub></td>
+</tr>
+</table>
+
+### From SmallTV Pomodoro, reworked
+
+These 11 faces come from [SmallTV Pomodoro](https://github.com/davicorrea0/smalltv-pomodoro). In the original they showed Pomodoro focus counts and were static. We replaced the Pomodoro parts with weather, wind and humidity, and animated the weather icons on the Weather and Forecast faces.
+
+<table>
+<tr>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/weather.gif" width="200" alt="Weather"><br><b>Weather</b><br><sub>Big temperature and cards. <i>We animated the weather icon</i></sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/forecast.gif" width="200" alt="Forecast"><br><b>Forecast</b><br><sub>Today and 4 days with low-to-high bars. <i>We animated the icons</i></sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/forecast-cards.gif" width="200" alt="Forecast cards"><br><b>Forecast cards</b><br><sub>Four days as cards. <i>We animated the icons</i></sub></td>
+</tr>
+<tr>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/forecast-lcd.gif" width="200" alt="Forecast LCD"><br><b>Forecast LCD</b><br><sub>Four days on a retro LCD. <i>We animated the pictograms</i></sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/matrix.gif" width="200" alt="Matrix"><br><b>Matrix</b><br><sub>Pixel clock. <i>Focus counts replaced by weather and wind cards</i></sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/scene.gif" width="200" alt="Scene"><br><b>Scene</b><br><sub>Was the Pomodoro tomato scene. <i>Now a weather landscape</i></sub></td>
+</tr>
+<tr>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/flip.gif" width="200" alt="Flip"><br><b>Flip</b><br><sub>Flipping cards with the Bebas Neue font. <i>Now shows weather and wind</i></sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/neon.gif" width="200" alt="Neon"><br><b>Neon</b><br><sub>Glowing tubes. <i>Now shows weather, wind and humidity</i></sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/retro-lcd.gif" width="200" alt="Retro LCD"><br><b>Retro LCD</b><br><sub>80s digital watch. <i>Now shows wind and humidity</i></sub></td>
+</tr>
+<tr>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/analog.gif" width="200" alt="Analog"><br><b>Analog</b><br><sub>Baton hands and bold markers, with the weather</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/words.gif" width="200" alt="Words"><br><b>Words</b><br><sub>The time spelled out in words</sub></td>
+</tr>
+</table>
+
+More faces can be installed from the panel without updating the firmware (small `.json` face packs, like Weather Half). Format: [docs/FACE_PACKS.md](docs/FACE_PACKS.md) and the [`faces/`](faces) folder.
 
 ## Features
 
-- **11 clock faces:** Matrix, Tomato (a pixel art scene that changes with the time and weather: the tomato opens an umbrella in the rain, wears a scarf in the cold and sunglasses in the heat, and cheers when you hit your daily goal), Analog, Weather, Neon, Flip (with a real flip animation), Retro LCD, Words (the time spelled out in English, Portuguese or Spanish), Forecast (today and the next 4 days, with the chance of rain and a low-to-high bar on a shared scale), Forecast cards (four days as cards with a big high, the low and the chance of rain, in the Outfit font with pixel art weather), and Forecast LCD (four days on the Retro LCD screen, with DSEG7 digits and wristwatch-style pictograms).
-- **Pomodoro** with a progress ring, the end time, and the tomato changing expression (focused, relaxing with a coffee, asleep when paused). Pick what you will do while focusing (read, study, code, tasks or draw) and the screen shows that activity next to the tomato, which jumps for joy when a phase ends. A daily session counter with a goal.
-- **Streak and achievements:** the clock keeps a year of daily focus sessions. A plant next to the tomato grows with every day in a row you hit your goal, up to a golden tomato at 7 days, and a flame shows your streak. In the web panel: a garden of the whole year, 10 achievements, and a pixel art card of your day to share (on a phone it opens the share menu).
-- **Downloadable faces:** small `.json` packages installed from the panel without updating the firmware. 36 faces in the online gallery, including Apple Watch and Mi Band inspired ones. A face can carry its text in all three languages and shows the one chosen in the panel.
-- **Weather and a 5-day forecast** from [Open-Meteo](https://open-meteo.com/) (no API key), with city search in the panel, in °C or °F.
-- **Rain warning:** when rain should start within the next hour, the clock shows "rain 15 min" (and the tomato opens its umbrella), using Open-Meteo's 15-minute precipitation.
-- **Automatic time zone:** picking the city also sets the time zone with its daylight saving rules; if the clock's zone does not match the city's, the panel offers to fix it.
-- **Diagnostics:** the panel shows why the clock last restarted (with the crash cause and address), the Wi-Fi signal, the lowest free memory since boot and the uptime.
-- **Test versions:** an option in the panel to receive test builds before everyone else.
-- **Photo and GIF album:** uploads from the panel are cropped to 240×240 in the browser. Installing over the original firmware formats the file storage (the original's photos are not kept): see [docs/MIGRATION-4M2M.md](docs/MIGRATION-4M2M.md).
-- **Night brightness** that follows the sun (from sunset to sunrise, using the times Open-Meteo already sends with the weather) or a fixed schedule.
-- **Alexa voice control, no account or cloud:** the clock shows up to an Echo on the same network as three dimmable lights (a minimal Philips Hue bridge emulation, the same protocol as Espalexa). *Pomodoro*: "turn on" starts or resumes a focus session and the screen switches to the timer, "turn off" pauses it and, again, stops it, and "set Pomodoro to 40%" focuses for 40 minutes. *Break* and *Long break*: "turn on" starts the break (a percentage sets its minutes), "turn off" goes back to focus. The lit light shows the current phase in the Alexa app, and the web panel shows when an Echo last talked to the clock and its last command. **End-of-phase announcements:** paste a trigger URL from [Virtual Smart Home](https://www.virtualsmarthome.xyz/), Voice Monkey or IFTTT in the panel and the clock calls it when a focus session or a break ends, so an Alexa routine can say "Pomodoro done" (plain HTTP; those services accept it).
-- **Face rotation:** pick your favourite faces and the clock switches between them every 1 to 60 minutes.
-- **English, Portuguese and Spanish:** the language you choose applies to both the panel and the clock's screen (dates, weather, Pomodoro, the Words face).
-- **Web panel** at the IP shown on the screen, with 4 tabs (Clock, Focus, Photos, Settings). It has its own layouts for phones and computers.
-- **One-tap updates:** the panel checks the website for new firmware, shows what changed and installs it with one tap.
-- **Safe updates:** before switching firmware, the clock checks the file's ESP8266 header, size and the CRC stored in the image, and that it fits. A truncated, corrupted or wrong file is refused and the current firmware keeps running. Since 1.20.1, updates over the network must also carry the project's signature (sent apart from the file, checked before the swap); recovery mode still accepts any firmware, so you can always go back.
-- **Protected against other websites:** every action needs a header that only the panel sends (blocks CSRF: a page you visit cannot reset the Wi-Fi, format the storage or flash a firmware), and requests must use the clock's IP address, not a name (blocks DNS rebinding). The Alexa API, the Wi-Fi setup portal and recovery mode stay open on purpose: Alexa can only start and stop the timer, and the other two require being next to the clock.
-- **Optional panel password:** the `/update` password (user `admin`) also protects the whole panel and its API; repeated wrong attempts from the same IP wait progressively longer, from 1 to 32 s, without freezing the clock. The setup and recovery Wi-Fi networks use a random 8-character password shown on the clock's screen, and the code the panel loads from the website (share card, translations) is pinned with Subresource Integrity, so a changed file is refused by the browser.
-- **Recovery mode without a button:** unplug and plug the clock back in 3 times in a row (or a firmware that crashes right after boot) and it opens its own Wi-Fi network for a password-free update, factory settings, forgetting Wi-Fi or downloading your focus history.
-- **Backup and restore** of settings, focus history and downloaded faces in a `.json` file (no passwords or Wi-Fi details).
-- **Panel adjustments** for colour order (RGB/BGR), inversion and 180° rotation, with a colour test screen, because these vary between units.
+A quick tour of everything the clock does, with screens from the simulator and the web panel.
 
-### Tomato scene
+### Live weather, no account needed
 
-![Tomato scene: day, night, rain, snow, heat and goal reached](docs/tomato-scene.png)
+Weather comes straight from [Open-Meteo](https://open-meteo.com/) every 15 minutes: temperature, feels-like, humidity, wind speed, gusts and direction, rain chance and millimetres, UV index, air quality (PM2.5, PM10 and US AQI), sunrise and sunset, the moon, and a 5-day forecast. No API key or sign-up. The panel's Clock page shows the same data at a glance.
 
-### Streak: the plant grows with every day you hit your goal
+<img src="docs/readme/panel-weather.png" width="320" alt="Current weather in the panel">
 
-![Plant stages from seed to golden tomato](docs/streak.png)
+### Choose your city, and the time zone follows
 
-| Share card of your day | Panel on a phone |
-|---|---|
-| ![Pixel art share card](docs/share-card.png) | ![Focus tab on a phone: streak, garden and achievements](docs/panel-focus-phone.png) |
+Search for your town under *Settings → Weather*. Picking it also sets the time zone with its daylight-saving rules, so the clock is right after DST changes without you touching it. The same card switches between °C and °F and turns the rain warning on or off.
 
-### Pomodoro
+<img src="docs/readme/panel-weather-settings.png" width="544" alt="Weather settings: city search, °F and rain warning">
 
-![Pomodoro: focus, paused, long break and phase done](docs/pomodoro.png)
+![Faces in Fahrenheit](docs/readme/fahrenheit.png)
 
-![Focus activities: read, study, code, tasks and draw](docs/activities.png)
+### Rain warning
 
-### Flip animation
+When rain is due within the next hour, faces show how many minutes away it is, using Open-Meteo's 15-minute rain forecast.
 
-![Flip face, frame by frame](docs/flip.png)
+![Rain warning on the Weather and Scene faces](docs/readme/rain-warning.png)
 
-### Three languages
+### Animated faces and smooth changes
 
-![The Words and Weather faces in Portuguese, English and Spanish](docs/languages.png)
+Weather icons drift and glow, rain falls, the wind arrow sways with the gusts, the Sky face tracks the sun, and the Flip face really flips. Every change of screen fades to black and back, so faces never tear while they redraw.
 
-## Web panel
+<img src="docs/readme/flip.gif" width="240" alt="Flip face turning over"> 
 
-Open the IP shown on the clock in any browser on the same network. Settings save as you change them.
+The Scene face is a pixel-art landscape that follows the time of day and the weather:
 
-![Panel on a computer: Clock tab](docs/panel-desktop.png)
+![Scene face: day, night, rain, snow and heat](docs/readme/scene.png)
 
-![Panel on a computer: Focus tab](docs/panel-focus-desktop.png)
+### Face rotation
 
-<img src="docs/panel-phone.png" width="300" alt="Panel on a phone: Clock tab">
+Under *Clock → Appearance*, tick the faces you want and choose how often they change (every 1 minute to every hour). With *What to show* set to **Alternate clock and album**, photos and radar or plane cards play between faces, each for the number of seconds you set. You can also change the digit colour and switch to 12-hour time.
+
+<img src="docs/readme/panel-rotation.png" width="320" alt="Face rotation settings in the panel">
+
+### More faces without updating the firmware
+
+Besides the built-in faces, the clock accepts small `.json` face packs. Install one under *Clock → More faces* by picking the file (and its preview image). It is stored on the clock and works straight away. Weather Half is one of them. Making your own: [docs/FACE_PACKS.md](docs/FACE_PACKS.md).
+
+### Photo and GIF album
+
+Upload photos and animated GIFs on the *Album & radar* page. Photos are cropped to 240×240 in your browser before they are sent, and the storage bar shows how much of the 2 MB is used. Oversized GIFs are skipped instead of freezing the clock.
+
+### Rain radar (Australia)
+
+With the optional helper running on another computer, the clock shows the Bureau of Meteorology rain radar for the last 30 minutes between faces, plus a card when BoM issues a warning nearby. Pick the radar station and range on the *Album & radar* page. The panel's Clock page plays the same radar loop.
+
+<img src="docs/readme/panel-radar.png" width="700" alt="Rain radar settings">
+
+### Brightness that follows the sun
+
+Set the daytime brightness, then a lower night level. Night can follow your city's sunset and sunrise or fixed hours. Changes ramp smoothly instead of jumping.
+
+<img src="docs/readme/panel-brightness.png" width="544" alt="Brightness and night mode settings">
+
+### Several clocks on one Wi-Fi
+
+Weather Clock is built to run several clocks around the house. Each one keeps its own faces, rotation and album, and they find each other automatically on the same Wi-Fi (no setup or account).
+
+![Three clocks with their own faces, then Identify](docs/readme/multi-clock.gif)
+
+How it works:
+
+1. **Give each clock a name and a number** under *Settings → System*, for example 1 Kitchen, 2 Office, 3 Bedroom. The name also shows on the start-up screen.
+2. **Place them on the grid** under *Settings → My clocks*. Every clock on your Wi-Fi appears there; drag each one to the row and column where it sits (up to 10 × 10). Moving one clock in the grid updates the others too.
+3. **Tap a clock to Identify it.** It shows its number, grid place, name and address in big digits for 10 seconds, so you know which is which. **Open** jumps straight to that clock's own panel.
+4. **Each clock gets its own address:** `weatherclock.local`, `weatherclock-2.local`, `weatherclock-3.local` and so on, as well as its IP address.
+
+<img src="docs/readme/panel-myclocks.png" width="544" alt="My clocks: grid of clocks on the same Wi-Fi">
+
+### Weather Clock WWW dashboard
+
+[Weather Clock WWW](https://github.com/FPV-dB/weather-clock-www) is a home dashboard for all your clocks at once. It runs on any always-on computer on your Wi-Fi (Mac, PC or Raspberry Pi, Python only, nothing to install from the internet) and you open it in a browser.
+
+**Tablets work really well for it.** An old Android tablet or iPad propped up in the kitchen or on a desk makes a great wall panel: open the dashboard, tap **Full screen**, and keep the tablet on its charger with the screen set to stay awake. It also works on a phone or a computer browser.
+
+![Weather Clock WWW on a tablet](docs/readme/www-home.gif)
+
+What it does:
+
+- Shows every clock on your network as a tile with what it's displaying (face previews are artwork, not a live camera of the screen).
+- Tap a clock to see its readings and change its brightness or face, or open its own panel.
+- **ID screens** numbers your clocks 1, 2, 3… in your chosen order and makes each one show its number for 10 seconds; **Reorder numbers** changes that order.
+- Local weather for a suburb you choose, a 7-day forecast, news and nearby aircraft, and the Desktop Radar plane screen if you have one.
+
+<table><tr>
+<td width="70%" valign="top"><img src="docs/readme/www-detail.png" alt="One clock's detail page on a tablet"><br><sub>One clock's page: readings, brightness and face</sub></td>
+<td width="30%" valign="top"><img src="docs/readme/www-portrait.png" alt="Dashboard on a tablet in portrait"><br><sub>Portrait tablet</sub></td>
+</tr></table>
+
+### Start-up screen
+
+While it starts, the clock shows its name, the step it is on (Wi-Fi, then the time), and its address so you can open the panel.
+
+![Start-up screens](docs/readme/startup.png)
+
+### Updates in one tap
+
+When a new version is published, the panel shows what changed and an **Update now** button. The new firmware is signed and checked before the clock switches to it.
+
+<img src="docs/readme/panel-update.png" width="700" alt="New version available banner">
+
+You can also use *Settings → Check for updates*. Manual update: download `weatherclock.bin` and its `.sig` file from [Releases](https://github.com/FPV-dB/WeatherClock/releases) and use *Settings → Update firmware*.
+
+### Name, password, backup and gifts
+
+*Settings → System* holds the clock's name and number, an optional panel password, **Back up** and **Restore backup** (settings, photos, GIFs and downloaded faces in one `.json` file, without passwords or Wi-Fi details), **Check for updates**, **Update firmware**, **Reset Wi-Fi**, and **Prepare as a gift**. That last one erases everything except the firmware, so the clock restarts with the first-install help for its new owner.
+
+<img src="docs/readme/panel-system.png" width="544" alt="System settings">
+
+### Fixes for different screens
+
+Panels vary between units. *Settings → Device screen* can swap the colour order, invert colours and rotate the picture 180°. A colour test shows which setting you need, and the anti-ghosting adjustment removes faint marks left by a face that stayed on for a long time.
+
+<img src="docs/readme/panel-screen.png" width="544" alt="Device screen settings">
+
+![Colour test and anti-ghosting screens](docs/readme/screen-tests.png)
+
+### Languages
+
+English is the default for the screen and the panel. Portuguese and Spanish are still available under *Settings → Language*.
+
+![The Words face in English, Portuguese and Spanish](docs/readme/languages.png)
+
+### Safe by design
+
+Updates over Wi-Fi must carry this project's signature, and a corrupted file is refused while the current firmware keeps running. Other websites can't send commands to the clock, the optional password slows down repeated guesses, and recovery mode (unplug and replug 3 times) always lets you get back in. *Settings → Diagnostics* shows why the clock last restarted, the Wi-Fi signal and free memory. Details: [docs/TECHNICAL.md](docs/TECHNICAL.md).
 
 ## Install
 
-1. Download the latest `.bin` from [Releases](../../releases).
-2. In the original firmware's web page, open **Firmware Upgrade** and upload the file.
-   - If you get `ERROR[4]: Not Enough Space`: the factory update space varies between units. First upload the loader [`smalltv-mod-loader.bin`](https://github.com/giovi321/smalltv-mod/releases/tag/v2.8.2) (giovi321/smalltv-mod v2.8.2), join the open network `SmallTV-Loader` and upload this firmware at `http://192.168.4.1/update`.
-3. If the clock does not join your network by itself, connect to the `SmallTV-Pomodoro` network and open `http://192.168.4.1` (**2.4 GHz** networks only).
-4. Open the IP shown on the screen to use the panel. Later updates: the panel offers them with one tap, or use *Settings → Update firmware*.
+You need the clock on your home **2.4 GHz** Wi-Fi and a computer or phone on the same network.
 
-### If something goes wrong
+1. Download `weatherclock.bin` from the [latest release](https://github.com/FPV-dB/WeatherClock/releases/latest).
+2. **From the original GeekMagic firmware:** open the clock's IP address in a browser, go to **Firmware Upgrade**, upload the `.bin` and wait for the restart.
+   - If you see `ERROR[4]: Not Enough Space`, the factory update space on your unit is too small. First upload the loader [`smalltv-mod-loader.bin`](https://github.com/giovi321/smalltv-mod/releases/tag/v2.8.2) (giovi321/smalltv-mod v2.8.2), join its open Wi-Fi `SmallTV-Loader`, and upload `weatherclock.bin` at `http://192.168.4.1/update`.
+3. **From smalltv-pomodoro or another firmware:** updates over Wi-Fi only accept firmware signed by the same project, so put the clock in [recovery mode](#if-something-goes-wrong) and upload `weatherclock.bin` there.
+4. The clock restarts into Weather Clock and shows the setup screens below.
 
-If the clock freezes or keeps restarting (for example after an update), **unplug it and plug it back in 3 times in a row, leaving it on for less than 30 seconds each time**. On the third time it opens **recovery mode**: join the `SmallTV-Recuperacao` network and open `http://192.168.4.1` to upload a firmware (no password needed), reset the settings to defaults, forget the Wi-Fi or download your focus history. *Restart normally* goes back to the clock.
+USB-C on the SmallTV-Ultra is power only. Flashing over a USB-to-serial adapter is only needed if a clock is completely dead: see [docs/RECOVERY.md](docs/RECOVERY.md).
 
-If the clock does not turn on at all and recovery mode does not open, reflash it over USB-TTL without losing your photos and settings: see [docs/RECOVERY.md](docs/RECOVERY.md).
+## First-time setup
 
-To go back to the original firmware, open recovery mode and upload GeekMagic's `.bin` ([GeekMagicClock/smalltv-ultra](https://github.com/GeekMagicClock/smalltv-ultra)) there. Since 1.20.1, *Settings → Update firmware* only accepts firmware signed by this project (with its `.sig` file from the release).
+A new clock (or one reset with "Prepare as a gift") walks you through setup on its own screen. Each step alternates every 10 seconds between written steps and a big QR code.
 
-> ⚠️ Only for the **SmallTV Ultra** (ESP8266). Do not flash it on the SmallTV Pro (ESP32) or other models.
+![Setup screens](docs/readme/setup-screens.png)
 
-## Repository layout
+1. **Join the setup Wi-Fi.** On your phone, join `WeatherClock-Setup` with the password shown on the clock, or scan the QR code with the camera.
+2. **Pick your home Wi-Fi.** The setup page opens by itself (or go to `http://192.168.4.1`). Choose your network and type its password. Only **2.4 GHz** networks work.
+3. **Choose your city.** Once connected, the clock shows its address and a QR code for the panel. Open it, tap **Choose my city** and search for your town. The time zone is set at the same time.
+
+The clock is then reachable at its IP address or at `http://weatherclock.local` (a second clock on the same network takes `weatherclock-2.local`, and so on).
+
+## The web panel
+
+The web panel was rebuilt for Weather Clock: weather at the top, every face as a live preview tile, tick boxes for the rotation, a radar page and the My clocks grid. Open the clock's address in any browser on the same Wi-Fi. Settings save as you change them, and the layout has its own design for phones and for computers.
+
+![Web panel tour: Clock, Album and radar, Settings](docs/readme/panel-tour.gif)
+
+| Page | What you can do |
+|---|---|
+| **Clock** | See the current weather, pick a face, build the face rotation, choose the digit colour, 12/24-hour time and what to show (clock, album or both) |
+| **Album & radar** | Upload photos and GIFs (photos are cropped to 240×240 in your browser), choose the rain radar and its range, see what is using storage |
+| **Settings** | Language, city search, °C/°F, rain warning, brightness and night mode, screen colour fixes, time zone, **My clocks**, clock name and number, panel password, backup and restore, updates, Wi-Fi reset, "Prepare as a gift", diagnostics |
+
+### Clock page
+
+<table><tr>
+<td width="72%" valign="top"><img src="docs/readme/panel-clock-full.png" alt="Clock page on a computer"></td>
+<td width="28%" valign="top"><img src="docs/readme/panel-clock-phone.png" alt="Clock page on a phone"></td>
+</tr></table>
+
+### Album & radar page
+
+<table><tr>
+<td width="72%" valign="top"><img src="docs/readme/panel-album-full.png" alt="Album and radar page on a computer"></td>
+<td width="28%" valign="top"><img src="docs/readme/panel-album-phone.png" alt="Album and radar page on a phone"></td>
+</tr></table>
+
+### Settings page
+
+<table><tr>
+<td width="72%" valign="top"><img src="docs/readme/panel-settings-full.png" alt="Settings page on a computer"></td>
+<td width="28%" valign="top"><img src="docs/readme/panel-settings-phone.png" alt="Settings page on a phone"></td>
+</tr></table>
+
+**Password:** *Settings → Panel and /update password* protects the panel (user `admin`). Forgot it? Use recovery mode.
+
+## Optional helper computer
+
+The clock fetches weather by itself and works fine on its own. A few extras need more memory, more data or more processing than the little ESP8266 can manage, for example decoding radar images or tracking aircraft. For those, a small script runs on another computer on the same Wi-Fi, does the heavy work and sends the result to the clock.
+
+**What can run the helpers:** a Mac, a Windows PC, a Raspberry Pi or any Linux box. The scripts are plain Python 3. They were written and tested on macOS (scheduled with launchd), and the same scripts run on Linux or a Raspberry Pi with cron or a systemd timer, or on Windows with Task Scheduler. A Raspberry Pi is a good always-on choice because it uses very little power. Helpers only update the clock while that computer is on and awake.
+
+| Helper | What it adds | Status |
+|---|---|---|
+| **Rain radar** | Bureau of Meteorology radar loop every 10 minutes, shown between faces (Australia only), plus warning cards. Also feeds the **News** face | Coming soon to this repository |
+| **Plane spotlight** | A card for each aircraft flying nearby, with its route, from public ADS-B data | Coming soon to this repository |
+| **Energy War and Airport Traffic** | Data for the Energy War and Airport Traffic faces, every 15 minutes | [tools/energy-airport-mac](tools/energy-airport-mac/) |
+| **Markets card** | A two-page album card with stocks, metals and Bitcoin, every 15 minutes | [tools/markets-card](tools/markets-card/) |
+
+Cards made by helpers play between faces like photos in the album:
+
+![Plane spotlight and markets cards](docs/readme/helper-cards.png)
+
+**Faces that need a helper:** News, Airport Traffic and Energy War. Without a helper running they have nothing new to show, and Airport Traffic is left out of the rotation until fresh data arrives. To show radar and other cards, set *Clock → What to show* to **Alternate clock and album**.
+
+## If something goes wrong
+
+**Recovery mode:** unplug the clock and plug it back in **3 times in a row**, leaving it on for less than 30 seconds each time. On the third start it opens the `WeatherClock-Recovery` Wi-Fi. Join it and open `http://192.168.4.1` to upload any firmware (no password or signature needed), reset settings, or forget the Wi-Fi. *Restart normally* goes back to the clock.
+
+- **Wrong colours or upside-down screen:** *Settings → Device screen* has colour order, invert and rotate options, plus a colour test.
+- **No weather:** check that a city is chosen and look at *Settings → Diagnostics* for a weak Wi-Fi signal (below about −75 dBm).
+- **Back to the original firmware:** open recovery mode and upload GeekMagic's `.bin` from [GeekMagicClock/smalltv-ultra](https://github.com/GeekMagicClock/smalltv-ultra).
+- **Completely dead clock:** reflash over USB-to-serial, see [docs/RECOVERY.md](docs/RECOVERY.md).
+
+## For developers
 
 | Folder | Contents |
 |---|---|
-| `weatherclock/` | Firmware (Arduino/ESP8266). `main.cpp`: Wi-Fi, weather, album, Pomodoro, history, updates, recovery and the web server. `ui.cpp` + `ui_kit.h`: the drawing core and kit. `face_*.cpp`: one file per face, registered in `faces_list.h`. `facepack.cpp`: the engine for downloadable faces. `fonts.cpp`: anti-aliased vector fonts. `assets.h` is generated from `assets/` |
-| `web/` | Web panel: edit `web/index.html`; `web/build.js` minifies and gzips it into `web/out/panel-<hash>.html.gz` (published on the website) and generates `web.h` with the small loader (`web/loader.html`) and the expected hash |
-| `assets/` | Pixel art sprites (one `.txt` per sprite), palettes and the `generate.js` generator |
-| `faces/` | Downloadable face packages (`.json`), their previews and `catalog.json` |
-| `sim/` | Screen simulator for the PC, redraw tests, and the face preview and font generators |
-| `docs/` | README images and the guides for face packages and built-in faces |
+| `weatherclock/` | Firmware (Arduino / ESP8266). One `face_*.cpp` per face, registered in `faces_list.h` |
+| `web/` | The web panel (`web/index.html`), served from GitHub Pages |
+| `sim/` | Screen simulator: compiles the drawing code on a PC and saves every screen as PNG, with redraw tests |
+| `faces/` | Downloadable face packs and their previews |
+| `assets/` | Pixel art sprites as text files |
+| `tools/` | Optional helper scripts |
+| `docs/` | Guides and README images |
 
-## Asset library
+Build the firmware:
 
-Every pixel art drawing (the tomato and its expressions, the plant stages, the flame, coffee, book, notebook, laptop, clipboard, paint palette, sun, moon, clouds and the end-of-Pomodoro animation) is a text file in `assets/`, one per sprite. `assets/generate.js` turns them all into `weatherclock/assets.h`: each sprite becomes `SPR_<NAME>` in flash (4 bits per pixel, ~130 bytes for a 16×16 sprite), using no RAM.
-
-![Asset preview sheet](docs/assets.png)
-
-### Adding an asset
-
-1. Create `assets/<name>.txt` (only `a-z`, `0-9` and `_`), for example `assets/regador.txt`:
-
-   ```
-   # Watering can: shown when ...
-   cor o #2a3a4a   # outline
-   cor B #4f8dff   # body
-   cor b #9cc0ff   # highlight
-   cor A #5aaaff   # water
-
-   ..........A.....
-   ...ooooo...A....
-   ..oBBbBBo.A.....
-   (more rows, until the drawing is complete)
-   ```
-
-   - every pixel row has the same length; `.` is transparent;
-   - `color <character> #rrggbb` defines a colour (up to 15 per sprite); `palette tomato` reuses the colours in `assets/palettes/tomato.txt`;
-   - animation: separate frames with a `frame` line and set each frame's duration with `ms 160`;
-   - `background #rrggbb` only changes the sprite's background on the preview sheet.
-
-2. Run `sim/build.sh` (or just `node assets/generate.js`). Errors point to the file and line.
-3. Draw it anywhere in `ui.cpp`:
-
-   ```cpp
-   uiSprite(&SPR_REGADOR, x, y);                // scale 1, transparent
-   uiSprite(&SPR_REGADOR, x, y, 3, 0, BG);      // scale 3; transparent pixels painted with BG
-   uiSprite(&SPR_TOMATO_DONE, x, y, 2, uiSpriteFrame(&SPR_TOMATO_DONE, s.ms), BG);  // animation
-   ```
-
-   Passing a background colour repaints the sprite over the previous one without clearing the area first (no flicker).
-
-To change an existing drawing, just edit its `.txt`: no code changes. The sheet above is generated by the simulator in `sim/out/assets.png`.
-
-## Downloadable faces (no firmware update)
-
-Besides the 11 built-in faces, the clock accepts **packages**: `.json` files of a few KB that describe a face in layers (text with variables such as `{HH}:{MM}`, `{TEMP}` and `{STREAK}`, the project's fonts, pixel art sprites, the weather icon, bars, progress rings, dial ticks, hands and the streak plant). Install them from the panel under *Clock → More faces*, from the online gallery or by picking the file. Format and examples (in Portuguese): **[docs/FACE_PACKS.md](docs/FACE_PACKS.md)** and the [`faces/`](faces) folder.
-
-![Some of the downloadable faces in the gallery](docs/packages.png)
-
-## Creating a built-in face
-
-One `face_<name>.cpp` file and one line in `faces_list.h`: the panel gallery, the preview and the tests follow automatically. Step by step guide, template and what the drawing kit offers (in Portuguese): **[docs/MAKING_A_FACE.md](docs/MAKING_A_FACE.md)**.
-
-## Screen simulator
-
-`sim/` compiles the firmware's `ui.cpp`, faces and package engine on the PC (with [Zig](https://ziglang.org/)) and saves each screen as a PNG, plus the asset preview sheet. It also runs a redraw test: it simulates minutes passing, weather changing and sessions being completed, and compares the result with a drawing made from scratch. Any different pixel means something was left behind on the screen. `SIM_LANG=1` (English) or `SIM_LANG=2` (Spanish) renders the screens in another language.
-
-```
-sim/build.sh
-```
-
-## Building
-
-```
+```sh
 arduino-cli core install esp8266:esp8266 --additional-urls https://arduino.esp8266.com/stable/package_esp8266com_index.json
 arduino-cli lib install "Adafruit GFX Library@1.13.0" "Adafruit ST7735 and ST7789 Library@1.11.0" "ArduinoJson@7.4.3"
-(cd web && npm install)  # optional: terser minifies the panel (~1 KB smaller)
-sim/build.sh   # generates assets.h and web.h, checks the code and tests the screens in the simulator
-sim/tests.sh  # Linux/WSL (g++-multilib): upload/host/password handlers, history, GIF and JPEG fuzzing
-./build.sh  # builds into build/ and checks the size
+sim/build.sh   # generates assets.h and the panel, tests every screen in the simulator
+./build.sh     # builds the firmware into build/
 ```
 
-`sim/build.sh` runs on Windows (Zig) and on Linux (Zig, or `g++ -m32` without it). Every push runs all of the above on GitHub Actions (`.github/workflows/firmware.yml`) and keeps the firmware as an artifact.
+The simulator needs [Zig](https://ziglang.org/) (`pip install ziglang` works) or a 32-bit `g++`. Set `GFX` and `JSON` to the Adafruit GFX and ArduinoJson source folders if they are not in the Arduino libraries folder. Making a new face: [docs/MAKING_A_FACE.md](docs/MAKING_A_FACE.md). Flash layout, security and other internals: [docs/TECHNICAL.md](docs/TECHNICAL.md).
 
-**Publishing** a Weather Clock version is one command, `tools/release.sh <version> "note"...` (kept next to the repository with the signing key, not in it): it builds the panel and firmware, signs both with the private key, copies them to the website (`firmware/latest.json`, `panel/`), pushes the site and creates the GitHub release.
+## Roadmap
 
-The time zone table (`web/tz.json`, IANA name → POSIX rule) is generated from the system tzdata by `web/tzgen.sh` and published like the dictionary.
-
-The panel's Portuguese and Spanish texts live in `web/i18n.json`, not in flash: `web/build.js` writes `web/out/i18n-<code>.json`, which is published in the website's `panel/` folder; the panel downloads it once and keeps it in the browser.
-
-`build.sh` builds without newlib's decimal number printf/scanf (`--build-property build.float=`, ~7 KB): the firmware never uses `%f` or parses decimals with it, and `sim/build.sh` rejects code that does.
-
-## Technical details
-
-- **4M2M flash layout** (since the version that follows 1.23.1): program up to ~1 MB (the ESP8266 execution ceiling) and a 2 MB LittleFS at `0x200000`. Up to 1.23 the layout was 4M3M, the same as the original firmware (3 MB LittleFS at `0x100000`), which left only ~1 MB for the program plus the update copy. EEPROM (`0x3FB000`), RF calibration and Wi-Fi data are at the same addresses in both layouts, so settings and the saved network survive. LittleFS is mounted **without auto-format**; the only formatting is the one-time migration at the first boot in 4M2M (an EEPROM mark says it already happened), after which the folders `/image`, `/gif` and `/faces` are recreated. Photos and GIFs: the panel saves them in the backup before the update and restores them after. Details, limits and procedure: [docs/MIGRATION-4M2M.md](docs/MIGRATION-4M2M.md).
-- **Compressed updates:** since 1.14 the clock also accepts `.bin.gz` firmware (~74% of the size, made by `compress.js` with an 8 KB window). The `.gz` is written at the end of the 1 MB program area and the bootloader (eboot) decompresses it over the current firmware on reboot, so a corrupted file would leave the clock without firmware. Before allowing the swap, the clock reads the stored `.gz` back, decompresses all of it with the same uzlib the bootloader uses and checks the gzip CRC, the image header, size and CRC, and that the decompressed image ends before the `.gz`; otherwise it cancels the swap. This lifts the size limit from ~520 KB to ~600 KB while any clock is still in the 4M3M layout (`build.sh` checks it; see docs/MIGRATION-4M2M.md). The original GeekMagic firmware can be installed as `.bin` while ours is under ~530 KB, and as `.bin.gz` after that.
-- **Update checks:** the elf2bin tool writes the image size and a CRC32 into every ESP8266 Arduino image (offsets 4112 and 4116); all original V9.0.x firmwares have them too. `/update` checks them while the file arrives and only switches firmware if everything matches.
-- **Recovery:** a boot counter stored in EEPROM after the settings (it survives power loss, unlike RTC memory). Three boots shorter than 30 s in a row open recovery mode; staying on for 30 s, or a deliberate restart, resets it.
-- **Focus history:** one count per day in a 371-day ring (`/stats.bin` on LittleFS, ~380 bytes). Only the header stays in RAM. If a photo, face or panel upload is writing another file, the history write waits until that upload closes, avoiding simultaneous LittleFS writers.
-- **Panel in the file storage (1.19+):** the minified, gzipped panel (~70 KB → ~19 KB) lives in LittleFS as `/www/<hash>.gz` instead of the 1 MB program area. Only a ~1 KB loader stays in flash: the first time (or after an update or formatting the storage) it downloads this version's panel from the website with Subresource Integrity, hands it to the clock, which checks the SHA-256 again and only ever serves the file whose hash matches the one compiled into the firmware. The in-panel update also pre-installs the next version's panel. The network stack uses the light lwIP variant (`ip=lm2n`, without features the clock does not use, such as PPP and routing).
-- **Fonts drawn by code:** the digits (5×7 pixel art, the "Geo" vector font, the DSEG7 segments, and Bebas Neue, Outfit and Righteous outlines) are polygons rather than bitmaps.
-- **Sprites** in `PROGMEM` at 4 bits per pixel, drawn by merging neighbouring pixels of the same colour into rectangles (fewer SPI calls).
-- **Translated text in flash:** `tr("pt", "en", "es")` keeps the three strings in flash with `PSTR` and copies only the current language into a small buffer, leaving the RAM the GIF decoder needs.
-- **RAM:** the GIF decoder needs ~24 KB of contiguous memory and the JPEG decoder ~18 KB. If memory runs short, the screen shows a notice instead of crashing.
-- **Network name (1.20.1):** the clock answers `http://smalltv.local` (shown on screen at startup). It probes the network first: if another clock already uses the name, it takes `smalltv-2.local`, `-3`… `smalltv-xxxx.local` (4 hex digits from the chip) always works as a fallback. It uses a minimal mDNS responder that only serves its own A record (~1.7 KB instead of ~21 KB for the core library; packet parser tested with malformed and looping packets in `sim/security_test.cjs`). The web server accepts that exact name besides IPv4 addresses, so DNS rebinding stays blocked.
-- **Signed updates (1.20.1):** RSA-2048 over the SHA-256 of the uploaded `.bin`/`.bin.gz`, sent in the `X-Firmware-Sig` header and checked with BearSSL before `Update.end(true)` (~6.5 KB of firmware). The signature is never appended to the image: the 1.20.0 test build did that and the bootloader read the trailer as the image size. See [docs/SIGNATURES.md](docs/SIGNATURES.md).
-- **GIF validation:** uploads and existing album files are checked before decoding (complete blocks, palettes, frame bounds, up to 480×480 and 2,000 frames). The bundled decoder uses checked reads and bounds LZW codes, dictionary links and compressed input. See [the GIF hardening notes](docs/GIF-SECURITY.md) for test coverage and limits.
-- **Wi-Fi downgrade guard:** the ESP8266 SDK can be pushed by a forged beacon to drop to an unencrypted (open) connection with a rogue access point ([CVE-2020-12638](https://nvd.nist.gov/vuln/detail/CVE-2020-12638), not fixed by Espressif for this SDK). Since 1.18.2 the clock watches the Wi-Fi authentication mode and reconnects as soon as it gets weaker, and a saved network (including one set up by the original firmware) only accepts WPA or better. The SDK in use (2.2.1+100, 2019-07-03) already includes Espressif's fix for the beacon crash (CVE-2019-12588). FragAttacks have no fix for this SDK: keep the panel password on and, if your router allows it, put the clock on a guest/IoT network. [docs/FRAGATTACKS-TEST.md](docs/FRAGATTACKS-TEST.md) (in Portuguese) shows how to measure which of them affect your clock with the researcher's test tool.
-- **Protected clock time (1.19.1):** the SNTP client in the ESP8266 core accepts any reply, so one injected UDP packet could change the time and wipe the focus history. The time only counts for the history once it matches the local time Open-Meteo sends over TCP (or, without weather, two consecutive syncs that agree); a jump that is not confirmed is undone, and a date in the past never erases anything. Wrong panel passwords make that IP wait 1 s instead of freezing the whole clock, and SSDP answers at most 4 times per second.
-
-### Pinout
-
-| Function | GPIO |
-|---|---|
-| SPI CLK / MOSI | 14 / 13 |
-| Display DC | 0 |
-| Display RST | 2 |
-| Backlight (inverted PWM) | 5 |
+Planned work, including **local sensor modules** (ESP32 boards with BME280 and other sensors around the house, set up the way you want), is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Credits
 
-- Pinout: [ESPHome devices — GeekMagic Ultra](https://devices.esphome.io/devices/geekmagic-ultra/)
+**Based on [SmallTV Pomodoro](https://github.com/davicorrea0/smalltv-pomodoro) v1.23.5 by [davicorrea0](https://github.com/davicorrea0)** (GPL-3.0). Much of the code comes from that project: the face engine and many faces, the web panel, face packs, signed updates, recovery mode and the security work. Weather Clock removed the Pomodoro timer and added the weather faces, animations, setup screens, multi-clock support and the helper scripts. Thank you!
+
+**Data sources**
+
+- Weather, air quality and city search: [Open-Meteo](https://open-meteo.com/) (CC BY 4.0)
+- Rain radar and warnings: [Australian Bureau of Meteorology](http://www.bom.gov.au/)
+- Aircraft positions: [adsb.fi](https://adsb.fi/) and [adsb.lol](https://adsb.lol/); routes: [adsbdb](https://www.adsbdb.com/)
+- News headlines: public news RSS feeds
+- Energy War face: [EnergyWar.net](https://energywar.net/)
+- Markets card: Yahoo Finance public chart data
+
+**Fonts** (SIL Open Font License 1.1, see [`licenses/`](licenses))
+
+- [DSEG7 Classic](https://github.com/keshikan/DSEG) by keshikan (LCD faces)
+- [Bebas Neue](https://github.com/dharmatype/Bebas-Neue) by Dharma Type (Flip face)
+- [Outfit](https://github.com/Outfitio/Outfit-Fonts) by the Outfit Project Authors (numbers on the weather faces)
+- [Righteous](https://fonts.google.com/specimen/Righteous) by Astigmatic
+
+**Libraries**
+
+- [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF) and [JPEGDEC](https://github.com/bitbank2/JPEGDEC) by BitBank Software (Apache 2.0, with local hardening changes)
+- [uzlib](https://github.com/pfalcon/uzlib) by Paul Sokolovsky (zlib license)
+- [QRCode](https://github.com/ricmoo/QRCode) by Richard Moore (MIT)
+- [Adafruit GFX and ST7789](https://github.com/adafruit/Adafruit-GFX-Library) by Adafruit (BSD) and [ArduinoJson](https://arduinojson.org/) by Benoît Blanchon (MIT)
+
+**Hardware help and ideas**
+
+- Pinout: [ESPHome devices: GeekMagic Ultra](https://devices.esphome.io/devices/geekmagic-ultra/)
 - Panel colour order and the loader for the space error: [giovi321/smalltv-mod](https://github.com/giovi321/smalltv-mod)
-- Ideas for recovery mode, update checks, backup and flash savings: [michaeldale/smartclock-oss](https://github.com/michaeldale/smartclock-oss) (reimplemented; no code copied)
-- LCD face digits: [DSEG7 Classic](https://github.com/keshikan/DSEG) (keshikan, SIL Open Font License 1.1 — see `licenses/DSEG-LICENSE.txt`); the segment outlines were extracted from the font and are drawn as polygons
-- Flip face digits: [Bebas Neue](https://github.com/dharmatype/Bebas-Neue) (Dharma Type, SIL Open Font License 1.1 — see `licenses/BebasNeue-OFL.txt`), also converted to polygons
-- `outfit` and `righteous` package fonts: [Outfit](https://github.com/Outfitio/Outfit-Fonts) (The Outfit Project Authors) and [Righteous](https://fonts.google.com/specimen/Righteous) (Astigmatic), SIL Open Font License 1.1 — see `licenses/`; digit outlines generated by `sim/fontgen.js`
-- [uzlib](https://github.com/pfalcon/uzlib) (Paul Sokolovsky, zlib license — see `licenses/uzlib-LICENSE.txt`), the decompressor from the ESP8266 core, used to check compressed updates
-- [JPEGDEC](https://github.com/bitbank2/JPEGDEC) 1.8.4 (BitBank Software, Apache License 2.0 — see `licenses/JPEGDEC-LICENSE.txt`), included in `weatherclock/src/JPEGDEC` with one change: its color and range lookup tables (7.7 KB) are computed at the start of each decode and freed at the end instead of living in RAM all the time
-- [AnimatedGIF](https://github.com/bitbank2/AnimatedGIF) 2.2.3 (BitBank Software, Apache License 2.0 — see `licenses/AnimatedGIF-LICENSE.txt`), included in `weatherclock/src/AnimatedGIF` with a checked sequential parser and bounds checks in the standard LZW decoder; `gif.inl` is named `gif_inl.h` for Arduino builds. This firmware uses RAW scanline callbacks, without Turbo or a framebuffer.
-- Libraries: Adafruit GFX and ST7789, ArduinoJson
+- Recovery mode, update checks and backup ideas: [michaeldale/smartclock-oss](https://github.com/michaeldale/smartclock-oss) (reimplemented, no code copied)
 
 ## License
 
-[GNU GPL v3](LICENSE) (GPL-3.0-or-later): you can use, study, change and share the code, the pixel art and the clock faces. If you distribute a modified version, or a firmware built from it, it must also be released under the GPL with its source code.
+[GNU GPL v3](LICENSE) (GPL-3.0-or-later). You can use, study, change and share the code, the pixel art and the faces. If you share a modified version or a firmware built from it, it must also be released under the GPL with its source code.
 
-Third-party parts keep their own licenses (copies in [`licenses/`](licenses)):
-
-- The digit outlines derived from DSEG7, Bebas Neue, Outfit and Righteous (in `weatherclock/fonts.cpp` and the faces that use them) remain under the SIL Open Font License 1.1.
-- uzlib (`weatherclock/src/uzlib/`) is under the zlib license.
-- JPEGDEC (`weatherclock/src/JPEGDEC/`) is under the Apache License 2.0.
-- AnimatedGIF (`weatherclock/src/AnimatedGIF/`) is under the Apache License 2.0. Local changes are described in `docs/GIF-SECURITY.md`.
-
-### Readable setup and full-screen QR codes
-
-Wi-Fi setup alternates every 10 seconds between numbered instructions and a full-screen QR code that joins `WeatherClock-Setup`. The network name, password and `192.168.4.1` address remain available on the instruction page for manual setup. After connecting, the city-selection screen alternates with a QR code for the clock's current web address.
-
-QR codes use whole-pixel squares and a four-module white border on the 240×240 display. The QR version is selected to fit the complete payload before encoding. Setup starts with instructions; this change does not reset existing Wi-Fi or city settings.
-
-### Markets card
-
-The optional [Markets card](tools/markets-card/) shows AAPL, MSFT and NVDA on one page, then gold, silver, copper and Bitcoin on a second page. A companion Mac updater creates `markets.wcr` and refreshes the delayed USD prices every 15 minutes. It is an album card, so it can coexist with radar and aircraft cards without adding quote-networking code to the ESP8266 firmware.
-
-### Energy War and Airport Traffic companion
-
-The [macOS companion updater](tools/energy-airport-mac/) feeds the built-in Energy War and Airport Traffic faces added in 2.0.15. It verifies the clock's IP/MAC identity and firmware before every write, refreshes Energy War from the configured source repository, and reuses the flight updater's observed takeoff/landing state. It is intended to run through launchd every 15 minutes.
+Third-party parts keep their own licenses, with copies in [`licenses/`](licenses): the font outlines (SIL OFL 1.1), uzlib (zlib), JPEGDEC and AnimatedGIF (Apache 2.0) and QRCode (MIT). Local changes to AnimatedGIF are described in [docs/GIF-SECURITY.md](docs/GIF-SECURITY.md).
