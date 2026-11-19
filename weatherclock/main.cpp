@@ -966,13 +966,6 @@ static bool aiUsageUsable() {
   return aiUsage.at && millis() - aiUsage.at < 45UL * 60000UL && (aiUsage.svc[0].ok || aiUsage.svc[1].ok);
 }
 
-// The companion posts every 15 minutes. No update for 45 minutes means the feed failed; zero movements means
-// there is nothing useful to show. In both cases rotation skips Airport Traffic instead of displaying an empty panel.
-static bool flightStatsUsable() {
-  return flightStats.at && millis() - flightStats.at < 45UL * 60000UL &&
-         flightStats.date[0] && (flightStats.off || flightStats.on);
-}
-
 // weatherbox: when rain reaches home, worked out from the radar by the computer program (/api/rainsoon):
 // minutes (0 = raining now, -1 = none on the way) and when it was received. Fresh for 20 minutes.
 int16_t radarEta = -1;
@@ -1639,7 +1632,7 @@ UiState makeState() {
   }
   s.city = cfg.city;
   s.theme = previewActive() ? previewTheme : cfg.theme;
-  if (s.theme == THEME_FLIGHT_STATS && !flightStatsUsable()) s.theme = THEME_WEATHER;
+  if (s.theme == THEME_FLIGHT_STATS) s.theme = THEME_WEATHER;
   s.accent = clockColor();
   strlcpy(ipText, WiFi.localIP().toString().c_str(), sizeof ipText);
   s.ip = ipText;
@@ -3659,9 +3652,14 @@ void setupWeb() {
     String j;
     j.reserve(1800);
     j = '[';
+    bool first = true;
     for (uint8_t t = 0; t < THEME_COUNT; t++) {
-      if (t) j += ',';
-      j += F("{\"n\":\"");
+      if (t == THEME_FLIGHT_STATS) continue;  // retain the saved ID, hide the retired face
+      if (!first) j += ',';
+      first = false;
+      j += F("{\"t\":");
+      j += t;
+      j += F(",\"n\":\"");
       char nb[40], db[72];  // name and description are in flash
       strncpy_P(nb, uiFaceName(t), sizeof nb - 1), nb[sizeof nb - 1] = 0;
       strncpy_P(db, uiFaceDesc(t), sizeof db - 1), db[sizeof db - 1] = 0;
@@ -3746,7 +3744,7 @@ void setupWeb() {
     if (!guard()) return;
     if (server.arg("c") == "preview") {
       int t = server.arg("t").toInt();
-      bool ok = t >= 0 && t < THEME_COUNT;
+      bool ok = t >= 0 && t < THEME_COUNT && t != THEME_FLIGHT_STATS;
       if (server.hasArg("pkg")) {  // pack preview: loads it into the engine until the preview ends
         ok = loadPack(server.arg("pkg"));
         t = THEME_PACK;
@@ -3771,6 +3769,7 @@ void setupWeb() {
     cfg.hour12 = argRange("h12", cfg.hour12, 0, 1);
     if (server.hasArg("theme") && server.arg("theme").length()) {  // built-in: free the pack engine
       cfg.theme = argRange("theme", cfg.theme, 0, THEME_COUNT - 1);
+      if (cfg.theme == THEME_FLIGHT_STATS) cfg.theme = THEME_WEATHER;
       facePackUnload();
     }
     if (server.hasArg("pkg") && loadPack(server.arg("pkg"))) {
@@ -4443,7 +4442,7 @@ void rotLoop() {
     if (it.startsWith("t:")) {
       int t = it.substring(2).toInt();
       if (t < 0 || t >= THEME_COUNT) continue;
-      if (t == THEME_FLIGHT_STATS && !flightStatsUsable()) continue;
+      if (t == THEME_FLIGHT_STATS) continue;
       if (t == THEME_LIGHTNING && !lightningActive()) continue;
       if (t == THEME_AI_USAGE && !aiUsageUsable()) continue;
       if ((t == THEME_WORLD_CLOCK && !world.nc) || (t == THEME_WORLD_WEATHER && !world.nw)) continue;  // no cities picked yet

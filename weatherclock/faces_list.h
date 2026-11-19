@@ -26,7 +26,7 @@
   X(MOON, themeMoon, "Moon", "Phase and light, moonrise and moonset, where it is now, and the next full and new moon") \
   X(RAIN, themeRain, "Rain", "Chance of rain and millimetres: today, the next 12 hours and the coming days") \
   X(NEWS, themeNews, "News", "Breaking news headlines (needs the radar program on a computer)") \
-  X(FLIGHT_STATS, themeFlightStats, "Airport Traffic", "Takeoffs and landings so far today at South Australian airports") \
+  X(FLIGHT_STATS, themeFlightStats, "Retired airport face", "Reserved ID for saved settings; Flights Today is an album card") \
   X(ENERGY, themeEnergy, "Energy War", "Latest attacks on energy infrastructure from EnergyWar.net, and the total (needs the radar program)") \
   X(LIGHTNING, themeLightning, "Lightning", "Live lightning strikes near you: nearest strike, count, where the storm is and where it is heading (needs the radar program)") \
   X(AI_USAGE, themeAiUsage, "AI Usage", "Claude and OpenAI Codex limits: what is left of the 5-hour and 7-day windows, and when they reset (needs the Mac program)") \
