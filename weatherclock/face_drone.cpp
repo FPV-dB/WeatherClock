@@ -234,7 +234,7 @@ void themeDrone(const UiState &s, bool full) {
   // redraw everything when the weather or the drone changes
   char key[40];
   const UiDrone *d = s.drone;
-  snprintf(key, sizeof key, "%d %u %u %u %u %s", ok, s.wx.version, d ? d->id : 255, d ? d->wind : 0, d ? d->gust : 0,
+  snprintf(key, sizeof key, "%d %d %u %u %u %u %s", ok, s.weatherOn, s.wx.version, d ? d->id : 255, d ? d->wind : 0, d ? d->gust : 0,
            d ? d->name : "");
   static uint32_t lastAnim = 0;
   if (full || changed(cA, key)) {
