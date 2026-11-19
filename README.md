@@ -58,7 +58,6 @@ These faces are new in Weather Clock, and all of them are animated.
 <td align="center" valign="top" width="33%"><img src="docs/readme/faces/news.gif" width="200" alt="News"><br><b>News</b><br><sub>Scrolling breaking news headlines. Needs a helper computer</sub></td>
 </tr>
 <tr>
-<td align="center" valign="top" width="33%"><img src="docs/readme/faces/airport-traffic.gif" width="200" alt="Airport Traffic"><br><b>Airport Traffic</b><br><sub>Takeoffs and landings so far today at nearby airports. Needs a helper computer</sub></td>
 <td align="center" valign="top" width="33%"><img src="docs/readme/faces/energy-war.gif" width="200" alt="Energy War"><br><b>Energy War</b><br><sub>Latest attacks on energy infrastructure from EnergyWar.net. Needs a helper computer</sub></td>
 <td align="center" valign="top" width="33%"><img src="docs/readme/faces/lightning.gif" width="200" alt="Lightning"><br><b>Lightning</b><br><sub>Live lightning strikes near you: nearest strike, strikes in the last 10 minutes, where the storm is and where it is heading. Needs a helper computer</sub></td>
 </tr>
@@ -314,7 +313,7 @@ The clock fetches weather by itself and works fine on its own. A few extras need
 | Helper | What it adds | Status |
 |---|---|---|
 | **WeatherClockRadar** | BoM rain radar and warning cards, News, Nearby Aircraft, Military Aircraft, Flights Today and the Lightning warning card | Helper is working; public source package and installer still need to be added to this repository |
-| **Energy War and Airport Traffic** | Data for the Energy War and Airport Traffic faces, every 15 minutes | [tools/energy-airport-mac](tools/energy-airport-mac/) |
+| **Energy War companion** | Data for the Energy War face (legacy helper also sends retired airport data) | [tools/energy-airport-mac](tools/energy-airport-mac/) |
 | **Lightning** | Live strikes for the Lightning face, from the Blitzortung.org network, every minute | [tools/lightning-mac](tools/lightning-mac/) |
 | **Markets card** | A two-page album card with stocks, metals and Bitcoin, every 15 minutes | [tools/markets-card](tools/markets-card/) |
 
@@ -322,7 +321,7 @@ Cards made by helpers play between faces like photos in the album:
 
 ![Plane spotlight and markets cards](docs/readme/helper-cards.png)
 
-**Faces that need a helper:** News, Airport Traffic, Energy War and Lightning. Without a helper running they have nothing new to show, and Airport Traffic is left out of the rotation until fresh data arrives. Lightning joins the rotation only while there has been a strike nearby in the last 30 minutes. The radar, lightning, warning, nearby-aircraft, military-aircraft, Flights Today and markets screens are helper-generated album cards rather than faces. To show them, set *Clock → What to show* to **Alternate clock and album**.
+**Faces that need a helper:** News, Energy War and Lightning. Without a helper running they have nothing new to show. Lightning joins the rotation only while there has been a strike nearby in the last 30 minutes. The radar, lightning, warning, nearby-aircraft, military-aircraft, Flights Today and markets screens are helper-generated album cards rather than faces. To show them, set *Clock → What to show* to **Alternate clock and album**. Airport Traffic is retired; its saved numeric ID is reserved so later faces keep their settings.
 
 ### Build your own station with a Raspberry Pi
 
