@@ -2,7 +2,7 @@
 
 This companion sends data to the built-in **Energy War** and **Airport Traffic** faces introduced in Weather Clock 2.0.15.
 
-It refuses to write unless both the configured clock MAC address and firmware version 2.0.15 match. Energy War records come from the configured GitHub repository through the authenticated `gh` CLI; if GitHub is temporarily unavailable, the last downloaded source is retained as a cache. Airport Traffic reuses the observation state produced by the existing Weather Clock flight updater.
+It refuses to write unless the configured clock MAC address matches and the clock runs firmware 2.0.15 or newer. Energy War records come from the configured GitHub repository through the authenticated `gh` CLI; if GitHub is temporarily unavailable, the last downloaded source is retained as a cache. Airport Traffic reuses the observation state produced by the existing Weather Clock flight updater.
 
 ## Set up
 

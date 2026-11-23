@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Feed Weather Clock 2.0.15 Energy War and Airport Traffic faces on .182."""
+"""Feed the Weather Clock Energy War face (firmware 2.0.15 or newer)."""
 
 import base64
 import json
@@ -45,8 +45,10 @@ def verify_target():
     actual = ":".join(part.zfill(2) for part in match.group(1).split(":")) if match else ""
     if actual != EXPECTED_MAC:
         raise RuntimeError(f"target MAC mismatch: expected {EXPECTED_MAC}, got {actual or 'unknown'}")
-    if state.get("ver") not in ("2.0.15", "2.0.16"):
-        raise RuntimeError(f"target firmware is {state.get('ver')!r}, expected '2.0.15' or '2.0.16'")
+    ver = str(state.get("ver") or "")
+    parts = tuple(int(x) for x in re.findall(r"\d+", ver)[:3])
+    if len(parts) < 3 or parts < (2, 0, 15):
+        raise RuntimeError(f"target firmware is {ver!r}, expected 2.0.15 or newer")
 
 
 def refresh_source():
