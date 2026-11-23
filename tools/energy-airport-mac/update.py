@@ -20,6 +20,7 @@ EXPECTED_MAC = CONFIG["expected_mac"].lower()
 GH = pathlib.Path(CONFIG.get("gh") or shutil.which("gh") or pathlib.Path.home() / ".local/bin/gh")
 SOURCE_CACHE = HERE / "incidents.ts"
 FLIGHT_STATE = pathlib.Path(CONFIG["flight_state"]).expanduser()
+STATS_URL = CONFIG.get("stats_url", "https://energywar.net/stats.json?limit=5")
 SOURCE_REPOSITORY = CONFIG.get("source_repository", "FPV-dB/WorldWarE")
 
 
@@ -172,10 +173,40 @@ def flight_payload():
     return payload
 
 
+def live_payload():
+    """The live site's own numbers: https://energywar.net/stats.json (total = homepage headline)."""
+    import urllib.request
+    req = urllib.request.Request(STATS_URL, headers={"User-Agent": "WeatherClock/1.0"})
+    with urllib.request.urlopen(req, timeout=30) as response:
+        stats = json.load(response)
+    status_letter = {"documented": "D", "reported": "R", "unconfirmed": "U", "investigating": "I"}
+    payload = {"total": int(stats["total"])}
+    rows = stats.get("latest") or []
+    for index, row in enumerate(rows[:5]):
+        name = row.get("name") or ""
+        place = name.split(" \u2014 ")[0]
+        what = name.split(" \u2014 ", 1)[1] if " \u2014 " in name else name
+        try:
+            day = datetime.strptime(row.get("eventStartDate") or "", "%Y-%m-%d").strftime("%d %b").upper()
+        except ValueError:
+            day = (row.get("date") or "")[:6].upper()
+        payload.update({
+            f"p{index}": place[:45],
+            f"w{index}": what[:91],
+            f"k{index}": (row.get("infrastructure") or "")[:23],
+            f"d{index}": day,
+            f"s{index}": status_letter.get(row.get("status") or "", "-"),
+        })
+    return payload, rows[:5]
+
+
 def main():
     verify_target()
-    source = refresh_source()
-    energy, newest = energy_payload(source)
+    try:
+        energy, newest = live_payload()
+    except Exception as error:
+        print(f"stats.json failed ({error}); using the GitHub incident list", flush=True)
+        energy, newest = energy_payload(refresh_source())
     if not newest:
         raise RuntimeError("no EnergyWar incidents parsed; no writes performed")
     if "--dry-run" in sys.argv:
