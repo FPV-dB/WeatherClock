@@ -164,7 +164,7 @@ const uint32_t SETTINGS_MAGIC_V3 = 0x504F4D33;  // "POM3": same fields, without 
 Settings cfg;
 
 void defaultSettings() {
-  cfg = Settings{SETTINGS_MAGIC, 25, 5, 15, 4, 80, 0, 0, "<-03>3", "", 0, -1,
+  cfg = Settings{SETTINGS_MAGIC, 25, 5, 15, 4, 80, 0, 0, "AEST-10AEDT,M10.1.0,M4.1.0/3", "", 0, -1,
                  THEME_MATRIX, 0, 10, 0, 22, 7, 15, 1, 242, 242, 242, 0, 0, "", 0, 1, 0, 8, ACT_READ, "", 0, 0, 0, 1, "", UI_VCOM_DEFAULT, 0, 0, 1, 0, 0};
   cfg.lightningOnly = 1;
   cfg.lightningMark = 0xD7;

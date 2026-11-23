@@ -122,7 +122,7 @@ nav button.on svg{stroke:var(--ac)}
  #t0.on{grid-template-columns:320px minmax(0,1fr);grid-template-rows:auto 1fr}
  #t0 #pvbar{grid-column:1/-1}
  #t0 .side{grid-column:1;margin-top:22px}#t0 .body{grid-column:2;grid-row:span 2}#t0 .side2{grid-column:1}
- #t0 .side2 select{width:150px}#t0 .side2 label{white-space:nowrap}
+ #t0 .side2 select{width:150px}#t0 .side2 label{white-space:nowrap}#t0 .side2 label:has(input[type=checkbox]){white-space:normal}
  .hero{flex-direction:column;align-items:stretch;text-align:center}.hero .scr{width:100%}
  .faces{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
  .face:hover .scr{border-color:#4a4a52}.face.cur:hover .scr{border-color:var(--ac)}
@@ -350,7 +350,7 @@ nav button[hidden],[hidden]{display:none!important}
  <h2>Date and time</h2>
  <div class="card">
   <label>Time zone (POSIX TZ)<input data-k="tz" type="text" spellcheck="false"></label>
-  <small>Automatic: choosing your city under Weather sets the time zone, including daylight saving. Manual examples: Adelaide ACST-9:30ACDT,M10.1.0,M4.1.0/3 · Sydney AEST-10AEDT,M10.1.0,M4.1.0/3 · Perth AWST-8</small>
+  <small>Automatic: choosing your city under Weather sets the time zone, including daylight saving. Manual examples: Canberra AEST-10AEDT,M10.1.0,M4.1.0/3 (the default) · London GMT0BST,M3.5.0/1,M10.5.0 · New York EST5EDT,M3.2.0,M11.1.0 · Berlin CET-1CEST,M3.5.0,M10.5.0/3 · Tokyo JST-9</small>
   <small id="tzauto"></small>
   <p id="tzfix" hidden><button class="btn" onclick="tzFix()">Set the time zone from the city</button></p>
  </div>
@@ -404,7 +404,7 @@ nav button[hidden],[hidden]{display:none!important}
  <div class="card cred">
   <div class="abt"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath fill='%23ff9f1c' d='M0 0h1v1h-1zM10 0h1v1h-1zM1 1h1v1h-1zM9 1h1v1h-1zM5 2h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM7 3h1v1h-1zM3 4h1v1h-1zM7 4h1v1h-1zM2 5h1v1h-1zM8 5h1v1h-1zM3 6h1v1h-1zM7 6h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM5 8h1v1h-1zM1 9h1v1h-1zM0 10h1v1h-1z'/%3E%3Cpath fill='%23ffd23f' d='M5 3h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM3 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM6 5h1v1h-1zM7 5h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM5 7h1v1h-1z'/%3E%3Cpath fill='%23f2f4f8' d='M8 8h1v1h-1zM9 8h1v1h-1zM10 8h1v1h-1zM6 9h1v1h-1zM7 9h1v1h-1zM8 9h1v1h-1zM9 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM11 10h1v1h-1zM12 10h1v1h-1zM13 10h1v1h-1zM14 10h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM11 11h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM14 11h1v1h-1zM15 11h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM11 12h1v1h-1zM12 12h1v1h-1zM13 12h1v1h-1zM14 12h1v1h-1zM15 12h1v1h-1z'/%3E%3Cpath fill='%23b8c2cf' d='M5 13h1v1h-1zM6 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1zM9 13h1v1h-1zM10 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM14 13h1v1h-1z'/%3E%3C/svg%3E" alt=""><div><b>Weather Clock</b><small id="aver"></small></div></div>
   <p>Weather Clock firmware and panel by <a href="https://github.com/FPV-dB" target="_blank" rel="noopener">FPV-dB</a>.</p>
-  <p>Based on <a href="https://github.com/davicorrea0/smalltv-pomodoro" target="_blank" rel="noopener">SmallTV Pomodoro</a> by <a href="https://github.com/davicorrea0" target="_blank" rel="noopener">davicorrea0</a>, originally written in Portuguese.</p>
+  <p>Based on <a href="https://github.com/davicorrea0/smalltv-pomodoro" target="_blank" rel="noopener">SmallTV Pomodoro</a> by <a href="https://github.com/davicorrea0" target="_blank" rel="noopener">davicorrea0</a>.</p>
   <small>Much of the code comes from that project: the clock faces, the web panel, face packs, signed updates, recovery mode and the security work. Thank you!</small>
   <p>Free software under the GNU GPL v3. <a href="https://github.com/FPV-dB/WeatherClock" target="_blank" rel="noopener">Source code</a></p>
   <small>Weather: Open-Meteo. Rain radar: Australian Bureau of Meteorology. Fonts: Bebas Neue, Outfit, Righteous and DSEG7 (SIL Open Font License). Libraries: AnimatedGIF and JPEGDEC (BitBank), uzlib, QRCode (Richard Moore), Adafruit GFX and ArduinoJson. Panel colour order and loader: giovi321/smalltv-mod.</small>
