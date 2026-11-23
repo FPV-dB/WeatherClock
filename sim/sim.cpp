@@ -660,18 +660,18 @@ int main() {
     delete f;
   }
 
-  // weatherbox: the News face with a longer screen time (30 s): one frame per second, a slower scroll
+  // weatherbox: the News face with the default screen time (60 s): one frame per second, a slow scroll
   {
     Frame *f = new Frame();
     uiBegin(f);
     UiState t = base(14, 37, 24);
     t.theme = THEME_NEWS;
-    t.newsSec = 30;
-    for (int i = 0; i <= 30; i++) {
+    t.newsSec = 60;
+    for (int i = 0; i <= 60; i++) {
       t.ms = i * 1000;
       uiRenderClock(t);
       char n[32];
-      snprintf(n, sizeof n, "news-30s-%02d", i);
+      snprintf(n, sizeof n, "news-60s-%02d", i);
       save(*f, n);
     }
     delete f;
