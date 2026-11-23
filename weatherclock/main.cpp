@@ -949,6 +949,7 @@ void sendHueDescription() {
 UiNews news = {};
 UiFlightStats flightStats = {};
 UiEnergy energy = {};
+UiSquawks squawks = {};  // weatherbox: emergency squawks for the Bad Squawks face (/api/squawks)
 UiLightning lightning = {-1, 0, -1, -1, 100, 0xFFFFFFFFUL, 0, 0};
 
 // The computer program posts every minute. Rotation shows the Lightning face only while there has been a strike
@@ -1649,6 +1650,7 @@ UiState makeState() {
   s.ai = aiUsageUsable() ? &aiUsage : nullptr;
   s.world = &world;
   s.drone = &drone;
+  s.squawks = &squawks;
   return s;
 }
 
@@ -3469,6 +3471,41 @@ void setupWeb() {
     energy = e;
     server.send(200, "text/plain", "ok");
   });
+  // weatherbox: aircraft that squawked 7700 / 7500 / 7600 / 0100, newest first, for the Bad Squawks face.
+  // Per row i (0-19): q<i> code, f<i> callsign, r<i> registration, t<i> type, i<i> route or operator,
+  // w<i> where (nearest big airport), a<i> altitude in feet (-1 unknown, -2 on the ground),
+  // s<i> UTC seconds when it first squawked, l<i> 1 while it is still squawking.
+  server.on("/api/squawks", HTTP_POST, [] {
+    if (!guard()) return;
+    UiSquawks &q = squawks;  // filled in place: a copy would need another 1.7 KB of RAM
+    const uint16_t ver = q.version;
+    q = {};
+    auto copy = [](char *dst, size_t n, const String &v) {
+      size_t o = 0;
+      for (char c : v)  // printable ASCII only (the pixel font, and the state JSON)
+        if (o + 1 < n) dst[o++] = (c >= 0x20 && c < 0x7F && c != '"' && c != '\\') ? c : ' ';
+      dst[o] = 0;
+    };
+    for (int i = 0; i < UI_SQUAWKS; i++) {
+      char k[4];
+      snprintf(k, sizeof k, "q%d", i);
+      if (!server.hasArg(k)) break;
+      UiSquawk &r = q.rows[i];
+      copy(r.code, sizeof r.code, server.arg(k));
+      k[0] = 'f'; copy(r.call, sizeof r.call, server.arg(k));
+      k[0] = 'r'; copy(r.reg, sizeof r.reg, server.arg(k));
+      k[0] = 't'; copy(r.type, sizeof r.type, server.arg(k));
+      k[0] = 'i'; copy(r.info, sizeof r.info, server.arg(k));
+      k[0] = 'w'; copy(r.near, sizeof r.near, server.arg(k));
+      k[0] = 'a'; r.alt = server.hasArg(k) && server.arg(k).length() ? (int32_t)server.arg(k).toInt() : -1;
+      k[0] = 's'; r.seen = (uint32_t)strtoul(server.arg(k).c_str(), nullptr, 10);
+      k[0] = 'l'; r.live = server.arg(k) == "1";
+      q.n = i + 1;
+    }
+    q.at = millis();
+    q.version = ver + 1;
+    server.send(200, "text/plain", "ok");
+  });
   // weatherbox: lightning near the clock for the Lightning face, from a live strike feed. near = nearest strike in
   // km (-1 none), n = strikes in the last 10 minutes, from / mv = bearing to the storm and its heading in degrees
   // (-1 unknown), r = radius watched in km, ago = seconds since the latest strike (-1 none seen).
@@ -4444,6 +4481,7 @@ void rotLoop() {
       if (t < 0 || t >= THEME_COUNT) continue;
       if (t == THEME_FLIGHT_STATS) continue;
       if (t == THEME_LIGHTNING && !lightningActive()) continue;
+      if (t == THEME_SQUAWKS && !squawks.n) continue;  // nothing received yet
       if (t == THEME_AI_USAGE && !aiUsageUsable()) continue;
       if ((t == THEME_WORLD_CLOCK && !world.nc) || (t == THEME_WORLD_WEATHER && !world.nw)) continue;  // no cities picked yet
       cfg.theme = t;  // weatherbox: the rotation's pack stays loaded (reloading it on every pass fragments memory)

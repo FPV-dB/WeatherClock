@@ -90,6 +90,25 @@ struct UiEnergy {
   uint16_t version;
 };
 
+// weatherbox: aircraft that squawked an emergency code (7700, 7500, 7600, 0100), newest first, sent by the
+// computer program (/api/squawks)
+static const int UI_SQUAWKS = 20;
+struct UiSquawk {
+  char code[5];            // "7700"
+  char call[9], reg[9], type[5];
+  char info[22];           // route ("ADL > SYD") or operator
+  char near[22];           // where it was: nearest big airport ("Sydney AU")
+  int32_t alt;             // feet; -1 unknown, -2 on the ground
+  uint32_t seen;           // UTC seconds when it first squawked the code
+  bool live;               // still squawking at the last check
+};
+struct UiSquawks {
+  uint8_t n;
+  UiSquawk rows[UI_SQUAWKS];
+  uint32_t at;             // millis() when received
+  uint16_t version;
+};
+
 // weatherbox: lightning near the clock, from a live strike feed, sent by the computer program (/api/lightning)
 struct UiLightning {
   int16_t nearKm;          // nearest strike (last 10 min, else last 30 min); -1 = none
@@ -176,6 +195,7 @@ struct UiState {
   const UiAiUsage *ai;     // weatherbox: Claude / Codex usage limits (null = none)
   const UiWorld *world;    // weatherbox: World clock / World weather cities (null = none)
   const UiDrone *drone;    // weatherbox: drone for the Drone face (null = DJI Neo 2)
+  const UiSquawks *squawks;  // weatherbox: emergency squawks for the Bad Squawks face (null = none)
 };
 
 constexpr uint16_t uiRgb(uint8_t r, uint8_t g, uint8_t b) {

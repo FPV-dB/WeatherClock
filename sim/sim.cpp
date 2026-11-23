@@ -127,6 +127,41 @@ static UiState base(int h, int m, int s) {
     ai.version = 1;
     st.ai = &ai;
   }
+  {  // weatherbox: Bad Squawks sample (made-up flights, newest first)
+    static UiSquawks sq;
+    sq = {};  // base() runs many times
+    struct R { const char *q, *f, *r, *t, *i, *w; int32_t alt; uint32_t ago; bool live; };
+    static const R rows[] = {
+      {"7700", "QFA471", "VH-VXQ", "B738", "SYD > MEL", "Canberra AU", 12400, 0, true},
+      {"7600", "DLH9KT", "D-AINQ", "A20N", "MUC > LHR", "Frankfurt DE", 36000, 23 * 60, false},
+      {"7700", "UAL1442", "N37522", "B39M", "DEN > ORD", "Omaha US", 23100, 51 * 60, false},
+      {"7500", "N512KC", "N512KC", "C172", "Private", "Phoenix US", 4500, 2 * 3600 + 600, false},
+      {"0100", "RYR7QG", "EI-DCL", "B738", "STN > DUB", "Dublin IE", -2, 3 * 3600, false},
+      {"7700", "ANZ103", "ZK-NZE", "B789", "AKL > SYD", "Auckland NZ", 31000, 4 * 3600, false},
+      {"7600", "JST521", "VH-VFL", "A320", "MEL > OOL", "Brisbane AU", 8000, 5 * 3600, false},
+      {"7700", "AFR1754", "F-HBNE", "A20N", "CDG > MAD", "Bordeaux FR", 38000, 6 * 3600, false},
+      {"7700", "SIA231", "9V-SMK", "A359", "SIN > SYD", "Darwin AU", 41000, 7 * 3600, false},
+      {"7600", "N8203M", "N8203M", "PA28", "Private", "Dallas US", 2600, 8 * 3600, false},
+      {"7700", "BAW2KM", "G-EUYK", "A320", "LHR > EDI", "Manchester GB", 29000, 9 * 3600, false},
+      {"7700", "AAL2210", "N914NN", "B738", "MIA > CLT", "Charlotte US", 15800, 10 * 3600, false},
+      {"0100", "EZY45LP", "G-UZHC", "A20N", "LGW > AMS", "London GB", 19000, 12 * 3600, false},
+      {"7700", "CPA725", "B-LRJ", "A359", "HKG > SIN", "Manila PH", 37000, 14 * 3600, false},
+      {"7700", "VOZ817", "VH-YIW", "B738", "BNE > SYD", "Sydney AU", 6200, 16 * 3600, false},
+      {"7600", "SWR38", "HB-JHF", "A333", "ZRH > JFK", "Shannon IE", 39000, 20 * 3600, false},
+      {"7700", "DAL89", "N501DN", "A359", "ATL > ICN", "Anchorage US", 35000, 26 * 3600, false},
+      {"7700", "UAE412", "A6-EOB", "A388", "DXB > SYD", "Perth AU", 40000, 30 * 3600, false},
+      {"7500", "N88TX", "N88TX", "BE20", "Private", "Austin US", 11000, 40 * 3600, false},
+      {"7700", "KLM871", "PH-BHL", "B789", "AMS > BOM", "Istanbul TR", 38000, 50 * 3600, false},
+    };
+    for (const R &r : rows) {
+      UiSquawk &q = sq.rows[sq.n++];
+      strcpy(q.code, r.q); strcpy(q.call, r.f); strcpy(q.reg, r.r); strcpy(q.type, r.t);
+      strcpy(q.info, r.i); strcpy(q.near, r.w);
+      q.alt = r.alt; q.seen = st.utc - r.ago - 60; q.live = r.live;
+    }
+    sq.version = 1;
+    st.squawks = &sq;
+  }
   {  // weatherbox: World clock / World weather sample (20 Oct: London BST, New York EDT, Tokyo, LA PDT...)
     static UiWorld wo = {};
     const bool six = getenv("SIM_WORLD6") != nullptr;
@@ -606,6 +641,27 @@ int main() {
         save(*f, name);
       }
     }
+    delete f;
+  }
+
+  // weatherbox: Bad Squawks pages (SIM_SQUAWK_FRAMES=n, 100 ms apart: a page every 25 frames), then no data
+  if (const char *nf = getenv("SIM_SQUAWK_FRAMES")) {
+    Frame *f = new Frame();
+    uiBegin(f);
+    UiState w = base(16, 42, 10);
+    w.theme = THEME_SQUAWKS;
+    for (int i = 0, n = atoi(nf); i < n; i++) {
+      w.ms = 1000 + i * 100;
+      uiRenderClock(w);
+      char name[32];
+      snprintf(name, sizeof name, "squawks-%03d", i);
+      save(*f, name);
+    }
+    static UiSquawks none = {};
+    w.squawks = &none;
+    uiInvalidate();
+    uiRenderClock(w);
+    save(*f, "squawks-none");
     delete f;
   }
 
