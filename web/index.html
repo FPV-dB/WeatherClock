@@ -674,7 +674,9 @@ function skipUpdate(){try{localStorage.updSkip=UPD.version}catch(e){}$('upd').cl
 async function doUpdate(){const u=UPD;if(!u||updating)return;const mig=u.layout=='4m2m'&&!(st&&st.fs&&st.fs.l2);
  if(!confirm(mig?t('Version {0} reorganizes the clock\'s file storage: photos, GIFs and downloaded faces will be erased (settings, Wi-Fi, history, rotation and notifications stay). Before updating, the panel saves a full backup on your device; afterwards, use Restore backup. Continue?',u.version):t('Update the clock to version {0}? It restarts by itself at the end.',u.version)))return;
  if(mig){$('updgo').disabled=true;const ok=await backup();$('updgo').disabled=false;if(!ok||!confirm(t('Was the backup saved? Check the smalltv-backup-*.json file in your downloads. Update now?')))return}
- const gz=!!u.gz,sig=gz?u.gzsig:u.sig,h={};  // with a password, the browser already sends the panel login
+ // the plain .bin when it fits beside the current firmware (4M2M: 2 MB area): no .gz check on the clock, which needs
+ // another 8 KB of RAM and crashed one clock mid-upload. The .gz only for clocks still on the old layout.
+ const gz=!!u.gz&&!(u.file&&u.sig&&st&&st.fs&&st.fs.l2),sig=gz?u.gzsig:u.sig,h={};  // with a password, the browser already sends the panel login
  if(sig)h['X-Firmware-Sig']=sig;  // 1.20.1+: without the file's signature the clock refuses the swap
  updating=true;$('updgo').disabled=true;const n=$('updn');n.innerHTML='';
  const step=m=>{const li=el('li',null,m);n.appendChild(li);return li},kb=x=>Math.round(x/1024)+' KB';
@@ -691,6 +693,16 @@ async function doUpdate(){const u=UPD;if(!u||updating)return;const mig=u.layout=
   if(u.panel){li=step(t('Copying the new web panel to the clock...'));
    try{const p=await (await fetch(SITE+'panel/'+u.panel,{integrity:u.psri,cache:'no-store'})).blob(),pf=new FormData();pf.append('p',p,'panel.gz');await fetch('/api/panel',{method:'POST',body:pf});li.textContent=t('Web panel copied ({0}) ✓',kb(p.size))}
    catch(e){li.textContent=t('Web panel not copied now: the clock fetches it after restarting')}}
+  // update mode: the clock restarts with only Wi-Fi and the web server, so the signature check has clean memory
+  // (after hours of uptime it failed with "not enough memory"). Older firmware has no /api/otamode: send directly.
+  li=step(t('Restarting the clock into update mode (frees its memory)...'));
+  const om=await fetch('/api/otamode',{method:'POST'}).then(r=>r.ok?r.text():'').catch(()=>'');
+  if(om){const t0=Date.now();let ready=om=='ready';if(!ready)await new Promise(r=>setTimeout(r,5000));
+   while(!ready&&Date.now()-t0<90000){try{const s2=await (await fetch('/api/state',{cache:'no-store'})).json();ready=!!s2.otam}catch(e){}
+    if(!ready){li.textContent=t('Waiting for the clock to come back in update mode... {0} s',Math.round((Date.now()-t0)/1000));await new Promise(r=>setTimeout(r,2000))}}
+   if(!ready)throw t('the clock did not come back in update mode. Reload this page in a minute and try again');
+   li.textContent=t('Clock ready in update mode ✓')}
+  else li.textContent=t('Update mode not available on this version: sending directly');
   $('updt').textContent=t('Installing... do not unplug the clock');li=step(t('Sending the firmware to the clock...'));
   const fd=new FormData();fd.append('firmware',bin,gz?'firmware.bin.gz':'firmware.bin');
   const x=await new Promise((ok,no)=>{const q=new XMLHttpRequest();q.open('POST','/update');for(const k in h)q.setRequestHeader(k,h[k]);

@@ -370,6 +370,28 @@ void softTime(int64_t sec, uint8_t src) {
 // The time passes through a software restart in RTC memory (outside the eboot's blocks 0-31 and the crash's 32-33).
 // It comes back as a fallback time: shown straight away, but only SNTP together with the weather confirms it.
 const uint32_t RTC_CLOCK_BLOCK = 40;
+
+// weatherbox: update mode. After hours of uptime the heap is fragmented (~24 KB free in small pieces) and a
+// network update fails ("not enough memory to check the signature") or crashes mid-upload. Unplugging the clock
+// once fixed it, so the panel's "Update now" now does the same in software: POST /api/otamode leaves a mark in
+// RTC memory and restarts; the next boot only brings up Wi-Fi and the web server (no faces, packs, album,
+// weather or feeds) and waits up to 5 minutes for /update with clean memory. The mark is used once.
+const uint32_t RTC_OTAMODE_BLOCK = 64;
+const uint32_t OTAMODE_TAG = 0x4F54414D;  // "OTAM"
+const uint32_t OTAMODE_MS = 300000;
+bool otaMode = false;
+void otaModeArm() {
+  uint32_t v = OTAMODE_TAG;
+  ESP.rtcUserMemoryWrite(RTC_OTAMODE_BLOCK, &v, sizeof v);
+}
+bool otaModeTake() {
+  uint32_t v = 0, z = 0;
+  ESP.rtcUserMemoryRead(RTC_OTAMODE_BLOCK, &v, sizeof v);
+  if (v != OTAMODE_TAG) return false;
+  ESP.rtcUserMemoryWrite(RTC_OTAMODE_BLOCK, &z, sizeof z);  // once only: the next restart is normal
+  const rst_info *r = ESP.getResetInfoPtr();  // only after our own restart, never after a crash
+  return r && r->reason == REASON_SOFT_RESTART;
+}
 void rtcTimeSave() {
   if (!timeTrusted()) return;
   eboot_command cmd;
@@ -2925,6 +2947,8 @@ void sendState() {
   j += ESP.getFreeHeap();
   j += F(",\"blk\":");
   j += ESP.getMaxFreeBlockSize();
+  j += F(",\"otam\":");  // weatherbox: 1 = in update mode, waiting for /update
+  j += otaMode ? 1 : 0;
   j += F(",\"pdraw\":");  // ms the screen took to draw the Pomodoro (0 = not measured yet)
   j += pomoDrawMs;
   j += F(",\"pseq\":");  // current phase and the last one the screen has already shown with the numbers (equal = on screen)
@@ -3616,6 +3640,20 @@ void setupWeb() {
     peerUdp.write((const uint8_t *)m, sizeof m - 1);
     peerUdp.endPacket();
     server.send(200, "text/plain", "ok");
+  });
+  server.on("/api/otamode", HTTP_POST, [] {  // weatherbox: restart into update mode (see otaModeArm)
+    if (!guard()) return;
+    if (otaMode) {
+      server.send(200, "text/plain", "ready");
+      return;
+    }
+    if (Update.isRunning()) {
+      server.send(409, "text/plain", "busy");
+      return;
+    }
+    otaModeArm();
+    server.send(200, "text/plain", "ok");
+    memRestartAt = millis() | 1;  // restarts 2 s later, after the answer has gone out
   });
   server.on("/api/identify", HTTP_POST, [] {  // weatherbox: big number, name and IP for 10 s, to tell clocks apart
     if (!guard()) return;
@@ -4334,6 +4372,7 @@ void setupUpdate() {
       if (ota.err.length()) {
         if (!inAlbum) packResume();  // didn't update: the face comes back
         server.send(400, "text/plain", "Update error: " + ota.err);
+        if (otaMode) memRestartAt = millis() | 1;  // weatherbox: update mode failed: restart normally
         return;
       }
       server.send(200, "text/html", F("<meta http-equiv=refresh content='20;URL=/'>Update Success! Rebooting..."));
@@ -4777,6 +4816,7 @@ void setup() {
   crashLoad();
   rtcTimeRestore();  // software restart: the previous time is already valid (unconfirmed) while Wi-Fi connects
   recoveryMode = boots + 1 >= 3;
+  otaMode = otaModeTake() && !recoveryMode;
   setBootCount(recoveryMode ? 0 : boots + 1);  // recovery applies once; the next restart is normal
   updateBrightness(true);
 
@@ -4816,8 +4856,10 @@ void setup() {
     return;
   }
   uiDrawImage = drawJpgAt;
-  if (cfg.theme == THEME_PACK) restoreActivePack();  // missing/invalid pack: back to Matrix
-  rebuildAlbum();
+  if (!otaMode) {  // update mode: no pack or album in RAM
+    if (cfg.theme == THEME_PACK) restoreActivePack();  // missing/invalid pack: back to Matrix
+    rebuildAlbum();
+  }
 
   uiMessageLine(tr("Conectando Wi-Fi", "Connecting Wi-Fi", "Conectando Wi-Fi"));
 
@@ -4825,6 +4867,7 @@ void setup() {
   wifiGuardBegin();
   timeGuardBegin();
   if (!connectStored(20000)) {
+    otaMode = false;
     startPortal();
     return;
   }
@@ -4833,6 +4876,11 @@ void setup() {
   applyTimezone();  // SNTP already asks for the time while the rest starts up
   ntpAskAt = millis();
   setupWeb();
+  if (otaMode) {  // only the web server: the rest of the RAM stays free for the update
+    mdnsStart();
+    message("Update mode", "Waiting for the new firmware", WiFi.localIP().toString().c_str());
+    return;
+  }
   alexaBegin();
   mdnsStart();
   bootConnectedScreen();
@@ -4859,6 +4907,12 @@ void loop() {
   }
   if (recoveryMode) {
     server.handleClient();
+    return;
+  }
+  if (otaMode) {  // nothing came within 5 minutes (or Wi-Fi dropped): back to normal
+    server.handleClient();
+    mdnsLoop();
+    if (millis() > OTAMODE_MS && !Update.isRunning()) safeRestart();
     return;
   }
   if (portalMode) {
