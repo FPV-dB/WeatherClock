@@ -1,26 +1,32 @@
 {
-  "version": "2.0.19",
-  "date": "2026-11-19",
+  "version": "2.0.20",
+  "date": "2026-11-24",
   "file": "weatherclock.bin",
-  "size": 641680,
+  "size": 643488,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 461783,
-  "sig": "lRXjekQ1LK+nTDeoFI4Vo29cZ0yohR+OO6nUj4HZ/zFrbE9z9a8tI3JmGalxSKc0eHIyvhYeqGlOsFoCHEMx/ITwrPlryE+pXKeoASbLtM+EHEh9ZBbbJfEd1lg5eKky/XEyl0xNN6PZW2Jv0AwvbGqZ/Ns06jFrMl0r2d4zqsB5BLlmF1l5MJfOiyO0MWW7vFphIy7TxmxD+myCV434e86drLlDJ7mysdQr6NHMq1pY8aXQWiBX16MWA/AQln6HVeShH3q8L1Fp5stlSbMjmzIe3Lg27U59L3TqBw9RtpqgOune1/1O8XsjqaBKAd1a6g1dDKJkGgiMbjQ3L/fSyw==",
-  "gzsig": "IhOnKURo7eHT/2WvS2/ilZ2n561AKGVJ4GaKo3rgNBVzQ0vxCePvcj+6APGCpdnNKPnl2wypSXEy9yt3Jh6Lrot7us3g87nh7lEgkcW+HXV+EG5zbFpkysj48jgq8aZbaErpQjBnpfeGzENidBB98dnJArCvmjvuy2CsVv2iIvVAFOHIhmFzQl3xq3CRYDGAWTnSL9RU68ITda9ygn4y4yGBBTsgyTz9oA/Yggb91K29hRoSq+rGYPd2nftLVqVgb7eeCQBkPK0QExMe5RrZNDwLsg54NPc92LCnRuFACM/As2ZDy0/LxxUBdRt3X8eE1Vckd+FrgJdX0/mIZTy/yQ==",
-  "panel": "panel-d3732ef881b2a6820207af9e.html.gz",
-  "psri": "sha256-03Mu+IGypoICB6+ejGaA3jyawOXA2OqTxyl+WRTW51c=",
+  "gzsize": 462993,
+  "sig": "rOuzFl3lTQUkPT5TtTq3sz3r4f7fZrBkd9QQiwERjNcPVM0h8oljUCjsRU2aOLYF3XGPNlf+p545B9lZ6CGUPcDUr211AktFKszocN9D/W5UfTwWNXSA5MTIHBbFed1pFxCJU/S+TynVB6Q7Y40XF+tIvc1aHHzl8Ub+ldHfzUI3C02tvsLAO/pnz59MKyXGh7Ijr5dtRfpE/3hYJ3QG8TQBuOqpKqrla8nSFPE4Lng3G1HptQFkGcJALeWAOmCTaHwF2158KOd9zSsHh/kkmKBFNx4atg+GAvNEQ7saeZW2Kzs/Gxocw08lefrQYW6ZZRE0n0TcOppQO2JemmmwAg==",
+  "gzsig": "jYlv+5GoBT9xt4v+efLE9YB5KHN5f5A/43u1BNjRqQ4JjynSVYMqRLqBtaQfvsY6+9NvBXvQpRb6b0q8+3pX2rsXkGjcStERkV50YYZxsFGZIQfC+LmR9+uBA9Ic4iElJXYGB4jZVFWonJ1JusJ9DFiG6HlJsECwmsYFe99ZZD7ScfCebCSYW7miDEcNIY+UlP0xtKZYCo+HWOpnQlr9bLG7nFlQ5KsV3g9bZqHzsancuG/41eGwhttg1zU6lFquAC/ujwobVGwvJ+bsPEcsDRJ/Z8xJmZgchVgDG2JGBdJXQtT2+EAjWtrTCbc5FeWoI6JJwg+gpI09FNi3wTfiVg==",
+  "panel": "panel-4bb77e12a75f7b83043ed825.html.gz",
+  "psri": "sha256-S7d+Eqdfe4MEPtglhqnlQ5x2QzUFjx2pJ1kKrZrLtbI=",
   "notes": {
     "en": [
-      "Drone Fly Check safety: precise wind thresholds and fresh, complete weather data.",
-      "Lightning event-only setting, redesigned panel, World Clock and World Weather faces, and AI Usage face."
+      "Energy War shows the site's total and newest incidents",
+      "Slower news scrolling and longer news screen",
+      "Wind face flicker fixed",
+      "Panel: Lightning switch fits, worldwide time zone examples, Canberra default"
     ],
     "pt": [
-      "Drone Fly Check safety: precise wind thresholds and fresh, complete weather data.",
-      "Lightning event-only setting, redesigned panel, World Clock and World Weather faces, and AI Usage face."
+      "Energy War shows the site's total and newest incidents",
+      "Slower news scrolling and longer news screen",
+      "Wind face flicker fixed",
+      "Panel: Lightning switch fits, worldwide time zone examples, Canberra default"
     ],
     "es": [
-      "Drone Fly Check safety: precise wind thresholds and fresh, complete weather data.",
-      "Lightning event-only setting, redesigned panel, World Clock and World Weather faces, and AI Usage face."
+      "Energy War shows the site's total and newest incidents",
+      "Slower news scrolling and longer news screen",
+      "Wind face flicker fixed",
+      "Panel: Lightning switch fits, worldwide time zone examples, Canberra default"
     ]
   }
 }
