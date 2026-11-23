@@ -51,7 +51,7 @@ jobs:
         run: |
           arduino-cli core update-index --additional-urls "$ESP8266_INDEX"
           arduino-cli core install "$ESP8266_CORE" --additional-urls "$ESP8266_INDEX"
-          arduino-cli lib install "Adafruit GFX Library@1.13.0" "Adafruit ST7735 and ST7789 Library@1.11.0" \
+          arduino-cli lib install --no-deps "Adafruit GFX Library@1.13.0" "Adafruit ST7735 and ST7789 Library@1.11.0" \
             "Adafruit BusIO@1.17.4" "ArduinoJson@7.4.3"
 
       - name: Simulator (faces, incremental redraw, screen changes) and web panel
