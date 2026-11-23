@@ -582,7 +582,15 @@ bool uiOffscreen(int x, int y, int w, int h, void (*draw)(void *), void *ctx) {
   const int BYTES = 4096;  // weatherbox: ~4 KB per strip (fits even with fragmented memory); only exists during drawing
   int rows = BYTES / (2 * w);
   if (rows > h) rows = h;
+  if (rows < 1) rows = 1;
+  // weatherbox: with fragmented memory the 4 KB strip may not fit; thinner strips (down to one row) still draw
+  // off-screen. Drawing straight to the screen instead erases the area to black first, and an animated face
+  // (Wind, Drone) did that ~8 times a second: the screen seemed to flicker in brightness.
   uint16_t *b = (uint16_t *)malloc(w * rows * 2);
+  while (!b && rows > 1) {
+    rows = rows > 2 ? rows / 2 : 1;
+    b = (uint16_t *)malloc(w * rows * 2);
+  }
   if (!b) return false;
   Adafruit_GFX *g0 = G;
   UiClip c0 = uiClip;
