@@ -676,16 +676,33 @@ async function doUpdate(){const u=UPD;if(!u||updating)return;const mig=u.layout=
  if(mig){$('updgo').disabled=true;const ok=await backup();$('updgo').disabled=false;if(!ok||!confirm(t('Was the backup saved? Check the smalltv-backup-*.json file in your downloads. Update now?')))return}
  const gz=!!u.gz,sig=gz?u.gzsig:u.sig,h={};  // with a password, the browser already sends the panel login
  if(sig)h['X-Firmware-Sig']=sig;  // 1.20.1+: without the file's signature the clock refuses the swap
- updating=true;$('updgo').disabled=true;
- try{$('updt').textContent=t('Downloading version {0}...',u.version);// from 1.14 the clock accepts the .bin.gz (smaller, and the firmware can exceed 520 KB)
-  const bin=await (await fetch(SITE+'firmware/'+(gz?u.gz:u.file),{cache:'no-store'})).blob();
+ updating=true;$('updgo').disabled=true;const n=$('updn');n.innerHTML='';
+ const step=m=>{const li=el('li',null,m);n.appendChild(li);return li},kb=x=>Math.round(x/1024)+' KB';
+ try{$('updt').textContent=t('Updating to version {0}...',u.version);
+  let li=step(t('Downloading the firmware from the update site...'));
+  const res=await fetch(SITE+'firmware/'+(gz?u.gz:u.file),{cache:'no-store'});if(!res.ok)throw 'HTTP '+res.status;
+  const total=(gz?u.gzsize:u.size)||+res.headers.get('content-length')||0,parts=[];let got=0;
+  if(res.body&&res.body.getReader){const rd=res.body.getReader();for(;;){const {done,value}=await rd.read();if(done)break;parts.push(value);got+=value.length;
+   li.textContent=t('Downloading the firmware: {0} of {1}',kb(got),total?kb(total):'?')+(total?' ('+Math.round(got*100/total)+'%)':'')}}
+  const bin=parts.length?new Blob(parts):await res.blob();
   if((gz?u.gzsize:u.size)&&bin.size!=(gz?u.gzsize:u.size))throw 'size';
-  // 1.19+: the panel lives in file storage; bring the new version's now (without it, the loader downloads it later)
-  if(u.panel)try{const p=await (await fetch(SITE+'panel/'+u.panel,{integrity:u.psri,cache:'no-store'})).blob(),pf=new FormData();pf.append('p',p,'panel.gz');await fetch('/api/panel',{method:'POST',body:pf})}catch(e){}
-  $('updt').textContent=t('Installing... do not unplug the clock');const fd=new FormData();fd.append('firmware',bin,gz?'firmware.bin.gz':'firmware.bin');
-  const r=await fetch('/update',{method:'POST',body:fd,headers:h}),x=await r.text();
-  if(r.status==401)throw t('Wrong password');if(!/success/i.test(x))throw x;
-  $('updt').textContent=t('Updated! The clock is restarting...');$('updn').innerHTML='';setTimeout(()=>location.reload(),20000)}
+  li.textContent=t('Downloaded {0} ✓',kb(bin.size));
+  if(sig)step(t('Signature attached: the clock checks it before installing ✓'));
+  if(u.panel){li=step(t('Copying the new web panel to the clock...'));
+   try{const p=await (await fetch(SITE+'panel/'+u.panel,{integrity:u.psri,cache:'no-store'})).blob(),pf=new FormData();pf.append('p',p,'panel.gz');await fetch('/api/panel',{method:'POST',body:pf});li.textContent=t('Web panel copied ({0}) ✓',kb(p.size))}
+   catch(e){li.textContent=t('Web panel not copied now: the clock fetches it after restarting')}}
+  $('updt').textContent=t('Installing... do not unplug the clock');li=step(t('Sending the firmware to the clock...'));
+  const fd=new FormData();fd.append('firmware',bin,gz?'firmware.bin.gz':'firmware.bin');
+  const x=await new Promise((ok,no)=>{const q=new XMLHttpRequest();q.open('POST','/update');for(const k in h)q.setRequestHeader(k,h[k]);
+   q.upload.onprogress=e=>{if(e.lengthComputable){const pc=Math.round(e.loaded*100/e.total);li.textContent=pc<100?t('Sending the firmware to the clock: {0}%',pc):t('Sent. The clock is checking the signature and writing to flash...')}};
+   q.onload=()=>q.status==401?no(t('Wrong password')):ok(q.responseText);q.onerror=()=>no(t('connection lost'));q.send(fd)});
+  if(!/success/i.test(x))throw x;
+  li.textContent=t('Firmware written and verified ✓');$('updt').textContent=t('Updated! The clock is restarting...');
+  li=step(t('Waiting for the clock to restart...'));const t0=Date.now();
+  const poll=async()=>{const sec=Math.round((Date.now()-t0)/1000);
+   try{const s2=await (await fetch('/api/state',{cache:'no-store'})).json();if(s2.ver){li.textContent=t('Back online after {0} s, running version {1} ✓',sec,s2.ver);step(t('Reloading the panel...'));setTimeout(()=>location.reload(),1500);return}}catch(e){}
+   li.textContent=t('Waiting for the clock to restart... {0} s',sec);if(sec>120){step(t('The clock is taking a while. Reload this page in a minute.'));return}setTimeout(poll,2000)};
+  setTimeout(poll,6000)}
  catch(e){updating=false;$('updgo').disabled=false;showUpdate();toast(t('Update failed: ')+e)}}
 // ---------- backup: settings, history and downloaded faces in a .json ----------
 // No passwords or Wi-Fi. Restoring goes through the panel's same validated paths (/api/settings,
