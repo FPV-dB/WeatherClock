@@ -866,12 +866,27 @@ void themeNews(const UiState &s, bool full) {
   }
   const int total = s.news ? s.news->n * 90 : 0;
   const int maxScroll = total > 186 ? total - 186 : 0;
-  uint32_t elapsed = s.ms - scrollStart;
-  // weatherbox: a 1 s pause at the top and at the bottom, the scroll in between takes the rest of the News screen time
-  const uint32_t scrollMs = (s.newsSec > 10 ? s.newsSec : 10) * 1000UL - 2000;
-  const int offset = elapsed < 1000 ? 0 : elapsed >= 1000 + scrollMs ? maxScroll : (uint32_t)maxScroll * (elapsed - 1000) / scrollMs;
-  if (reset || s.ms - lastBody >= 350) {
+  const uint32_t elapsed = s.ms - scrollStart;
+  // weatherbox: speed 0 fits the scroll to the News screen time (a 1 s pause at the top and at the bottom);
+  // speeds 1..5 move at a fixed rate (pixels per second), pause 2 s at the bottom and start again from the top
+  static const uint8_t PX_PER_SEC[UI_NEWS_SPEEDS + 1] = {0, 6, 10, 16, 26, 40};
+  const uint8_t speed = s.newsSpeed <= UI_NEWS_SPEEDS ? s.newsSpeed : 0;
+  int offset;
+  uint32_t step = 350;  // ms between body redraws
+  if (!speed) {
+    const uint32_t scrollMs = (s.newsSec > 10 ? s.newsSec : 10) * 1000UL - 2000;
+    offset = elapsed < 1000 ? 0 : elapsed >= 1000 + scrollMs ? maxScroll : (uint32_t)maxScroll * (elapsed - 1000) / scrollMs;
+  } else {
+    const uint32_t pps = PX_PER_SEC[speed], runMs = (uint32_t)maxScroll * 1000 / pps, cycle = 1000 + runMs + 2000;
+    const uint32_t t = maxScroll ? elapsed % cycle : 0;
+    offset = t < 1000 ? 0 : t >= 1000 + runMs ? maxScroll : (int)((t - 1000) * pps / 1000);
+    step = 4000 / pps;  // about 4 pixels a step, so the fast speeds still move smoothly
+    if (step < 100) step = 100;
+  }
+  static int lastOffset = -1;
+  if (reset || (s.ms - lastBody >= step && (offset != lastOffset || s.ms - lastBody >= 5000))) {
     lastBody = s.ms;
+    lastOffset = offset;
     NewsBody b = {&s, offset};
     uiPaint(false, 0, 50, 240, 190, paintNewsBody, &b);
   }

@@ -677,6 +677,24 @@ int main() {
     delete f;
   }
 
+  // weatherbox: the News face at a set scroll speed (Fast), 4 frames a second for 20 s
+  {
+    Frame *f = new Frame();
+    uiBegin(f);
+    UiState t = base(14, 37, 24);
+    t.theme = THEME_NEWS;
+    t.newsSec = 20;
+    t.newsSpeed = 4;
+    for (int i = 0; i <= 80; i++) {
+      t.ms = i * 250;
+      uiRenderClock(t);
+      char n[32];
+      snprintf(n, sizeof n, "news-fast-%02d", i);
+      save(*f, n);
+    }
+    delete f;
+  }
+
   // ---- Pomodoro ----
   UiState p = base(14, 37, 25);
   p.phase = PH_WORK; p.running = true; p.totalMs = 25 * 60000; p.remainingMs = 10 * 60000 + 12000; p.cycleDone = 2;

@@ -59,6 +59,7 @@ static const int UI_HOURS = 12;
 
 // weatherbox: headlines sent by the computer program (/api/news); ASCII only (the pixel font)
 static const int UI_NEWS = 8;
+static const uint8_t UI_NEWS_SPEEDS = 5;  // News scroll speeds: very slow, slow, medium, fast, very fast
 struct UiNews {
   uint8_t n;               // headlines in t[] (0 = none yet)
   char src[20];            // e.g. "ABC Just In"
@@ -170,7 +171,8 @@ struct UiState {
   float lat, lon;  // weatherbox: the clock's place (for the sun's position)
   uint32_t utc;    // weatherbox: seconds since 1970, UTC (0 = unknown)
   const UiNews *news;  // weatherbox: latest headlines (never null on the clock)
-  uint8_t newsSec;     // weatherbox: seconds the News face is on screen (0 = 10); the headlines scroll through in that time
+  uint8_t newsSec;     // weatherbox: seconds the News face is on screen (0 = 10)
+  uint8_t newsSpeed;   // weatherbox: 0 = the headlines scroll through once in newsSec; 1..UI_NEWS_SPEEDS = fixed speed, looping
   const UiFlightStats *flights;
   const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
   const UiLightning *lightning;  // weatherbox: nearby strikes (may be null)
