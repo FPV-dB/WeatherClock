@@ -51,6 +51,25 @@ def verify_target():
         raise RuntimeError(f"target firmware is {ver!r}, expected 2.0.15 or newer")
 
 
+def tanker_count():
+    # the site's headline adds tanker, gas-carrier and gas-terminal attacks to the incident list
+    cache = HERE / "tankerAttacks.ts"
+    try:
+        raw = subprocess.check_output(
+            [str(GH), "api", "-X", "GET",
+             f"repos/{SOURCE_REPOSITORY}/contents/app/tankerAttacks.ts", "--jq", ".content"],
+            text=True, timeout=45,
+        )
+        source = base64.b64decode("".join(raw.split())).decode("utf-8")
+        cache.write_text(source)
+    except Exception as error:
+        if not cache.exists():
+            print(f"tanker list unavailable: {error}", flush=True)
+            return 0
+        source = cache.read_text()
+    return len(object_blocks(source, "export const tankerAttacks"))
+
+
 def refresh_source():
     try:
         raw = subprocess.check_output(
@@ -74,8 +93,8 @@ def refresh_source():
         raise
 
 
-def object_blocks(source):
-    start = source.index("export const incidents")
+def object_blocks(source, marker="export const incidents"):
+    start = source.index(marker)
     start = source.index("=", start)
     start = source.index("[", start)
     blocks = []
@@ -178,6 +197,7 @@ def main():
     energy, newest = energy_payload(source)
     if not newest:
         raise RuntimeError("no EnergyWar incidents parsed; no writes performed")
+    energy["total"] += tanker_count()
     if "--dry-run" in sys.argv:
         print(json.dumps({"energy": energy, "newest": newest, "flight": flight_payload()}, indent=2))
         return
