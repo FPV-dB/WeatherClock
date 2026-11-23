@@ -189,6 +189,13 @@ nav button[hidden],[hidden]{display:none!important}
   <label>Rotate faces<select data-k="rotmin"><option value="0">Never</option><option value="1">Every 1 min</option><option value="5">Every 5 min</option><option value="15">Every 15 min</option><option value="30">Every 30 min</option><option value="60">Every hour</option></select></label>
   <label>Lightning only when strikes are detected<input data-k="lightningonly" type="checkbox"></label>
   <small>Applies to rotation. Uses nearby strikes from the last 30 minutes and fresh helper data. Turn off to include the all-clear and waiting screens. Manual selection always works.</small>
+  <label>News source<select data-k="nsrc"><option value="0">BBC World</option><option value="1">ABC Just In</option><option value="2">Kyiv Independent</option><option value="3">The Moscow Times</option><option value="4">RT</option><option value="5">Al Jazeera</option><option value="6">The Guardian World</option><option value="7">NPR News</option><option value="8">DW News</option><option value="9">France 24</option><option value="10">SBS News</option><option value="11">Ukrainska Pravda</option><option value="12">Meduza</option><option value="13">TASS</option><option value="14">My own feed (below)</option><option value="15">Take turns (ticked below)</option></select></label>
+  <div id="nturns"></div>
+  <label>My own feed: name<input data-k="nname" maxlength="19" placeholder="e.g. Local paper"></label>
+  <label>My own feed: RSS address<input data-k="nurl" type="url" maxlength="300" placeholder="https://.../rss"></label>
+  <label>News screen seconds<input data-k="nsec" type="number" min="10" max="240"></label>
+  <label>News scroll speed<select data-k="nspeed"><option value="0">Fit to screen time</option><option value="1">Very slow</option><option value="2">Slow</option><option value="3">Medium</option><option value="4">Fast</option><option value="5">Very fast</option></select></label>
+  <small>"Take turns" changes source every 10 minutes, going through the ticked ones. Any news site's RSS or Atom feed works as your own feed. The News face stays on for "News screen seconds" (rounded up to whole "Seconds per item"). "Fit to screen time" scrolls the headlines through once in that time; the other speeds scroll at a set pace and start again from the top if there is time left. The source changes within 10 minutes (the radar program on the computer fetches it).</small>
   <small>Faces in the rotation (tick 2 or more):</small>
   <div id="rotlist"></div>
   <small id="rotinfo" hidden></small>
@@ -736,6 +743,8 @@ function diagShow(s){const d=s.diag,c=$('diag'),q=d.rssi>=-60?'good':d.rssi>=-72
  const k=s.crash;if(k){const r=el('div'),b=el('button','btn',t('Clear'));b.style.cssText='padding:4px 12px;min-height:0;margin-left:8px';b.onclick=()=>post('/api/crash').then(x=>{if(!x.ok)throw 0;delete st.crash;diagShow(s);toast(t('Record cleared'))}).catch(()=>toast(t('Failed: ')));
   r.append(el('b',null,t('Last crash')),el('span',null,'#'+k.n+' · '+t(RST[k.r]||'?',k.x,'0x'+k.epc)+' · v'+k.ver+(k.up?' · '+t('after {0} up',dur(k.up)):'')+' '),b);c.appendChild(r)}}
 // data-neg: ticked switch = 0. "Invert colors" is relative to normal (the IPS panel already starts with INVON)
+const NEWS=['BBC World','ABC Just In','Kyiv Independent','The Moscow Times','RT','Al Jazeera','The Guardian World','NPR News','DW News','France 24','SBS News','Ukrainska Pravda','Meduza','TASS','My own feed'];
+function newsTurns(c){const d=$('nturns');if(!d||c.nmask===undefined)return;d.innerHTML='';NEWS.forEach((n,i)=>{const l=document.createElement('label');l.textContent=n;const b=document.createElement('input');b.type='checkbox';b.checked=!!(c.nmask>>i&1);b.onchange=()=>{let m=0;d.querySelectorAll('input').forEach((x,k)=>{if(x.checked)m|=1<<k});if(!m){b.checked=true;return}save({nmask:m}).then(()=>toast(t('Saved')))};l.appendChild(b);d.appendChild(l)});const sel=document.querySelector('[data-k=nsrc]'),show=()=>{d.hidden=sel.value!='15'};if(!d._on){d._on=1;sel.addEventListener('change',show)}d.hidden=c.nsrc!=15}
 document.querySelectorAll('[data-k]').forEach(e=>{e.onchange=()=>{const v=e.type=='checkbox'?(e.checked!=e.hasAttribute('data-neg')?1:0):e.value;save({[e.dataset.k]:v}).then(()=>{toast(t('Saved'));if(e.dataset.k=='beta')checkUpdate();if(e.dataset.k=='num')peers()})}});
 // ---------- state ----------
 function beep(){try{actx=actx||new AudioContext();[0,.25,.5].forEach(d=>{const o=actx.createOscillator(),g=actx.createGain();
@@ -793,7 +802,7 @@ function load(s){{const n=s.cfg.name||'Weather Clock';if($('hname').textContent!
  $('fsinfo').textContent=s.fs.ok?t('{0} used of {1}',kb(s.fs.used),kb(s.fs.total)):t('File storage unavailable');
  $('fsbar').style.width=(s.fs.total?s.fs.used/s.fs.total*100:0)+'%';$('fmt').hidden=!!s.fs.ok;$('mig').classList.toggle('v',!!s.fs.mig);
  document.querySelectorAll('#grid div').forEach(e=>e.classList.toggle('on',e.dataset.n==s.showing));
- if(!filled){filled=true;$('prow').value=rowOf(s.cfg.pos||0);$('pcol').value=colOf(s.cfg.pos||0);document.querySelectorAll('[data-k]').forEach(e=>{const v=s.cfg[e.dataset.k];if(v===undefined)return;if(e.type=='checkbox')e.checked=!!v!=e.hasAttribute('data-neg');else e.value=v})}
+ if(!filled){filled=true;newsTurns(s.cfg);$('prow').value=rowOf(s.cfg.pos||0);$('pcol').value=colOf(s.cfg.pos||0);document.querySelectorAll('[data-k]').forEach(e=>{const v=s.cfg[e.dataset.k];if(v===undefined)return;if(e.type=='checkbox')e.checked=!!v!=e.hasAttribute('data-neg');else e.value=v})}
  draw()}
 // the panel's ring being drawn in ms; with wait, it only finishes on the clock's notice (or after 4 s, if it doesn't come)
 function ringDraw(ms,rem,wait){holding=true;holdRem=rem;const r=document.querySelector('.ring');r.style.setProperty('--pd',ms+'ms');
