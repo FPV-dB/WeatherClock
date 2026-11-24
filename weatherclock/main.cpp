@@ -150,7 +150,7 @@ struct Settings {
   uint8_t devNum;       // weatherbox: the clock's number among several (1..99, 0 = none), shown by Identify; garbage becomes 0
   uint8_t lightningOnly, lightningMark; // appended: preserve existing EEPROM offsets
   uint8_t newsSrc;      // weatherbox: News face source, read by the computer program (NEWS_SOURCES below); garbage becomes 0
-  uint8_t newsSec;      // weatherbox: seconds the News face stays on screen (10..240, rounded up to whole "Seconds per item"); garbage becomes 60
+  uint8_t newsSec;      // weatherbox: seconds the News face stays on screen (10..240, rounded up to whole "Seconds per item"); garbage becomes 120
   uint16_t newsMask;    // weatherbox: sources "take turns" goes through (bit n = source n); 0 or garbage becomes NEWS_MASK_DEFAULT
   uint8_t newsSpeed;    // weatherbox: News scroll speed: 0 = fit the screen time, 1..5 = very slow..very fast (UI_NEWS_SPEEDS); garbage becomes 0
 };
@@ -170,7 +170,7 @@ void defaultSettings() {
   cfg.lightningMark = 0xD7;
   cfg.lang = 1;   // weatherbox: English by default
   cfg.newsSrc = 0;
-  cfg.newsSec = 60;
+  cfg.newsSec = 120;
   cfg.newsMask = NEWS_MASK_DEFAULT;
   cfg.newsSpeed = 0;
   cfg.alexa = 0;  // Alexa's "Pomodoro" light belongs to the timer, which doesn't exist here
@@ -296,7 +296,7 @@ void loadSettings() {
   }
   if (cfg.devNum > 99) cfg.devNum = 0;
   if (cfg.newsSrc >= NEWS_SOURCES) cfg.newsSrc = 0;
-  if (cfg.newsSec < 10 || cfg.newsSec > 240) cfg.newsSec = 60;
+  if (cfg.newsSec < 10 || cfg.newsSec > 240) cfg.newsSec = 120;
   if (cfg.newsSpeed > UI_NEWS_SPEEDS) cfg.newsSpeed = 0;
   if (!(cfg.newsMask & NEWS_MASK_ALL) || (cfg.newsMask & ~NEWS_MASK_ALL)) cfg.newsMask = NEWS_MASK_DEFAULT;
   if (cfg.devPos > 100) cfg.devPos = 0;
