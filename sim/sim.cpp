@@ -695,6 +695,30 @@ int main() {
     delete f;
   }
 
+  // weatherbox: one News frame per feed (each has its own colour and name), plus the "waiting" screen
+  {
+    static const char *const SRC[] = {"BBC World", "ABC Just In", "Kyiv Independent", "The Moscow Times", "RT", "Al Jazeera",
+        "Guardian World", "NPR News", "DW News", "France 24", "SBS News", "Ukrainska Pravda", "Meduza", "TASS", "Taking turns", ""};
+    Frame *f = new Frame();
+    uiBegin(f);
+    UiState t = base(14, 37, 24);
+    t.theme = THEME_NEWS;
+    static UiNews nw;
+    for (int i = 0; i < 16; i++) {
+      nw = *t.news;
+      strcpy(nw.src, SRC[i]);
+      if (!SRC[i][0]) { nw.n = 0; t.newsWant = "ABC Just In"; }
+      nw.version = 100 + i;
+      t.news = &nw;
+      t.ms = 300;
+      uiRenderClock(t);
+      char n[32];
+      snprintf(n, sizeof n, "news-src-%02d", i);
+      save(*f, n);
+    }
+    delete f;
+  }
+
   // ---- Pomodoro ----
   UiState p = base(14, 37, 25);
   p.phase = PH_WORK; p.running = true; p.totalMs = 25 * 60000; p.remainingMs = 10 * 60000 + 12000; p.cycleDone = 2;

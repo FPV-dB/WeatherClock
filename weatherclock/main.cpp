@@ -158,6 +158,10 @@ struct Settings {
 // 0 BBC World, 1 ABC Just In, 2 Kyiv Independent, 3 The Moscow Times, 4 RT, 5 Al Jazeera, 6 The Guardian World, 7 NPR News,
 // 8 DW News, 9 France 24, 10 SBS News, 11 Ukrainska Pravda, 12 Meduza, 13 TASS, 14 custom feed (/newsfeed.txt), 15 take turns
 const uint8_t NEWS_SOURCES = 16;
+// the names the News face shows in its header before the first headlines arrive (the program sends the real one)
+const char *const NEWS_NAMES[NEWS_SOURCES] = {"BBC World", "ABC Just In", "Kyiv Independent", "The Moscow Times", "RT",
+    "Al Jazeera", "Guardian World", "NPR News", "DW News", "France 24", "SBS News", "Ukrainska Pravda", "Meduza", "TASS",
+    "Own feed", "Taking turns"};
 const uint16_t NEWS_MASK_ALL = 0x7FFF, NEWS_MASK_DEFAULT = 0x001F;  // the first five
 const uint32_t SETTINGS_MAGIC = 0x504F4D34;     // "POM4"
 const uint32_t SETTINGS_MAGIC_V3 = 0x504F4D33;  // "POM3": same fields, without the v4 ones
@@ -1684,6 +1688,7 @@ UiState makeState() {
   s.news = &news;
   s.newsSec = cfg.newsSec;  // weatherbox: how long the News face is on screen
   s.newsSpeed = cfg.newsSpeed;
+  s.newsWant = cfg.newsSrc < NEWS_SOURCES ? NEWS_NAMES[cfg.newsSrc] : nullptr;
   s.flights = &flightStats;
   s.energy = &energy;
   s.lightning = &lightning;

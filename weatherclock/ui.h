@@ -173,6 +173,7 @@ struct UiState {
   const UiNews *news;  // weatherbox: latest headlines (never null on the clock)
   uint8_t newsSec;     // weatherbox: seconds the News face is on screen (0 = 10)
   uint8_t newsSpeed;   // weatherbox: 0 = the headlines scroll through once in newsSec; 1..UI_NEWS_SPEEDS = fixed speed, looping
+  const char *newsWant;  // weatherbox: the source picked in the panel ("BBC World"), shown until headlines arrive (may be null)
   const UiFlightStats *flights;
   const UiEnergy *energy;  // weatherbox: EnergyWar.net incidents (never null on the clock)
   const UiLightning *lightning;  // weatherbox: nearby strikes (may be null)
