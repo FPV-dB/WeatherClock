@@ -1,0 +1,2 @@
+# One Weather Clock address per line. One is enough: the others on the same Wi-Fi are found by themselves.
+192.168.1.100

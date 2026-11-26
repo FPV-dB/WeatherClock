@@ -315,6 +315,7 @@ The clock fetches weather by itself and works fine on its own. A few extras need
 | **WeatherClockRadar** | BoM rain radar and warning cards, News, Nearby Aircraft, Military Aircraft, Flights Today and the Lightning warning card | Helper is working; public source package and installer still need to be added to this repository |
 | **Energy War companion** | Data for the Energy War face (legacy helper also sends retired airport data) | [tools/energy-airport-mac](tools/energy-airport-mac/) |
 | **Lightning** | Live strikes for the Lightning face, from the Blitzortung.org network, every minute | [tools/lightning-mac](tools/lightning-mac/) |
+| **Bad Squawks** | Aircraft squawking 7700, 7500, 7600 or 0100 anywhere in the world, for the Aircraft Bad Squawks face, every minute | [tools/squawks-mac](tools/squawks-mac/) |
 | **Markets card** | A two-page album card with stocks, metals and Bitcoin, every 15 minutes | [tools/markets-card](tools/markets-card/) |
 
 Cards made by helpers play between faces like photos in the album:
