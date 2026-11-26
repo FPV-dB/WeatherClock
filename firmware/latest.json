@@ -1,32 +1,23 @@
 {
-  "version": "2.0.20",
-  "date": "2026-11-24",
+  "version": "2.0.21",
+  "date": "2026-11-27",
   "file": "weatherclock.bin",
   "size": 643488,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 462993,
-  "sig": "rOuzFl3lTQUkPT5TtTq3sz3r4f7fZrBkd9QQiwERjNcPVM0h8oljUCjsRU2aOLYF3XGPNlf+p545B9lZ6CGUPcDUr211AktFKszocN9D/W5UfTwWNXSA5MTIHBbFed1pFxCJU/S+TynVB6Q7Y40XF+tIvc1aHHzl8Ub+ldHfzUI3C02tvsLAO/pnz59MKyXGh7Ijr5dtRfpE/3hYJ3QG8TQBuOqpKqrla8nSFPE4Lng3G1HptQFkGcJALeWAOmCTaHwF2158KOd9zSsHh/kkmKBFNx4atg+GAvNEQ7saeZW2Kzs/Gxocw08lefrQYW6ZZRE0n0TcOppQO2JemmmwAg==",
-  "gzsig": "jYlv+5GoBT9xt4v+efLE9YB5KHN5f5A/43u1BNjRqQ4JjynSVYMqRLqBtaQfvsY6+9NvBXvQpRb6b0q8+3pX2rsXkGjcStERkV50YYZxsFGZIQfC+LmR9+uBA9Ic4iElJXYGB4jZVFWonJ1JusJ9DFiG6HlJsECwmsYFe99ZZD7ScfCebCSYW7miDEcNIY+UlP0xtKZYCo+HWOpnQlr9bLG7nFlQ5KsV3g9bZqHzsancuG/41eGwhttg1zU6lFquAC/ujwobVGwvJ+bsPEcsDRJ/Z8xJmZgchVgDG2JGBdJXQtT2+EAjWtrTCbc5FeWoI6JJwg+gpI09FNi3wTfiVg==",
+  "gzsize": 462994,
+  "sig": "jJBrN7/2ycq/UviqujcksnQak733vTOQIrouu0z6ZwLxhUONyr8RlxvbkedxHbgEanhyubJnqT23kxzfYLvXklPv7kHMHFlYiVnJFWU7oYy/IIU0TJR3QvMa/P5sQzOSrWfByF6CnY1YbJ8TxRCdmXF1DCtXOvp2fRo5u6xv9qSAj7J8UZwcf0RV0CBCzPHbSpI5W3afVIZM5NqvC1dceiOx3LslmdiMeKI0NKC+fmPQ9OZ1AIRQdd2tkZVLAwPKO8eoqhHXBWUHw1hPI9StsjyKmg46X5rD+plYE4eDRnqcsDYO+AJjOc/yX/YLTtinr9e6HVebHZJcoaSmXrHdig==",
+  "gzsig": "r1PhruzSEgEoUPILw8b+O+QyWyvQkXGi60BTim2xCyCXxz4wuRi/NVu5C/0Du9XbYxwwvqyNw2dnCRjHUO91xjmRmozQBM8bJ/rA66PGM24Z0QF7QKvIQSM9Y59Gg+eDSRB5eLXtzAPCVIbGgKOMX2tk+fFdAqnEZxDl3Z/85zebAP9ghr64+UBIxZOq2u0MHUqer8E7szqPISZkCuF6jhD6sAP6aXo/Ew2tXY+ezevmjMNgbSFRktATKgx+1nXl2WI0AZH6JkETBvGnuWQCFsjIjrkfy7A4FUKAb6w87dzDWCVQU8qBUmVYVJUNtvIoTiRFn8KedpNLKm6VeRSB3Q==",
   "panel": "panel-4bb77e12a75f7b83043ed825.html.gz",
   "psri": "sha256-S7d+Eqdfe4MEPtglhqnlQ5x2QzUFjx2pJ1kKrZrLtbI=",
   "notes": {
     "en": [
-      "Energy War shows the site's total and newest incidents",
-      "Slower news scrolling and longer news screen",
-      "Wind face flicker fixed",
-      "Panel: Lightning switch fits, worldwide time zone examples, Canberra default"
+      "News face: each feed named in the header, in its own colour"
     ],
     "pt": [
-      "Energy War shows the site's total and newest incidents",
-      "Slower news scrolling and longer news screen",
-      "Wind face flicker fixed",
-      "Panel: Lightning switch fits, worldwide time zone examples, Canberra default"
+      "News face: each feed named in the header, in its own colour"
     ],
     "es": [
-      "Energy War shows the site's total and newest incidents",
-      "Slower news scrolling and longer news screen",
-      "Wind face flicker fixed",
-      "Panel: Lightning switch fits, worldwide time zone examples, Canberra default"
+      "News face: each feed named in the header, in its own colour"
     ]
   }
 }
