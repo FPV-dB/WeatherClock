@@ -627,7 +627,9 @@ void command(const String &c) {
 // The lit light shows the current phase in the Alexa app.
 // Network name, so nobody has to remember the IP:
 //  - lanName: http://weatherclock.local; with another clock already using it, weatherclock-2.local, -3... (checked on connect)
-//  - netName: "weatherclock-" + 4 hex digits of the chip, always valid as a fallback and used for DHCP.
+//  - with a clock number set (Identify, 1..99): weatherclock<number>.local (weatherclock1, weatherclock2...), also the
+//    DHCP name the router shows; if another device already answers for it, the old weatherclock / -2 / -3 names apply.
+//  - netName: "weatherclock-" + 4 hex digits of the chip, always valid as a fallback and used for DHCP without a number.
 // Only the A record, with the packet reader in security.h (tested): ESP8266mDNS would cost ~21 KB.
 char netName[24], lanName[20];  // weatherbox: "weatherclock-xxxx" is longer than "smalltv-xxxx"
 WiFiUDP hueUdp;
@@ -675,6 +677,18 @@ bool mdnsTaken(const char *name) {
 // On connect: picks the free short name and announces itself.
 bool mdnsUp = false;  // Wi-Fi connected on the last mdnsLoop pass (reconnected: join the group again)
 
+// weatherbox: the name from the clock number ("weatherclock3"), empty without one
+void numName(char *out, size_t len) {
+  if (cfg.devNum) snprintf(out, len, HOSTNAME "%u", (unsigned)cfg.devNum);
+  else out[0] = 0;
+}
+// DHCP name: the numbered one when set, otherwise the chip's
+const char *dhcpName() {
+  static char n[20];
+  numName(n, sizeof n);
+  return n[0] ? n : netName;
+}
+
 void mdnsStart() {
   // No Wi-Fi power saving: dozing between beacons, the ESP8266 loses multicast packets and
   // .local disappears "sometimes". The clock lives on mains power; the cost is ~15 mA.
@@ -682,6 +696,13 @@ void mdnsStart() {
   lanName[0] = 0;
   mdnsUp = true;
   if (!mdnsJoin()) return;
+  char own[sizeof lanName];
+  numName(own, sizeof own);
+  if (own[0] && !mdnsTaken(own)) {  // weatherbox: numbered clocks get weatherclock<number>.local
+    strlcpy(lanName, own, sizeof lanName);
+    mdnsAnnounce();
+    return;
+  }
   for (int i = 1; i <= 9; i++) {
     char name[sizeof lanName];
     if (i == 1) strlcpy(name, HOSTNAME, sizeof name);
@@ -3937,7 +3958,14 @@ void setupWeb() {
       }
     }
     if (server.hasArg("pos")) cfg.devPos = (uint8_t)constrain(server.arg("pos").toInt(), 0, 100);  // weatherbox
-    if (server.hasArg("num")) cfg.devNum = (uint8_t)constrain(server.arg("num").toInt(), 0, 99);  // weatherbox
+    if (server.hasArg("num")) {  // weatherbox: a new number renames the clock on the network straight away
+      uint8_t num = (uint8_t)constrain(server.arg("num").toInt(), 0, 99);
+      if (num != cfg.devNum) {
+        cfg.devNum = num;
+        WiFi.hostname(dhcpName());  // the router sees it at the next DHCP renewal or restart
+        if (WiFi.status() == WL_CONNECTED) mdnsStart();
+      }
+    }
     String tz = server.arg("tz");
     tz.trim();
     if (tz.length() > 0 && safeText(tz)) {
@@ -4685,7 +4713,7 @@ static bool waitWifi(uint32_t ms) {
 bool connectStored(uint32_t timeoutMs) {
   uint32_t t0 = millis();
   WiFi.mode(WIFI_STA);
-  WiFi.hostname(netName);
+  WiFi.hostname(dhcpName());
   bool hardened = wifiHarden();
   if (!hardened && WiFi.status() == WL_CONNECTED) {  // the SDK connected by itself while the screen was starting
     bootWifiPath = 2;
