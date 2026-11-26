@@ -65,7 +65,7 @@ Add small ESP32 boards around the house, each with its own sensors, and show the
 
 ## Multiple clocks
 
-- [ ] Each clock gets its own local name automatically (`weatherclock-2.local` and so on)
+- [x] Each clock gets its own local name automatically (`weatherclock-2.local` and so on; `weatherclock1.local`, `weatherclock2.local`... from the clock number)
 
 ## Helpers without a computer
 

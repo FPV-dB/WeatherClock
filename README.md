@@ -183,7 +183,7 @@ How it works:
 1. **Give each clock a name and a number** under *Settings → System*, for example 1 Kitchen, 2 Office, 3 Bedroom. The name also shows on the start-up screen.
 2. **Place them on the grid** under *Settings → My clocks*. Every clock on your Wi-Fi appears there; drag each one to the row and column where it sits (up to 10 × 10). Moving one clock in the grid updates the others too.
 3. **Tap a clock to Identify it.** It shows its number, grid place, name and address in big digits for 10 seconds, so you know which is which. **Open** jumps straight to that clock's own panel.
-4. **Each clock gets its own address:** `weatherclock.local`, `weatherclock-2.local`, `weatherclock-3.local` and so on, as well as its IP address.
+4. **Each clock gets its own address:** give it a number under Identify and it becomes `weatherclock1.local`, `weatherclock2.local` and so on (also the name your router shows). Without a number it takes `weatherclock.local`, `weatherclock-2.local`, `weatherclock-3.local` and so on. Its IP address always works too.
 
 <img src="docs/readme/panel-myclocks.png" width="544" alt="My clocks: grid of clocks on the same Wi-Fi">
 
@@ -267,7 +267,7 @@ A new clock (or one reset with "Prepare as a gift") walks you through setup on i
 2. **Pick your home Wi-Fi.** The setup page opens by itself (or go to `http://192.168.4.1`). Choose your network and type its password. Only **2.4 GHz** networks work.
 3. **Choose your city.** Once connected, the clock shows its address and a QR code for the panel. Open it, tap **Choose my city** and search for your town. The time zone is set at the same time.
 
-The clock is then reachable at its IP address or at `http://weatherclock.local` (a second clock on the same network takes `weatherclock-2.local`, and so on).
+The clock is then reachable at its IP address or at `http://weatherclock.local` (a second clock on the same network takes `weatherclock-2.local`, and so on; a clock with a number set under Identify uses `weatherclock<number>.local` instead).
 
 ## The web panel
 
