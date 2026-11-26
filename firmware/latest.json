@@ -1,14 +1,14 @@
 {
-  "version": "2.0.21",
+  "version": "2.0.22",
   "date": "2026-11-27",
   "file": "weatherclock.bin",
-  "size": 643488,
+  "size": 645040,
   "gz": "weatherclock.bin.gz",
-  "gzsize": 462994,
-  "sig": "jJBrN7/2ycq/UviqujcksnQak733vTOQIrouu0z6ZwLxhUONyr8RlxvbkedxHbgEanhyubJnqT23kxzfYLvXklPv7kHMHFlYiVnJFWU7oYy/IIU0TJR3QvMa/P5sQzOSrWfByF6CnY1YbJ8TxRCdmXF1DCtXOvp2fRo5u6xv9qSAj7J8UZwcf0RV0CBCzPHbSpI5W3afVIZM5NqvC1dceiOx3LslmdiMeKI0NKC+fmPQ9OZ1AIRQdd2tkZVLAwPKO8eoqhHXBWUHw1hPI9StsjyKmg46X5rD+plYE4eDRnqcsDYO+AJjOc/yX/YLTtinr9e6HVebHZJcoaSmXrHdig==",
-  "gzsig": "r1PhruzSEgEoUPILw8b+O+QyWyvQkXGi60BTim2xCyCXxz4wuRi/NVu5C/0Du9XbYxwwvqyNw2dnCRjHUO91xjmRmozQBM8bJ/rA66PGM24Z0QF7QKvIQSM9Y59Gg+eDSRB5eLXtzAPCVIbGgKOMX2tk+fFdAqnEZxDl3Z/85zebAP9ghr64+UBIxZOq2u0MHUqer8E7szqPISZkCuF6jhD6sAP6aXo/Ew2tXY+ezevmjMNgbSFRktATKgx+1nXl2WI0AZH6JkETBvGnuWQCFsjIjrkfy7A4FUKAb6w87dzDWCVQU8qBUmVYVJUNtvIoTiRFn8KedpNLKm6VeRSB3Q==",
-  "panel": "panel-4bb77e12a75f7b83043ed825.html.gz",
-  "psri": "sha256-S7d+Eqdfe4MEPtglhqnlQ5x2QzUFjx2pJ1kKrZrLtbI=",
+  "gzsize": 464141,
+  "sig": "Ub2gZjJTlmObro1wG2Qf1WOCVNiwkS2zmGPkpDXDUZ95/R3mCQDiyHihl9IzcReTvddKawBpLOwNoJMQ/A03rLphv/TFCJouDZCvJqNH4wOqO3DPx7tOQXXopAqVyzDMWBGkw43/eJ3mZUdyHZmdgkmxCePfcdoSKyhdBSv3e3b6UtCmGk/i6BaQ3PiojiMHI9ujnW37d08YNAuFELqf3bivy8tOQVr0gqIDw96N+3ohvoKQs5RcvWFmzpn1eC8NKfGA3gCEMmNA8lQNtOkCZSGskVKY6sPvbel24dS//jViow//kNtNB4JbI0y1Km3s2wGH5c8rucr/vT8vTTUPoQ==",
+  "gzsig": "EBMnsPHo4qFPJS6vXRbTN4+tXU1yRVM6jC+7w0x+qDwp7ZThnoL+1WlgXAq4lHICek1fLCTC7OTavIZVVm9ne/mQYGxLtkoauf+AxzwRZP3All5Y9MwoJnfUZUY6K/X7yjuhPuVqQbG5ioRuN/1/oVHoVnSg3e0a0T0eUxyWBkO+Cb8kwRXKcBr/vIQYYaoIlFnAqBxHW5gbPup64LSp0/BxRomZJmNmGxznG0sgoUivQnJwUYueLLpV6cL+8wrqR/HJOsKY1c2Y+SM+C1fLDXxg43NG5NR1ds3j1ZJV+W/d1z1rpJ47K7XXavPZHQgJ5rPcBuOJIPtv9UjPIA+w4Q==",
+  "panel": "panel-0fb9ee58a136b5dd3b552b6c.html.gz",
+  "psri": "sha256-D7nuWKE2td07VStsWhE/acjgP8vGKJ1uGcVYOGTfSHg=",
   "notes": {
     "en": [
       "News face: each feed named in the header, in its own colour"
