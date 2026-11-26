@@ -35,11 +35,11 @@ Weather Clock is a fork of [smalltv-pomodoro](https://github.com/davicorrea0/sma
 
 ## Clock faces
 
-There are 24 faces. Every GIF below is recorded from the simulator, which runs the same drawing code as the clock, so this is how they move on the real screen. The animations run on the clock itself: no video files, each frame is drawn live by the ESP8266. Screens also fade to black and back when the clock changes face.
+There are 25 faces. Every GIF below is recorded from the simulator, which runs the same drawing code as the clock, so this is how they move on the real screen. The animations run on the clock itself: no video files, each frame is drawn live by the ESP8266. Screens also fade to black and back when the clock changes face.
 
 ### Made for it!
 
-These faces are new in Weather Clock, and all of them are animated.
+These faces are new in Weather Clock, and most of them are animated.
 
 <table>
 <tr>
@@ -63,6 +63,8 @@ These faces are new in Weather Clock, and all of them are animated.
 </tr>
 <tr>
 <td align="center" valign="top" width="33%"><img src="docs/readme/faces/drone.gif" width="200" alt="Drone fly check"><br><b>Drone fly check</b><br><sub>Is it safe to fly your drone right now? Pick your drone in Settings &gt; Drone (DJI Neo 1/2, Avata 2, Pavo 20 Pro, 65 mm Tinywhoop, or your own limits). Shows wind and gusts against its limits and the best hours in the next 12 hours. Built in, no computer needed. Uses the same rules as <a href="https://github.com/FPV-dB/WindBar2">WindBar2</a>, a wind checker made for flying FPV drones</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/world-clock.gif" width="200" alt="World clock"><br><b>World clock</b><br><sub>The time in up to 6 cities you pick in the panel, with day or night</sub></td>
+<td align="center" valign="top" width="33%"><img src="docs/readme/faces/world-weather.gif" width="200" alt="World weather"><br><b>World weather</b><br><sub>Weather now in up to 6 cities you pick in the panel, with the high and low</sub></td>
 </tr>
 </table>
 
