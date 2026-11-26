@@ -811,23 +811,59 @@ static void agoText(uint16_t mins, char *out, size_t n) {
   else snprintf(out, n, tr("ha %u h", "%u h ago", "hace %u h"), mins / 60);
 }
 static const uint16_t NEWS_RED = uiRgb(220, 50, 45);
-static void newsDot(const UiState &s) {
+static const char *newsSource(const UiState &s) {
+  if (s.news && s.news->src[0]) return s.news->src;
+  return s.newsWant ? s.newsWant : "";
+}
+// weatherbox: each feed has its own colour (header bar, live dot, "ago" lines), so the feeds are easy to tell apart
+// at a glance; matched by a word in the name the program sends. Unknown feeds (your own) get a colour from their name.
+struct NewsLook { const char *key; uint8_t r, g, b; bool darkText; };
+static const NewsLook NEWS_LOOKS[] = {
+  {"BBC", 200, 30, 40, false},        {"ABC", 250, 190, 30, true},      {"Kyiv", 40, 90, 220, false},
+  {"Moscow", 120, 60, 170, false},    {"Jazeera", 150, 100, 30, false}, {"Guardian", 25, 50, 110, false},
+  {"NPR", 230, 80, 30, false},        {"DW", 0, 150, 210, false},       {"France", 20, 160, 140, false},
+  {"SBS", 240, 120, 170, true},       {"Pravda", 170, 210, 40, true},   {"Meduza", 180, 180, 190, true},
+  {"TASS", 70, 80, 100, false},       {"Taking turns", 190, 40, 140, false},
+};
+struct NewsColors { uint16_t bar, ink; };
+static NewsColors newsColors(const UiState &s) {
+  const char *src = newsSource(s);
+  if (!src[0]) return {NEWS_RED, TEXT};
+  if (!strcmp(src, "RT") || !strncmp(src, "RT ", 3)) return {uiRgb(40, 140, 60), TEXT};  // "RT" alone: a substring would match "Report"
+  for (const NewsLook &l : NEWS_LOOKS)
+    if (strstr(src, l.key)) return {uiRgb(l.r, l.g, l.b), l.darkText ? uiRgb(20, 20, 24) : TEXT};
+  uint32_t h = 5381;  // your own feed: a steady colour picked from its name
+  for (const char *p = src; *p; p++) h = h * 33 + (uint8_t)*p;
+  static const uint16_t OWN[] = {uiRgb(130, 20, 70), uiRgb(100, 90, 30)};  // colours no listed feed uses
+  return {OWN[h % 2], TEXT};
+}
+static void newsDot(const UiState &s, uint16_t bar) {
   const int ph = (int)(s.ms / 100 % 14), w = ph < 7 ? ph : 14 - ph;
-  G->fillCircle(18, 37, 6, NEWS_RED);
-  G->fillCircle(18, 37, 2 + w / 2, mix16(NEWS_RED, uiRgb(255, 255, 255), 6 + w));
+  const uint16_t hot = bar == NEWS_RED ? uiRgb(255, 255, 255) : uiRgb(220, 30, 30);  // a red pulse on the feed's colour
+  G->fillCircle(18, 37, 6, bar == NEWS_RED ? bar : uiRgb(255, 255, 255));
+  G->fillCircle(18, 37, 2 + w / 2, mix16(bar == NEWS_RED ? bar : uiRgb(255, 255, 255), hot, 6 + w));
 }
 static void paintNewsDot(void *c) {
   const UiState &s = *(const UiState *)c;
-  G->fillRect(10, 29, 17, 17, NEWS_RED);
-  newsDot(s);
+  const NewsColors nc = newsColors(s);
+  G->fillRect(10, 29, 17, 17, nc.bar);
+  newsDot(s, nc.bar);
 }
 static void paintNewsHeader(void *c) {
   const UiState &s = *(const UiState *)c;
   G->fillRect(0, 24, 240, 26, BG);
-  G->fillRect(0, 28, 240, 19, NEWS_RED);
-  newsDot(s);
-  text(30, 33, 2, TEXT, tr("NOTICIAS", "NEWS", "NOTICIAS"));
-  if (s.news && s.news->src[0]) textR(232, 34, 1, uiRgb(255, 220, 215), s.news->src);
+  const NewsColors nc = newsColors(s);
+  G->fillRect(0, 28, 240, 19, nc.bar);
+  newsDot(s, nc.bar);
+  const char *title = tr("NOTICIAS", "NEWS", "NOTICIAS");
+  text(30, 33, 2, nc.ink, title);
+  // weatherbox: which feed this is, always shown: the one the headlines came from, else the one picked in the panel;
+  // big when it fits beside the title, else small
+  const char *src = newsSource(s);
+  if (!src[0]) return;
+  const int room = 232 - (30 + textW(title, 2) + 14);
+  if (textW(src, 2) <= room) textR(232, 33, 2, nc.ink, src);
+  else textR(232, 34, 1, nc.ink, src);
 }
 struct NewsBody { const UiState *s; int offset; };
 static void paintNewsBody(void *c) {
@@ -837,19 +873,27 @@ static void paintNewsBody(void *c) {
   const UiNews *nw = s.news;
   if (!nw || !nw->n) {
     textC(120, 100, 2, MUTED, tr("Sem noticias", "No news yet", "Sin noticias"));
-    textC(120, 126, 1, MUTED, tr("precisa do programa do radar", "needs the radar program", "necesita el programa del radar"));
-    textC(120, 138, 1, MUTED, tr("num computador", "on a computer", "en un ordenador"));
+    const char *src = newsSource(s);
+    if (src[0]) {  // weatherbox: say which feed it is waiting for
+      char w[40];
+      snprintf(w, sizeof w, tr("a espera de %s", "waiting for %s", "esperando %s"), src);
+      textC(120, 122, 1, TEXT, w);
+    }
+    textC(120, 140, 1, MUTED, tr("precisa do programa do radar", "needs the radar program", "necesita el programa del radar"));
+    textC(120, 152, 1, MUTED, tr("num computador", "on a computer", "en un ordenador"));
     return;
   }
   const uint16_t since = (uint16_t)((s.ms - nw->at) / 60000);
+  const uint16_t bar = newsColors(s).bar, ageC = mix16(bar, uiRgb(255, 255, 255), 6);  // lifted so dark colours still read
+
   for (int i = 0; i < nw->n; i++) {
     const int y = 54 + i * 90 - b.offset;
     if (y < -40 || y > 240) continue;
     wrapText(8, y, 2, TEXT, nw->t[i], 19, 3);
     char age[24];
     agoText(nw->ago[i] + since, age, sizeof age);
-    text(8, y + 61, 1, NEWS_RED, age);
-    G->drawFastHLine(8, y + 79, 224, CARD2);
+    text(8, y + 61, 1, ageC, age);
+    G->drawFastHLine(8, y + 79, 224, mix16(CARD2, bar, 4));
   }
 }
 
